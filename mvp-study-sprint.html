@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>考前突击计划 MVP</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --panel: #ffffff;
+      --text: #101010;
+      --muted: #666666;
+      --line: #d8d8d8;
+      --strong-line: #222222;
+      --btn-bg: #111111;
+      --btn-text: #ffffff;
+      --input-bg: #ffffff;
+      --list-text: #1b1b1b;
+      --tag-bg: #f6f6f6;
+    }
+    body[data-theme="dark"] {
+      --bg: #0f0f0f;
+      --panel: #141414;
+      --text: #f2f2f2;
+      --muted: #b3b3b3;
+      --line: #373737;
+      --strong-line: #f2f2f2;
+      --btn-bg: #f2f2f2;
+      --btn-text: #111111;
+      --input-bg: #121212;
+      --list-text: #e5e5e5;
+      --tag-bg: #1a1a1a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+    .app {
+      width: 100%;
+      max-width: 980px;
+      display: grid;
+      gap: 16px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: 0.4px;
+    }
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 14px;
+      padding: 10px 12px;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--strong-line); }
+    textarea { min-height: 84px; resize: vertical; }
+    .full { grid-column: 1 / -1; }
+    .actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    button {
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .primary {
+      background: var(--btn-bg);
+      border-color: var(--btn-bg);
+      color: var(--btn-text);
+    }
+    .ghost {
+      background: var(--panel);
+      color: var(--text);
+    }
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .panel-title {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+    ul {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 6px;
+      color: var(--list-text);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-right: 6px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--tag-bg);
+    }
+    .danger, .ok { color: var(--muted); border-color: var(--line); }
+    .headline {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+    .empty {
+      color: var(--muted);
+      margin: 0;
+      font-size: 14px;
+    }
+    #themeToggle {
+      max-width: 130px;
+      margin-left: auto;
+    }
+    .hint {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    #apiStatus {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .feedback-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .feedback-col {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+    .feedback-block {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      background: var(--panel);
+    }
+    .feedback-main {
+      display: grid;
+      gap: 10px;
+    }
+    .feedback-item {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      background: var(--panel);
+    }
+    .feedback-item h4 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      line-height: 1;
+    }
+    .feedback-item p {
+      margin: 0;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .feedback-title {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+    .feedback-desc {
+      margin: 0 0 12px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .wx-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .wx-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .wx-id {
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--tag-bg);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+    #copyWx {
+      width: auto;
+      min-width: 112px;
+      padding: 9px 12px;
+    }
+    .copy-tip {
+      margin: 8px 0 0;
+      min-height: 18px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .qr-box {
+      text-align: center;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .qr-box img {
+      width: 100%;
+      max-width: 250px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      display: block;
+      margin: 0 auto;
+    }
+    .qr-note {
+      margin: 8px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    @media (max-width: 760px) {
+      body { padding: 14px; }
+      .card { padding: 14px; }
+      .grid, .result-grid { grid-template-columns: 1fr; }
+      .feedback-grid { grid-template-columns: 1fr; }
+      .feedback-col { gap: 10px; }
+      .qr-box img { max-width: 220px; }
+      #themeToggle { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="card">
+      <h1>考前突击计划生成器</h1>
+      <p class="sub">目标：最少输入，1次点击，直接给出可执行计划</p>
+      <div class="grid">
+        <div>
+          <label for="course">课程名</label>
+          <input id="course" type="text" value="大学物理" />
+        </div>
+        <div>
+          <label for="date">考试日期</label>
+          <input id="date" type="date" />
+        </div>
+        <div>
+          <label for="hours">每天可用时间（小时）</label>
+          <input id="hours" type="number" min="1" max="20" value="8" />
+        </div>
+        <div>
+          <label for="goal">目标分</label>
+          <input id="goal" type="number" min="60" max="100" value="80" />
+        </div>
+        <div class="full">
+          <label for="keywords">资料关键词（可粘贴目录/题型词，逗号分隔）</label>
+          <textarea id="keywords">动量守恒, 刚体转动, 热力学第一定律, 简答题, 计算题</textarea>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="generate" class="primary">一键生成计划</button>
+        <button id="fillDemo" class="ghost">加载示例</button>
+        <button id="themeToggle" class="ghost">切换深色</button>
+      </div>
+      <p class="hint">当前为后端代理模式：API密钥与系统提示词均在服务端读取（.env + prompt.md），首次会弹窗验证访问口令。</p>
+      <p id="apiStatus"></p>
+    </section>
+
+    <section class="card">
+      <h2 class="headline" id="headline">你的突击计划还没生成</h2>
+      <p class="empty" id="summary">点击上方按钮后，这里会给出“必做 / 可放弃 / 24小时安排 / 高频考点”。</p>
+      <div class="result-grid">
+        <article class="card">
+          <h3 class="panel-title">必拿分模块</h3>
+          <ul id="must"></ul>
+        </article>
+        <article class="card">
+          <h3 class="panel-title">可放弃清单</h3>
+          <ul id="drop"></ul>
+        </article>
+        <article class="card">
+          <h3 class="panel-title">24小时行动表</h3>
+          <ul id="schedule"></ul>
+        </article>
+        <article class="card">
+          <h3 class="panel-title">高频押题点（10条）</h3>
+          <ul id="hits"></ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="headline">产品反馈</h2>
+      <div class="feedback-grid">
+        <div class="feedback-col">
+          <article class="feedback-block feedback-main">
+            <div class="feedback-item">
+              <h4>产品反馈</h4>
+              <p>支持通过微信反馈产品建议、Bug 与体验问题，我会优先处理高频反馈。</p>
+            </div>
+          </article>
+          <article class="feedback-block">
+            <h3 class="feedback-title">微信号</h3>
+            <div class="wx-row">
+              <span class="wx-label">微信号：</span>
+              <span id="wxId" class="wx-id">Wind12006</span>
+            </div>
+            <button id="copyWx" class="primary" type="button">一键复制微信号</button>
+            <p id="copyTip" class="copy-tip"></p>
+          </article>
+        </div>
+        <article class="feedback-block qr-box">
+          <h3 class="feedback-title">微信二维码</h3>
+          <img src="./contactme.jpg" alt="微信二维码" />
+          <p class="qr-note">扫码添加微信并备注「产品反馈」，我会更快处理。</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const now = new Date();
+    const defaultDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3);
+    document.getElementById("date").valueAsDate = defaultDate;
+    const body = document.body;
+    const themeToggle = document.getElementById("themeToggle");
+    const generateBtn = document.getElementById("generate");
+    const apiStatus = document.getElementById("apiStatus");
+    const copyWxBtn = document.getElementById("copyWx");
+    const copyTip = document.getElementById("copyTip");
+
+    function applyTheme(theme) {
+      body.setAttribute("data-theme", theme);
+      localStorage.setItem("mvp-theme", theme);
+      themeToggle.textContent = theme === "dark" ? "切换浅色" : "切换深色";
+    }
+
+    function initTheme() {
+      const saved = localStorage.getItem("mvp-theme");
+      if (saved === "dark" || saved === "light") {
+        applyTheme(saved);
+        return;
+      }
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      applyTheme(prefersDark ? "dark" : "light");
+    }
+
+    function setStatus(text) {
+      apiStatus.textContent = text;
+    }
+
+    function setCopyTip(text) {
+      copyTip.textContent = text;
+      if (!text) return;
+      window.setTimeout(() => {
+        if (copyTip.textContent === text) copyTip.textContent = "";
+      }, 1800);
+    }
+
+    async function copyWxId() {
+      const value = document.getElementById("wxId").textContent.trim();
+      try {
+        await navigator.clipboard.writeText(value);
+        setCopyTip("已复制，可直接去微信粘贴。");
+      } catch {
+        const input = document.createElement("input");
+        input.value = value;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        input.remove();
+        setCopyTip("已复制，可直接去微信粘贴。");
+      }
+    }
+
+    function getApiBase() {
+      if (window.location.protocol === "file:") {
+        return "http://127.0.0.1:8010";
+      }
+      return window.location.origin;
+    }
+
+    async function getHealth() {
+      const resp = await fetch(`${getApiBase()}/api/health`, { method: "GET" });
+      if (!resp.ok) throw new Error(`健康检查失败：${resp.status}`);
+      return resp.json();
+    }
+
+    function applyPlan(plan) {
+      document.getElementById("headline").innerHTML = `<span class="tag ok">${plan.headline || "已生成计划"}</span>`;
+      document.getElementById("summary").textContent = plan.summary || "";
+      listToUl("must", Array.isArray(plan.must) ? plan.must : []);
+      listToUl("drop", Array.isArray(plan.drop) ? plan.drop : []);
+      listToUl("schedule", Array.isArray(plan.schedule) ? plan.schedule : []);
+      listToUl("hits", Array.isArray(plan.hits) ? plan.hits : []);
+    }
+
+    function parseJsonFromText(text) {
+      const raw = text.trim();
+      if (raw.startsWith("{")) return JSON.parse(raw);
+      const fence = raw.match(/```json\s*([\s\S]*?)```/i);
+      if (fence && fence[1]) return JSON.parse(fence[1].trim());
+      const block = raw.match(/\{[\s\S]*\}/);
+      if (block) return JSON.parse(block[0]);
+      throw new Error("模型未返回可解析JSON");
+    }
+
+    async function fetchPlanByAI() {
+      const course = document.getElementById("course").value.trim() || "当前课程";
+      const date = document.getElementById("date").value;
+      const hours = Number(document.getElementById("hours").value || 8);
+      const goal = Number(document.getElementById("goal").value || 80);
+      const keywords = document.getElementById("keywords").value.trim();
+      const d = daysLeft(date);
+      const response = await fetch(`${getApiBase()}/api/plan`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          course,
+          days_left: d,
+          hours_per_day: hours,
+          goal_score: goal,
+          keywords
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`API调用失败：${response.status} ${errText.slice(0, 180)}`);
+      }
+      const data = await response.json();
+      if (data?.ok && data?.plan) return data.plan;
+      if (data?.plan) return data.plan;
+      const content = data?.content || "";
+      if (!content) throw new Error("后端返回为空");
+      return parseJsonFromText(content);
+    }
+
+    function daysLeft(targetDate) {
+      const oneDay = 1000 * 60 * 60 * 24;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const t = new Date(targetDate);
+      t.setHours(0, 0, 0, 0);
+      return Math.max(1, Math.ceil((t - today) / oneDay));
+    }
+
+    function listToUl(id, items) {
+      const ul = document.getElementById(id);
+      ul.innerHTML = "";
+      items.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        ul.appendChild(li);
+      });
+    }
+
+    async function generatePlan() {
+      generateBtn.disabled = true;
+      generateBtn.textContent = "生成中...";
+      setStatus("正在请求模型...");
+      try {
+        const aiPlan = await fetchPlanByAI();
+        applyPlan(aiPlan);
+        setStatus("AI 生成成功");
+      } catch (err) {
+        const msg = String(err?.message || err);
+        if (msg.includes("Failed to fetch")) {
+          setStatus("AI失败：无法连接后端。请先启动 server.py，并用 http://127.0.0.1:8010/mvp-study-sprint.html 打开页面。");
+        } else if (msg.includes("401")) {
+          try {
+            const health = await getHealth();
+            if (health?.service !== "study-sprint-api") {
+              setStatus("AI失败：你当前连接的不是本项目后端（服务标识不匹配）。");
+            } else if (health?.require_app_token) {
+              setStatus("AI失败：后端仍在强制鉴权。请在 .env 将 REQUIRE_APP_TOKEN 设置为 false 并重启后端。");
+            } else {
+              setStatus("AI失败：后端返回401，疑似端口上仍是旧进程，请关闭后重启。");
+            }
+          } catch {
+            setStatus("AI失败：后端返回401，且健康检查不可用，极可能连到了错误服务。");
+          }
+        } else {
+          setStatus(`AI失败：${msg}`);
+        }
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = "一键生成计划";
+      }
+    }
+
+    function fillDemo() {
+      document.getElementById("course").value = "工程力学";
+      document.getElementById("hours").value = 7;
+      document.getElementById("goal").value = 85;
+      document.getElementById("keywords").value = "受力分析, 力矩平衡, 杆件内力, 材料力学基础, 计算题, 简答题";
+      const d = new Date();
+      d.setDate(d.getDate() + 4);
+      document.getElementById("date").valueAsDate = d;
+      generatePlan();
+    }
+
+    themeToggle.addEventListener("click", () => {
+      const nextTheme = body.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      applyTheme(nextTheme);
+    });
+    document.getElementById("generate").addEventListener("click", () => generatePlan());
+    document.getElementById("fillDemo").addEventListener("click", fillDemo);
+    copyWxBtn.addEventListener("click", copyWxId);
+    getHealth()
+      .then((h) => setStatus(`后端已连接：${h.service} / 鉴权=${h.require_app_token ? "开" : "关"}`))
+      .catch(() => setStatus("后端未连接，请先启动 server.py"));
+    initTheme();
+  </script>
+</body>
+</html>
