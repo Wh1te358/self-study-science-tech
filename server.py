@@ -12,8 +12,13 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 APP_NAME = "study-sprint-api"
-APP_VERSION = "2026-04-09-health-1"
-SYSTEM_PROMPT = "你是考前突击规划助手。你必须仅输出JSON对象，不要输出任何解释。JSON结构：headline:string, summary:string, must:string[5], drop:string[3], schedule:string[6], hits:string[10]。语言：简体中文，句子短，执行导向。"
+APP_VERSION = "2026-07-16-i18n-1"
+SYSTEM_PROMPT = (
+    "You are an exam-cram planning assistant. Return only one JSON object with no explanation. "
+    "Schema: headline:string, summary:string, must:string[5], drop:string[3], "
+    "schedule:string[6], hits:string[10]. Follow the runtime output-language instruction exactly; "
+    "if it is absent, match the language used in the course name and keywords. Keep every sentence short and action-oriented."
+)
 RATE_BUCKET = {}
 RATE_LOCK = threading.Lock()
 SESSIONS = {}
@@ -79,13 +84,48 @@ def check_rate_limit(client_ip: str):
 
 def extract_keywords(payload: dict):
     raw = str(payload.get("keywords", "")).strip()
-    return [x.strip() for x in re.split(r"[，,、\n]", raw) if x.strip()]
+    return [x.strip() for x in re.split(r"[，,;；、\n]", raw) if x.strip()]
+
+
+def normalize_language(value: str) -> str:
+    raw = str(value or "").strip().lower().replace("_", "-")
+    if raw == "zh" or raw.startswith("zh-") or raw in {"chinese", "中文", "简体中文"}:
+        return "zh"
+    if raw == "en" or raw.startswith("en-") or raw in {"english", "英文", "英语"}:
+        return "en"
+    return ""
+
+
+def detect_text_language(text: str) -> str:
+    content = str(text or "")
+    han_count = len(re.findall(r"[\u3400-\u9fff]", content))
+    latin_count = len(re.findall(r"[A-Za-z]", content))
+    if han_count == 0 and latin_count == 0:
+        return ""
+    return "zh" if han_count > max(1, latin_count * 0.12) else "en"
+
+
+def resolve_response_language(payload: dict) -> str:
+    frontend_language = normalize_language(payload.get("language", ""))
+    if frontend_language:
+        return frontend_language
+    declared_input_language = normalize_language(payload.get("input_language", ""))
+    if declared_input_language:
+        return declared_input_language
+    text = f"{payload.get('course', '')}\n{payload.get('keywords', '')}"
+    return detect_text_language(text) or "zh"
 
 
 def detect_subject_mode(course: str, keywords: list[str]) -> str:
-    memory_signals = ["毛概", "思政", "政治", "历史", "法学", "背诵", "名词解释", "论述", "选择题", "填空题", "马克思"]
-    calc_signals = ["数学", "高数", "线代", "概率", "物理", "化学", "力学", "电路", "编程", "算法", "计算", "公式", "推导", "证明", "建模"]
-    text = f"{course} {' '.join(keywords)}"
+    memory_signals = [
+        "毛概", "思政", "政治", "历史", "法学", "背诵", "名词解释", "论述", "选择题", "填空题", "马克思",
+        "politics", "history", "law", "memorization", "definition", "essay", "multiple choice", "fill in the blank",
+    ]
+    calc_signals = [
+        "数学", "高数", "线代", "概率", "物理", "化学", "力学", "电路", "编程", "算法", "计算", "公式", "推导", "证明", "建模",
+        "mathematics", "calculus", "linear algebra", "probability", "physics", "chemistry", "mechanics", "circuit", "programming", "algorithm", "calculation", "formula", "derivation", "proof", "modeling",
+    ]
+    text = f"{course} {' '.join(keywords)}".lower()
     mem_score = sum(1 for s in memory_signals if s in text)
     calc_score = sum(1 for s in calc_signals if s in text)
     return "calc" if calc_score > mem_score else "memory"
@@ -97,11 +137,13 @@ def normalize_sentence(item: str) -> str:
 
 def sanitize_plan(plan: dict, payload: dict) -> dict:
     keywords = extract_keywords(payload)
-    course = str(payload.get("course", "当前课程")).strip() or "当前课程"
+    language = resolve_response_language(payload)
+    default_course = "Current course" if language == "en" else "当前课程"
+    course = str(payload.get("course", default_course)).strip() or default_course
     mode = detect_subject_mode(course, keywords)
     kw_fallback = keywords if keywords else [course]
-    calc_words = ["计算题", "公式", "推导", "积分", "数值", "建模", "证明"]
-    memory_words = ["名词解释", "论述", "选择题", "填空题", "背诵", "记忆"]
+    calc_words = ["计算题", "公式", "推导", "积分", "数值", "建模", "证明", "calculation", "formula", "derivation", "integral", "numeric", "modeling", "proof"]
+    memory_words = ["名词解释", "论述", "选择题", "填空题", "背诵", "记忆", "definition", "essay", "multiple choice", "fill in the blank", "memorize", "memory"]
 
     must = [normalize_sentence(x) for x in normalize_list(plan.get("must", []), 5)]
     drop = [normalize_sentence(x) for x in normalize_list(plan.get("drop", []), 3)]
@@ -110,24 +152,32 @@ def sanitize_plan(plan: dict, payload: dict) -> dict:
 
     for i, item in enumerate(hits):
         if not item:
-            hits[i] = f"{kw_fallback[i % len(kw_fallback)]} × 高频考点"
+            suffix = "high-frequency exam target" if language == "en" else "高频考点"
+            hits[i] = f"{kw_fallback[i % len(kw_fallback)]} × {suffix}"
             continue
         if mode == "memory" and any(w in item for w in calc_words):
-            hits[i] = f"{kw_fallback[i % len(kw_fallback)]} × 高频记忆点"
+            suffix = "high-frequency recall target" if language == "en" else "高频记忆点"
+            hits[i] = f"{kw_fallback[i % len(kw_fallback)]} × {suffix}"
         if mode == "calc" and any(w in item for w in memory_words):
-            hits[i] = f"{kw_fallback[i % len(kw_fallback)]} × 高频计算点"
+            suffix = "high-frequency calculation target" if language == "en" else "高频计算点"
+            hits[i] = f"{kw_fallback[i % len(kw_fallback)]} × {suffix}"
 
-    generic_drop = ["低频冷门章节深挖", "超长推导压轴题", "高耗时低收益边角点"]
+    generic_drop = [
+        "low-frequency obscure chapters", "ultra-long derivation problems", "high-time low-return edge cases"
+    ] if language == "en" else ["低频冷门章节深挖", "超长推导压轴题", "高耗时低收益边角点"]
     uniq_keywords = []
     for kw in keywords:
         if kw and kw not in uniq_keywords:
             uniq_keywords.append(kw)
     source_keywords = (uniq_keywords[-3:] if len(uniq_keywords) >= 3 else uniq_keywords) or [course]
     if mode == "memory":
-        dynamic_suffix = ["低频延展", "材料题冷门变体", "耗时长收益低"]
+        dynamic_suffix = ["low-frequency extension", "obscure source-question variant", "high time cost, low return"] if language == "en" else ["低频延展", "材料题冷门变体", "耗时长收益低"]
     else:
-        dynamic_suffix = ["复杂变形题", "超长推导链", "低频边界条件"]
-    dynamic_drop = [f"暂缓：{source_keywords[i % len(source_keywords)]}（{dynamic_suffix[i]}）" for i in range(3)]
+        dynamic_suffix = ["complex transformed problem", "overlong derivation chain", "low-frequency boundary condition"] if language == "en" else ["复杂变形题", "超长推导链", "低频边界条件"]
+    if language == "en":
+        dynamic_drop = [f"Defer: {source_keywords[i % len(source_keywords)]} ({dynamic_suffix[i]})" for i in range(3)]
+    else:
+        dynamic_drop = [f"暂缓：{source_keywords[i % len(source_keywords)]}（{dynamic_suffix[i]}）" for i in range(3)]
     for i, item in enumerate(drop):
         if not item:
             drop[i] = dynamic_drop[i]
@@ -141,20 +191,27 @@ def sanitize_plan(plan: dict, payload: dict) -> dict:
 
     for i, item in enumerate(must):
         if not item:
-            must[i] = f"{kw_fallback[i % len(kw_fallback)]}：高频核心拿分"
+            suffix = "high-yield core marks" if language == "en" else "高频核心拿分"
+            must[i] = f"{kw_fallback[i % len(kw_fallback)]}: {suffix}"
 
     for i, item in enumerate(schedule):
         if not item:
-            schedule[i] = f"第{i * 4 + 1}-{(i + 1) * 4}小时：围绕{kw_fallback[i % len(kw_fallback)]}高压训练"
+            if language == "en":
+                schedule[i] = f"Hours {i * 4 + 1}-{(i + 1) * 4}: pressure-test {kw_fallback[i % len(kw_fallback)]}"
+            else:
+                schedule[i] = f"第{i * 4 + 1}-{(i + 1) * 4}小时：围绕{kw_fallback[i % len(kw_fallback)]}高压训练"
 
     plan["must"] = must
     plan["drop"] = drop
     plan["schedule"] = schedule
     plan["hits"] = hits
     if not str(plan.get("headline", "")).strip():
-        plan["headline"] = f"{course}：{ '理解计算型' if mode == 'calc' else '背诵记忆型' }冲刺"
+        if language == "en":
+            plan["headline"] = f"{course}: {'calculation' if mode == 'calc' else 'recall'} survival sprint"
+        else:
+            plan["headline"] = f"{course}：{ '理解计算型' if mode == 'calc' else '背诵记忆型' }冲刺"
     if not str(plan.get("summary", "")).strip():
-        plan["summary"] = "先拿确定分，再处理增益分，严禁无效投入。"
+        plan["summary"] = "Bank certain marks first, then chase upside. Zero low-return work." if language == "en" else "先拿确定分，再处理增益分，严禁无效投入。"
     return plan
 
 
@@ -175,7 +232,7 @@ def normalize_list(v, count):
     if isinstance(v, list):
         items = [str(x) for x in v if str(x).strip()]
     elif isinstance(v, str) and v.strip():
-        parts = [p.strip() for p in re.split(r"[，,\n、]", v) if p.strip()]
+        parts = [p.strip() for p in re.split(r"[，,;；\n、]", v) if p.strip()]
         items = parts
     else:
         items = []
@@ -191,7 +248,9 @@ def call_model(payload: dict) -> dict:
     api_base = os.environ.get("AI_API_BASE", "https://api.siliconflow.cn/v1").strip().rstrip("/")
     model = os.environ.get("AI_API_MODEL", "Qwen/Qwen2.5-7B-Instruct").strip()
     target_url = f"{api_base}/chat/completions"
-    course = str(payload.get("course", "当前课程")).strip() or "当前课程"
+    language = resolve_response_language(payload)
+    default_course = "Current course" if language == "en" else "当前课程"
+    course = str(payload.get("course", default_course)).strip() or default_course
     days_left = int(payload.get("days_left", 3) or 3)
     hours_per_day = int(payload.get("hours_per_day", 8) or 8)
     goal_score = int(payload.get("goal_score", 80) or 80)
@@ -199,8 +258,21 @@ def call_model(payload: dict) -> dict:
     keywords_max_chars = int(os.environ.get("KEYWORDS_MAX_CHARS", "800"))
     if len(keywords) > keywords_max_chars:
         keywords = keywords[:keywords_max_chars]
-    user_prompt = f"课程：{course}\n剩余天数：{days_left}\n每日学习时长：{hours_per_day}\n目标分：{goal_score}\n资料关键词：{keywords}\n请生成计划。"
-    system_prompt = load_system_prompt()
+    if language == "en":
+        user_prompt = (
+            f"Course: {course}\nDays remaining: {days_left}\nStudy hours per day: {hours_per_day}\n"
+            f"Target score: {goal_score}\nMaterial keywords: {keywords}\nGenerate the plan in English."
+        )
+        runtime_language_contract = (
+            "Runtime output language: English. Every string value in the JSON must be English. "
+            "Keep the JSON property names unchanged. Do not mix in Chinese except inside an untranslatable proper noun supplied by the user."
+        )
+    else:
+        user_prompt = f"课程：{course}\n剩余天数：{days_left}\n每日学习时长：{hours_per_day}\n目标分：{goal_score}\n资料关键词：{keywords}\n请用简体中文生成计划。"
+        runtime_language_contract = (
+            "运行时输出语言：简体中文。JSON 中的所有字符串值必须使用简体中文，JSON 属性名保持不变。"
+        )
+    system_prompt = f"{load_system_prompt()}\n\n# Runtime Language Contract\n{runtime_language_contract}"
     req_body = json.dumps(
         {
             "model": model,

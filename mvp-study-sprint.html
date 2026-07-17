@@ -146,8 +146,10 @@
       margin: 0;
       font-size: 14px;
     }
-    #themeToggle {
+    #themeToggle, #languageToggle {
       max-width: 130px;
+    }
+    #themeToggle {
       margin-left: auto;
     }
     .hint {
@@ -270,91 +272,603 @@
       #themeToggle { margin-left: 0; }
     }
   </style>
+  <style id="keynote-redesign">
+    :root {
+      --bg: #f3f5f9;
+      --panel: rgba(255, 255, 255, 0.78);
+      --panel-solid: #ffffff;
+      --text: #0a1020;
+      --muted: #687083;
+      --line: rgba(18, 30, 58, 0.11);
+      --strong-line: rgba(18, 30, 58, 0.24);
+      --accent: #176bff;
+      --accent-2: #6d4aff;
+      --accent-soft: rgba(23, 107, 255, 0.10);
+      --signal: #00a67e;
+      --warning: #e68019;
+      --btn-bg: #0a1020;
+      --btn-text: #ffffff;
+      --input-bg: rgba(249, 250, 253, 0.92);
+      --list-text: #20283a;
+      --tag-bg: #eef3ff;
+      --shadow: 0 28px 80px rgba(33, 46, 82, 0.12);
+      --shadow-soft: 0 12px 36px rgba(33, 46, 82, 0.08);
+    }
+
+    body[data-theme="dark"] {
+      --bg: #03060d;
+      --panel: rgba(10, 15, 30, 0.76);
+      --panel-solid: #0a0f1e;
+      --text: #f5f8ff;
+      --muted: #8e9ab0;
+      --line: rgba(176, 199, 255, 0.12);
+      --strong-line: rgba(176, 199, 255, 0.28);
+      --accent: #55d9ff;
+      --accent-2: #7b79ff;
+      --accent-soft: rgba(85, 217, 255, 0.10);
+      --signal: #58e6b3;
+      --warning: #ffb45b;
+      --btn-bg: #f5f8ff;
+      --btn-text: #070b14;
+      --input-bg: rgba(6, 11, 22, 0.9);
+      --list-text: #dce5f5;
+      --tag-bg: rgba(85, 217, 255, 0.08);
+      --shadow: 0 34px 110px rgba(0, 0, 0, 0.48);
+      --shadow-soft: 0 16px 48px rgba(0, 0, 0, 0.28);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      display: block;
+      min-height: 100vh;
+      padding: 0;
+      overflow-x: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 72% -10%, color-mix(in srgb, var(--accent) 22%, transparent) 0, transparent 32%),
+        radial-gradient(circle at 8% 32%, color-mix(in srgb, var(--accent-2) 12%, transparent) 0, transparent 28%),
+        var(--bg);
+      color: var(--text);
+      transition: background-color 240ms ease, color 240ms ease;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.22;
+      background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 76px 76px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.55), transparent 72%);
+      z-index: -1;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      min-height: 68px;
+      padding: 0 34px;
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--bg) 78%, transparent);
+      backdrop-filter: blur(22px) saturate(145%);
+    }
+
+    .brand-lockup,
+    .system-line,
+    .top-controls,
+    .metric,
+    .section-index,
+    .result-actions,
+    .contact-actions {
+      display: flex;
+      align-items: center;
+    }
+
+    .brand-lockup { gap: 11px; font-weight: 760; letter-spacing: -0.02em; }
+    .brand-glyph {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 26px color-mix(in srgb, var(--accent) 55%, transparent);
+      transform: rotate(8deg);
+    }
+    .brand-version {
+      padding: 3px 7px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+    }
+
+    .system-line {
+      justify-content: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--signal);
+      box-shadow: 0 0 14px color-mix(in srgb, var(--signal) 72%, transparent);
+      animation: statusPulse 2.4s ease-in-out infinite;
+    }
+    #apiStatus { margin: 0; font-size: 12px; color: var(--muted); }
+
+    .top-controls { justify-content: flex-end; gap: 8px; }
+    .top-controls button {
+      width: auto;
+      min-width: 72px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border-color: var(--line);
+      background: var(--panel);
+      color: var(--text);
+      font-size: 12px;
+      box-shadow: none;
+    }
+    .top-controls #themeToggle { margin-left: 0; }
+
+    .app {
+      width: min(1180px, calc(100% - 48px));
+      max-width: none;
+      margin: 0 auto;
+      padding: 0 0 72px;
+      gap: 0;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 92px 12px 72px;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 58px color-mix(in srgb, var(--accent) 3%, transparent),
+        0 0 110px color-mix(in srgb, var(--accent) 18%, transparent);
+      z-index: -1;
+      opacity: 0.75;
+    }
+    .eyebrow {
+      margin: 0 0 24px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      max-width: 960px;
+      margin: 0;
+      font-size: clamp(52px, 7.4vw, 94px);
+      line-height: 0.98;
+      letter-spacing: -0.065em;
+      font-weight: 790;
+    }
+    .hero h1 span { display: block; }
+    .hero-accent {
+      padding-bottom: 0.08em;
+      background: linear-gradient(105deg, var(--accent) 8%, var(--accent-2) 88%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .sub {
+      max-width: 650px;
+      margin: 28px auto 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(150px, 1fr));
+      width: min(700px, 100%);
+      margin-top: 54px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+    .metric {
+      justify-content: center;
+      min-height: 82px;
+      gap: 7px;
+      padding: 15px;
+      border-right: 1px solid var(--line);
+    }
+    .metric:last-child { border-right: 0; }
+    .metric span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+    .metric strong { font-size: 27px; letter-spacing: -0.05em; }
+    .metric small { align-self: flex-end; padding-bottom: 5px; color: var(--muted); }
+
+    .stage {
+      margin-top: 28px;
+      padding: 34px;
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(26px) saturate(135%);
+    }
+    .section-head {
+      display: grid;
+      grid-template-columns: 54px 1fr auto;
+      gap: 18px;
+      align-items: start;
+      margin-bottom: 30px;
+    }
+    .section-index {
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--accent);
+      background: var(--accent-soft);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+    }
+    .section-kicker {
+      margin: 1px 0 7px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .section-title { margin: 0; font-size: 26px; letter-spacing: -0.035em; }
+    .section-desc { margin: 7px 0 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+    .grid {
+      margin-top: 0;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+    .field { grid-column: span 6; }
+    .field.full { grid-column: 1 / -1; }
+    label {
+      margin-bottom: 9px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 760;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+    input, textarea, button {
+      border-radius: 14px;
+      padding: 15px 16px;
+      border-color: var(--line);
+      background: var(--input-bg);
+      font-size: 15px;
+      transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+    input:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+    textarea { min-height: 116px; line-height: 1.6; }
+    .actions { margin-top: 20px; gap: 12px; }
+    .actions button { width: auto; min-width: 150px; }
+    button:hover:not(:disabled) { transform: translateY(-1px); }
+    button:disabled { cursor: not-allowed; opacity: 0.42; }
+    .primary {
+      background: linear-gradient(115deg, var(--accent), var(--accent-2));
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 14px 34px color-mix(in srgb, var(--accent) 24%, transparent);
+    }
+    .ghost { background: transparent; border-color: var(--line); }
+    .hint {
+      margin: 15px 0 0;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .analysis-panel {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 20px;
+      align-items: center;
+      margin-top: 24px;
+      padding: 22px;
+      border: 1px solid color-mix(in srgb, var(--accent) 36%, var(--line));
+      border-radius: 18px;
+      background: var(--accent-soft);
+      overflow: hidden;
+    }
+    .analysis-panel[hidden] { display: none; }
+    .analysis-orb {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--accent) 32%, var(--accent-2) 72%);
+      box-shadow: 0 0 28px color-mix(in srgb, var(--accent) 55%, transparent);
+      animation: orbBreathe 1.7s ease-in-out infinite;
+    }
+    .analysis-title { margin: 0 0 7px; font-size: 15px; font-weight: 750; }
+    .analysis-detail { margin: 0; color: var(--muted); font-size: 13px; }
+    .analysis-track {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 2px;
+      background: var(--line);
+      overflow: hidden;
+    }
+    .analysis-track span {
+      display: block;
+      width: 36%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
+      animation: scanTrack 1.35s linear infinite;
+    }
+
+    .result-actions { gap: 9px; }
+    .result-actions button { width: auto; min-width: 126px; padding: 10px 13px; font-size: 12px; }
+    .result-hero {
+      margin-bottom: 20px;
+      padding: 28px;
+      border-radius: 22px;
+      background:
+        linear-gradient(120deg, var(--accent-soft), transparent 55%),
+        var(--input-bg);
+      border: 1px solid var(--line);
+    }
+    .headline { margin: 0 0 12px; font-size: clamp(26px, 4vw, 44px); letter-spacing: -0.045em; line-height: 1.08; }
+    .headline .tag {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: inherit;
+      line-height: inherit;
+    }
+    .empty { font-size: 15px; line-height: 1.65; }
+    .result-grid { gap: 16px; }
+    .plan-card {
+      min-height: 260px;
+      padding: 23px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--input-bg);
+      box-shadow: none;
+    }
+    .plan-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    .panel-title { margin: 0; font-size: 16px; letter-spacing: -0.02em; }
+    .plan-code { color: var(--accent); font-size: 10px; font-weight: 850; letter-spacing: 0.16em; }
+    ul { padding-left: 20px; gap: 9px; font-size: 14px; line-height: 1.62; }
+    li::marker { color: var(--accent); }
+    .export-status { min-height: 18px; margin: 14px 0 0; color: var(--muted); font-size: 12px; text-align: right; }
+
+    .feedback-stage {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: center;
+      margin: 28px 0 0;
+      padding: 28px 32px;
+    }
+    .feedback-stage .headline { font-size: 24px; }
+    .feedback-stage p { max-width: 640px; margin: 8px 0 0; color: var(--muted); line-height: 1.6; }
+    .contact-actions { gap: 10px; }
+    .wx-id { border-radius: 999px; padding: 8px 12px; }
+    #copyWx { min-width: auto; width: auto; }
+    .qr-mini { width: 58px; height: 58px; border-radius: 12px; border: 1px solid var(--line); background: #fff; }
+    .copy-tip { margin: 6px 0 0; text-align: right; }
+
+    @keyframes statusPulse { 50% { opacity: .42; transform: scale(.72); } }
+    @keyframes orbBreathe { 50% { transform: scale(.86); filter: saturate(1.5); } }
+    @keyframes scanTrack { from { transform: translateX(-120%); } to { transform: translateX(360%); } }
+
+    @media (max-width: 820px) {
+      .topbar { grid-template-columns: 1fr auto; padding: 0 16px; }
+      .system-line { display: none; }
+      .app { width: min(100% - 24px, 1180px); }
+      .hero { min-height: 540px; padding-top: 70px; }
+      .hero::after { width: 300px; height: 300px; }
+      .metrics { grid-template-columns: 1fr; }
+      .metric { border-right: 0; border-bottom: 1px solid var(--line); }
+      .metric:last-child { border-bottom: 0; }
+      .stage { padding: 22px; border-radius: 22px; }
+      .section-head { grid-template-columns: 44px 1fr; }
+      .section-head .result-actions { grid-column: 1 / -1; }
+      .field { grid-column: 1 / -1; }
+      .result-grid { grid-template-columns: 1fr; }
+      .feedback-stage { grid-template-columns: 1fr; }
+      .contact-actions { flex-wrap: wrap; }
+      .copy-tip { text-align: left; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 1ms !important; scroll-behavior: auto !important; transition-duration: 1ms !important; }
+    }
+  </style>
 </head>
 <body>
+  <header class="topbar">
+    <div class="brand-lockup" aria-label="Finals OS">
+      <span class="brand-glyph" aria-hidden="true"></span>
+      <span>FINALS / OS</span>
+      <span class="brand-version">V1.0</span>
+    </div>
+    <div class="system-line" aria-live="polite">
+      <span class="status-dot" aria-hidden="true"></span>
+      <p id="apiStatus"></p>
+    </div>
+    <div class="top-controls">
+      <button id="languageToggle" class="ghost" type="button">English</button>
+      <button id="themeToggle" class="ghost" type="button">切换深色</button>
+    </div>
+  </header>
+
   <main class="app">
-    <section class="card">
-      <h1>考前突击计划生成器</h1>
-      <p class="sub">目标：最少输入，1次点击，直接给出可执行计划</p>
-      <div class="grid">
+    <section class="hero">
+      <p class="eyebrow" id="heroEyebrow">EXAM SURVIVAL SYSTEM</p>
+      <h1>
+        <span id="heroLead">这把，</span>
+        <span class="hero-accent" id="heroAccent">稳了。</span>
+      </h1>
+      <p class="sub" id="appSubtitle">输入课程、时间和目标。系统替你完成取舍，发布一份可以立刻执行的期末方案。</p>
+      <div class="metrics" aria-label="Plan inputs overview">
+        <div class="metric">
+          <span id="daysMetricLabel">距考试</span>
+          <strong id="daysPreview">3</strong>
+          <small id="daysMetricUnit">天</small>
+        </div>
+        <div class="metric">
+          <span id="goalMetricLabel">目标分</span>
+          <strong id="goalPreview">80</strong>
+          <small>/ 100</small>
+        </div>
+        <div class="metric">
+          <span id="hoursMetricLabel">每日投入</span>
+          <strong id="hoursPreview">8</strong>
+          <small id="hoursMetricUnit">小时</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage" id="configurationStage">
+      <div class="section-head">
+        <div class="section-index">01</div>
         <div>
-          <label for="course">课程名</label>
+          <p class="section-kicker" id="configureKicker">CONFIGURE THE MISSION</p>
+          <h2 class="section-title" id="configureTitle">定义这场考试</h2>
+          <p class="section-desc" id="configureDesc">只输入会改变策略的信息。其余噪音，交给系统删除。</p>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="field">
+          <label for="course" id="courseLabel">课程名</label>
           <input id="course" type="text" value="大学物理" />
         </div>
-        <div>
-          <label for="date">考试日期</label>
+        <div class="field">
+          <label for="date" id="dateLabel">考试日期</label>
           <input id="date" type="date" />
         </div>
-        <div>
-          <label for="hours">每天可用时间（小时）</label>
+        <div class="field">
+          <label for="hours" id="hoursLabel">每天可用时间（小时）</label>
           <input id="hours" type="number" min="1" max="20" value="8" />
         </div>
-        <div>
-          <label for="goal">目标分</label>
+        <div class="field">
+          <label for="goal" id="goalLabel">目标分</label>
           <input id="goal" type="number" min="60" max="100" value="80" />
         </div>
-        <div class="full">
-          <label for="keywords">资料关键词（可粘贴目录/题型词，逗号分隔）</label>
+        <div class="field full">
+          <label for="keywords" id="keywordsLabel">资料关键词（可粘贴目录/题型词，逗号分隔）</label>
           <textarea id="keywords">动量守恒, 刚体转动, 热力学第一定律, 简答题, 计算题</textarea>
         </div>
       </div>
       <div class="actions">
         <button id="generate" class="primary">一键生成计划</button>
         <button id="fillDemo" class="ghost">加载示例</button>
-        <button id="themeToggle" class="ghost">切换深色</button>
       </div>
-      <p class="hint">当前为后端代理模式：API密钥与系统提示词均在服务端读取（.env + prompt.md），首次会弹窗验证访问口令。</p>
-      <p id="apiStatus"></p>
+      <p class="hint" id="proxyHint">当前为后端代理模式：API密钥与系统提示词均在服务端读取（.env + prompt.md），首次会弹窗验证访问口令。</p>
+      <div class="analysis-panel" id="analysisPanel" hidden>
+        <div class="analysis-orb" aria-hidden="true"></div>
+        <div>
+          <p class="analysis-title" id="analysisTitle">正在压缩复习空间</p>
+          <p class="analysis-detail" id="analysisDetail">识别高收益模块，删除低回报任务。</p>
+        </div>
+        <div class="analysis-track" aria-hidden="true"><span></span></div>
+      </div>
     </section>
 
-    <section class="card">
-      <h2 class="headline" id="headline">你的突击计划还没生成</h2>
-      <p class="empty" id="summary">点击上方按钮后，这里会给出“必做 / 可放弃 / 24小时安排 / 高频考点”。</p>
+    <section class="stage" id="resultSection" aria-live="polite">
+      <div class="section-head">
+        <div class="section-index">02</div>
+        <div>
+          <p class="section-kicker" id="resultKicker">RELEASE THE PLAN</p>
+          <h2 class="section-title" id="resultTitle">发布你的复习方案</h2>
+          <p class="section-desc" id="resultDesc">不是建议合集，而是一份可以复制、保存并立即执行的计划。</p>
+        </div>
+        <div class="result-actions">
+          <button id="copyPlan" class="ghost" type="button" disabled>复制全部</button>
+          <button id="downloadPlan" class="primary" type="button" disabled>下载 Markdown</button>
+        </div>
+      </div>
+      <div class="result-hero">
+        <h2 class="headline" id="headline">你的突击计划还没生成</h2>
+        <p class="empty" id="summary">点击上方按钮后，这里会给出“必做 / 可放弃 / 24小时安排 / 高频考点”。</p>
+      </div>
       <div class="result-grid">
-        <article class="card">
-          <h3 class="panel-title">必拿分模块</h3>
+        <article class="plan-card">
+          <div class="plan-card-head"><h3 class="panel-title" id="mustTitle">必拿分模块</h3><span class="plan-code">MUST / 05</span></div>
           <ul id="must"></ul>
         </article>
-        <article class="card">
-          <h3 class="panel-title">可放弃清单</h3>
+        <article class="plan-card">
+          <div class="plan-card-head"><h3 class="panel-title" id="dropTitle">可放弃清单</h3><span class="plan-code">DROP / 03</span></div>
           <ul id="drop"></ul>
         </article>
-        <article class="card">
-          <h3 class="panel-title">24小时行动表</h3>
+        <article class="plan-card">
+          <div class="plan-card-head"><h3 class="panel-title" id="scheduleTitle">24小时行动表</h3><span class="plan-code">EXEC / 06</span></div>
           <ul id="schedule"></ul>
         </article>
-        <article class="card">
-          <h3 class="panel-title">高频押题点（10条）</h3>
+        <article class="plan-card">
+          <div class="plan-card-head"><h3 class="panel-title" id="hitsTitle">高频押题点（10条）</h3><span class="plan-code">HITS / 10</span></div>
           <ul id="hits"></ul>
         </article>
       </div>
+      <p class="export-status" id="exportStatus"></p>
     </section>
 
-    <section class="card">
-      <h2 class="headline">产品反馈</h2>
-      <div class="feedback-grid">
-        <div class="feedback-col">
-          <article class="feedback-block feedback-main">
-            <div class="feedback-item">
-              <h4>产品反馈</h4>
-              <p>支持通过微信反馈产品建议、Bug 与体验问题，我会优先处理高频反馈。</p>
-            </div>
-          </article>
-          <article class="feedback-block">
-            <h3 class="feedback-title">微信号</h3>
-            <div class="wx-row">
-              <span class="wx-label">微信号：</span>
-              <span id="wxId" class="wx-id">Wind12006</span>
-            </div>
-            <button id="copyWx" class="primary" type="button">一键复制微信号</button>
-            <p id="copyTip" class="copy-tip"></p>
-          </article>
+    <section class="stage feedback-stage">
+      <div>
+        <p class="section-kicker" id="feedbackKicker">FEEDBACK CHANNEL</p>
+        <h2 class="headline" id="feedbackHeading">把不好用的地方直接扔给我</h2>
+        <p id="feedbackDescription">产品建议、Bug 与体验问题都可以通过微信反馈；高频问题优先处理。</p>
+      </div>
+      <div>
+        <div class="contact-actions">
+          <span class="wx-label" id="wechatLabel">微信号：</span>
+          <span id="wxId" class="wx-id">Wind12006</span>
+          <button id="copyWx" class="ghost" type="button">复制微信号</button>
+          <img id="qrImage" class="qr-mini" src="./contactme.jpg" alt="微信二维码" />
         </div>
-        <article class="feedback-block qr-box">
-          <h3 class="feedback-title">微信二维码</h3>
-          <img src="./contactme.jpg" alt="微信二维码" />
-          <p class="qr-note">扫码添加微信并备注「产品反馈」，我会更快处理。</p>
-        </article>
+        <p id="copyTip" class="copy-tip"></p>
       </div>
     </section>
   </main>
@@ -365,15 +879,292 @@
     document.getElementById("date").valueAsDate = defaultDate;
     const body = document.body;
     const themeToggle = document.getElementById("themeToggle");
+    const languageToggle = document.getElementById("languageToggle");
     const generateBtn = document.getElementById("generate");
     const apiStatus = document.getElementById("apiStatus");
     const copyWxBtn = document.getElementById("copyWx");
     const copyTip = document.getElementById("copyTip");
+    const copyPlanBtn = document.getElementById("copyPlan");
+    const downloadPlanBtn = document.getElementById("downloadPlan");
+    const exportStatus = document.getElementById("exportStatus");
+    const analysisPanel = document.getElementById("analysisPanel");
+    const analysisDetail = document.getElementById("analysisDetail");
+    const resultSection = document.getElementById("resultSection");
+    let currentLanguage = "zh";
+    let hasGeneratedPlan = false;
+    let lastHealth = null;
+    let lastPlan = null;
+    let analysisTimer = null;
+    let exportTimer = null;
+
+    const translations = {
+      zh: {
+        documentTitle: "考前突击计划 MVP",
+        heroEyebrow: "EXAM SURVIVAL SYSTEM",
+        heroLead: "这把，",
+        heroAccent: "稳了。",
+        appSubtitle: "输入课程、时间和目标。系统替你完成取舍，发布一份可以立刻执行的期末方案。",
+        daysMetricLabel: "距考试",
+        daysMetricUnit: "天",
+        goalMetricLabel: "目标分",
+        hoursMetricLabel: "每日投入",
+        hoursMetricUnit: "小时",
+        configureKicker: "CONFIGURE THE MISSION",
+        configureTitle: "定义这场考试",
+        configureDesc: "只输入会改变策略的信息。其余噪音，交给系统删除。",
+        courseLabel: "课程名",
+        dateLabel: "考试日期",
+        hoursLabel: "每天可用时间（小时）",
+        goalLabel: "目标分",
+        keywordsLabel: "资料关键词（可粘贴目录/题型词，逗号分隔）",
+        generate: "一键生成计划",
+        generating: "生成中...",
+        fillDemo: "加载示例",
+        switchDark: "深色",
+        switchLight: "浅色",
+        languageToggleAria: "Switch interface to English",
+        proxyHint: "模型与系统提示词只在服务端运行。你输入的是考试信息，不是 API 密钥。",
+        analysisTitle: "正在压缩复习空间",
+        analysisSteps: ["审计目标分与剩余时间", "识别高收益知识模块", "删除低回报任务", "编排 24 小时执行流水线"],
+        resultKicker: "RELEASE THE PLAN",
+        resultTitle: "发布你的复习方案",
+        resultDesc: "不是建议合集，而是一份可以复制、保存并立即执行的计划。",
+        copyPlan: "复制全部",
+        downloadPlan: "下载 Markdown",
+        exportCopied: "完整计划已复制。",
+        exportDownloaded: "Markdown 计划已保存到本地。",
+        exportEmpty: "先生成计划，再导出。",
+        emptyHeadline: "你的突击计划还没生成",
+        emptySummary: "点击上方按钮后，这里会给出“必做 / 可放弃 / 24小时安排 / 高频考点”。",
+        mustTitle: "必拿分模块",
+        dropTitle: "可放弃清单",
+        scheduleTitle: "24小时行动表",
+        hitsTitle: "高频押题点（10条）",
+        feedbackKicker: "FEEDBACK CHANNEL",
+        feedbackHeading: "把不好用的地方直接扔给我",
+        feedbackDescription: "产品建议、Bug 与体验问题都可以通过微信反馈；高频问题优先处理。",
+        wechatHeading: "微信号",
+        wechatLabel: "微信号：",
+        copyWechat: "复制微信号",
+        qrHeading: "微信二维码",
+        qrAlt: "微信二维码",
+        qrNote: "扫码添加微信并备注「产品反馈」，我会更快处理。",
+        copySuccess: "已复制，可直接去微信粘贴。",
+        healthCheckFailed: "健康检查失败：{status}",
+        generatedFallback: "已生成计划",
+        parseError: "模型未返回可解析JSON",
+        courseFallback: "当前课程",
+        apiCallFailed: "API调用失败：{status} {detail}",
+        emptyBackend: "后端返回为空",
+        requestingModel: "正在请求模型...",
+        generationSuccess: "AI 生成成功",
+        fetchFailed: "AI失败：无法连接后端。请先启动 server.py，并用 http://127.0.0.1:8010/mvp-study-sprint.html 打开页面。",
+        wrongService: "AI失败：你当前连接的不是本项目后端（服务标识不匹配）。",
+        authRequired: "AI失败：后端仍在强制鉴权。请在 .env 将 REQUIRE_APP_TOKEN 设置为 false 并重启后端。",
+        staleBackend: "AI失败：后端返回401，疑似端口上仍是旧进程，请关闭后重启。",
+        authHealthFailed: "AI失败：后端返回401，且健康检查不可用，极可能连到了错误服务。",
+        aiFailed: "AI失败：{message}",
+        backendConnected: "后端已连接：{service} / 鉴权={auth}",
+        authOn: "开",
+        authOff: "关",
+        backendDisconnected: "后端未连接，请先启动 server.py",
+        regenerateForLanguage: "界面已切换；重新生成后，AI 结果会使用中文。"
+      },
+      en: {
+        documentTitle: "Exam Survival Sprint MVP",
+        heroEyebrow: "EXAM SURVIVAL SYSTEM",
+        heroLead: "EXAM.",
+        heroAccent: "SECURED.",
+        appSubtitle: "Enter the course, time, and target. The system cuts the noise and releases an exam plan you can execute immediately.",
+        daysMetricLabel: "Days left",
+        daysMetricUnit: "days",
+        goalMetricLabel: "Target",
+        hoursMetricLabel: "Daily input",
+        hoursMetricUnit: "hours",
+        configureKicker: "CONFIGURE THE MISSION",
+        configureTitle: "Define the exam",
+        configureDesc: "Enter only what changes the strategy. The system deletes the rest.",
+        courseLabel: "Course",
+        dateLabel: "Exam date",
+        hoursLabel: "Available hours per day",
+        goalLabel: "Target score",
+        keywordsLabel: "Material keywords (paste topics or question types, separated by commas)",
+        generate: "Generate survival plan",
+        generating: "Generating...",
+        fillDemo: "Load demo",
+        switchDark: "Dark",
+        switchLight: "Light",
+        languageToggleAria: "将界面切换为中文",
+        proxyHint: "The model and system prompt run only on the server. You enter exam data—not API credentials.",
+        analysisTitle: "Compressing the study space",
+        analysisSteps: ["Auditing the target and time left", "Finding high-return knowledge", "Deleting low-return work", "Sequencing the 24-hour execution pipeline"],
+        resultKicker: "RELEASE THE PLAN",
+        resultTitle: "Release your study plan",
+        resultDesc: "Not a pile of advice. A plan you can copy, save, and execute now.",
+        copyPlan: "Copy all",
+        downloadPlan: "Download Markdown",
+        exportCopied: "The full plan is copied.",
+        exportDownloaded: "The Markdown plan is saved locally.",
+        exportEmpty: "Generate a plan before exporting.",
+        emptyHeadline: "No survival plan yet",
+        emptySummary: "Generate a plan to get high-yield targets, explicit skips, a 24-hour schedule, and likely exam hits.",
+        mustTitle: "High-yield modules",
+        dropTitle: "Skip list",
+        scheduleTitle: "24-hour action plan",
+        hitsTitle: "Likely exam hits (10)",
+        feedbackKicker: "FEEDBACK CHANNEL",
+        feedbackHeading: "Throw every rough edge at me",
+        feedbackDescription: "Send product ideas, bugs, and usability problems through WeChat. Repeated issues get fixed first.",
+        wechatHeading: "WeChat ID",
+        wechatLabel: "WeChat:",
+        copyWechat: "Copy WeChat ID",
+        qrHeading: "WeChat QR code",
+        qrAlt: "WeChat QR code",
+        qrNote: "Scan and add the note “Product feedback” so I can triage it faster.",
+        copySuccess: "Copied. Paste it directly into WeChat.",
+        healthCheckFailed: "Health check failed: {status}",
+        generatedFallback: "Plan generated",
+        parseError: "The model did not return parseable JSON",
+        courseFallback: "Current course",
+        apiCallFailed: "API call failed: {status} {detail}",
+        emptyBackend: "The backend returned an empty response",
+        requestingModel: "Requesting the model...",
+        generationSuccess: "AI plan generated",
+        fetchFailed: "AI failed: the backend is unreachable. Start server.py and open http://127.0.0.1:8010/mvp-study-sprint.html.",
+        wrongService: "AI failed: this port is not serving the Study Sprint backend.",
+        authRequired: "AI failed: backend authentication is still enforced. Set REQUIRE_APP_TOKEN=false in .env and restart the backend.",
+        staleBackend: "AI failed: the backend returned 401. An old process may still own the port; stop it and restart.",
+        authHealthFailed: "AI failed: the backend returned 401 and its health check is unavailable. This is probably the wrong service.",
+        aiFailed: "AI failed: {message}",
+        backendConnected: "Backend connected: {service} / Auth={auth}",
+        authOn: "on",
+        authOff: "off",
+        backendDisconnected: "Backend disconnected. Start server.py.",
+        regenerateForLanguage: "Interface switched. Regenerate to get the AI plan in English."
+      }
+    };
+
+    const textBindings = {
+      heroEyebrow: "heroEyebrow",
+      heroLead: "heroLead",
+      heroAccent: "heroAccent",
+      appSubtitle: "appSubtitle",
+      daysMetricLabel: "daysMetricLabel",
+      daysMetricUnit: "daysMetricUnit",
+      goalMetricLabel: "goalMetricLabel",
+      hoursMetricLabel: "hoursMetricLabel",
+      hoursMetricUnit: "hoursMetricUnit",
+      configureKicker: "configureKicker",
+      configureTitle: "configureTitle",
+      configureDesc: "configureDesc",
+      courseLabel: "courseLabel",
+      dateLabel: "dateLabel",
+      hoursLabel: "hoursLabel",
+      goalLabel: "goalLabel",
+      keywordsLabel: "keywordsLabel",
+      generate: "generate",
+      fillDemo: "fillDemo",
+      proxyHint: "proxyHint",
+      analysisTitle: "analysisTitle",
+      resultKicker: "resultKicker",
+      resultTitle: "resultTitle",
+      resultDesc: "resultDesc",
+      copyPlan: "copyPlan",
+      downloadPlan: "downloadPlan",
+      mustTitle: "mustTitle",
+      dropTitle: "dropTitle",
+      scheduleTitle: "scheduleTitle",
+      hitsTitle: "hitsTitle",
+      feedbackKicker: "feedbackKicker",
+      feedbackHeading: "feedbackHeading",
+      feedbackDescription: "feedbackDescription",
+      wechatLabel: "wechatLabel",
+      copyWx: "copyWechat"
+    };
+
+    function t(key, replacements = {}) {
+      const template = translations[currentLanguage]?.[key] ?? translations.zh[key] ?? key;
+      return String(template).replace(/\{(\w+)\}/g, (_, name) => replacements[name] ?? `{${name}}`);
+    }
+
+    function detectBrowserLanguage() {
+      const languages = Array.isArray(navigator.languages) && navigator.languages.length
+        ? navigator.languages
+        : [navigator.language || ""];
+      return languages.some((language) => String(language).toLowerCase().startsWith("zh")) ? "zh" : "en";
+    }
+
+    function detectInputLanguage(text) {
+      const content = String(text || "");
+      const hanCount = (content.match(/[\u3400-\u9fff]/g) || []).length;
+      const latinCount = (content.match(/[A-Za-z]/g) || []).length;
+      if (!hanCount && !latinCount) return null;
+      return hanCount > Math.max(1, latinCount * 0.12) ? "zh" : "en";
+    }
+
+    function translateKnownInputs(language) {
+      const course = document.getElementById("course");
+      const keywords = document.getElementById("keywords");
+      const coursePairs = [
+        { zh: "大学物理", en: "University Physics" },
+        { zh: "工程力学", en: "Engineering Mechanics" }
+      ];
+      const keywordPairs = [
+        {
+          zh: "动量守恒, 刚体转动, 热力学第一定律, 简答题, 计算题",
+          en: "conservation of momentum, rigid-body rotation, first law of thermodynamics, short-answer questions, calculation problems"
+        },
+        {
+          zh: "受力分析, 力矩平衡, 杆件内力, 材料力学基础, 计算题, 简答题",
+          en: "free-body diagrams, moment equilibrium, internal forces, mechanics of materials basics, calculation problems, short-answer questions"
+        }
+      ];
+      const coursePair = coursePairs.find((pair) => course.value === pair.zh || course.value === pair.en);
+      const keywordPair = keywordPairs.find((pair) => keywords.value === pair.zh || keywords.value === pair.en);
+      if (coursePair) course.value = coursePair[language];
+      if (keywordPair) keywords.value = keywordPair[language];
+    }
+
+    function renderHealthStatus() {
+      if (!lastHealth) return;
+      setStatus(t("backendConnected", {
+        service: lastHealth.service,
+        auth: lastHealth.require_app_token ? t("authOn") : t("authOff")
+      }));
+    }
+
+    function applyLanguage(language) {
+      currentLanguage = language === "en" ? "en" : "zh";
+      localStorage.setItem("mvp-language", currentLanguage);
+      document.documentElement.lang = currentLanguage === "en" ? "en" : "zh-CN";
+      document.title = t("documentTitle");
+      Object.entries(textBindings).forEach(([id, key]) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = t(key);
+      });
+      languageToggle.textContent = currentLanguage === "zh" ? "English" : "中文";
+      languageToggle.setAttribute("aria-label", t("languageToggleAria"));
+      const qrImage = document.getElementById("qrImage");
+      qrImage.alt = t("qrAlt");
+      translateKnownInputs(currentLanguage);
+      if (analysisTimer) analysisDetail.textContent = translations[currentLanguage].analysisSteps[0];
+      if (!hasGeneratedPlan) {
+        document.getElementById("headline").textContent = t("emptyHeadline");
+        document.getElementById("summary").textContent = t("emptySummary");
+      }
+      themeToggle.textContent = body.getAttribute("data-theme") === "dark" ? t("switchLight") : t("switchDark");
+      renderHealthStatus();
+    }
+
+    function initLanguage() {
+      const saved = localStorage.getItem("mvp-language");
+      applyLanguage(saved === "zh" || saved === "en" ? saved : detectBrowserLanguage());
+    }
 
     function applyTheme(theme) {
       body.setAttribute("data-theme", theme);
       localStorage.setItem("mvp-theme", theme);
-      themeToggle.textContent = theme === "dark" ? "切换浅色" : "切换深色";
+      themeToggle.textContent = theme === "dark" ? t("switchLight") : t("switchDark");
     }
 
     function initTheme() {
@@ -398,11 +1189,144 @@
       }, 1800);
     }
 
+    function setExportStatus(text) {
+      window.clearTimeout(exportTimer);
+      exportStatus.textContent = text;
+      if (!text) return;
+      exportTimer = window.setTimeout(() => {
+        if (exportStatus.textContent === text) exportStatus.textContent = "";
+      }, 2400);
+    }
+
+    function updateMetrics() {
+      const date = document.getElementById("date").value;
+      const goal = Number(document.getElementById("goal").value || 0);
+      const hours = Number(document.getElementById("hours").value || 0);
+      document.getElementById("daysPreview").textContent = date ? daysLeft(date) : "—";
+      document.getElementById("goalPreview").textContent = goal || "—";
+      document.getElementById("hoursPreview").textContent = hours || "—";
+    }
+
+    function startAnalysis() {
+      window.clearInterval(analysisTimer);
+      const steps = translations[currentLanguage].analysisSteps;
+      let stepIndex = 0;
+      analysisDetail.textContent = steps[stepIndex];
+      analysisPanel.hidden = false;
+      analysisTimer = window.setInterval(() => {
+        stepIndex = (stepIndex + 1) % steps.length;
+        analysisDetail.textContent = steps[stepIndex];
+      }, 1200);
+    }
+
+    function stopAnalysis() {
+      window.clearInterval(analysisTimer);
+      analysisTimer = null;
+      analysisPanel.hidden = true;
+    }
+
+    function markdownList(items) {
+      return (Array.isArray(items) ? items : []).map((item) => `- ${item}`).join("\n");
+    }
+
+    function formatPlanMarkdown(plan) {
+      const course = document.getElementById("course").value.trim() || t("courseFallback");
+      const examDate = document.getElementById("date").value || "—";
+      const hours = document.getElementById("hours").value || "—";
+      const goal = document.getElementById("goal").value || "—";
+      const labels = currentLanguage === "en" ? {
+        title: "Exam Survival Plan",
+        course: "Course",
+        date: "Exam date",
+        hours: "Hours per day",
+        goal: "Target score",
+        must: "High-yield modules",
+        drop: "Skip list",
+        schedule: "24-hour action plan",
+        hits: "Likely exam hits"
+      } : {
+        title: "期末突击计划",
+        course: "课程",
+        date: "考试日期",
+        hours: "每日投入",
+        goal: "目标分",
+        must: "必拿分模块",
+        drop: "可放弃清单",
+        schedule: "24小时行动表",
+        hits: "高频押题点"
+      };
+      return [
+        `# ${labels.title}｜${course}`,
+        "",
+        `> ${plan.headline || t("generatedFallback")}`,
+        "",
+        plan.summary || "",
+        "",
+        `- ${labels.course}: ${course}`,
+        `- ${labels.date}: ${examDate}`,
+        `- ${labels.hours}: ${hours}`,
+        `- ${labels.goal}: ${goal}`,
+        "",
+        `## ${labels.must}`,
+        markdownList(plan.must),
+        "",
+        `## ${labels.drop}`,
+        markdownList(plan.drop),
+        "",
+        `## ${labels.schedule}`,
+        markdownList(plan.schedule),
+        "",
+        `## ${labels.hits}`,
+        markdownList(plan.hits),
+        ""
+      ].join("\n");
+    }
+
+    async function copyFullPlan() {
+      if (!lastPlan) {
+        setExportStatus(t("exportEmpty"));
+        return;
+      }
+      const markdown = formatPlanMarkdown(lastPlan);
+      try {
+        await navigator.clipboard.writeText(markdown);
+      } catch {
+        const textarea = document.createElement("textarea");
+        textarea.value = markdown;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+      setExportStatus(t("exportCopied"));
+    }
+
+    function downloadPlanMarkdown() {
+      if (!lastPlan) {
+        setExportStatus(t("exportEmpty"));
+        return;
+      }
+      const course = document.getElementById("course").value.trim() || "exam-plan";
+      const safeName = course.replace(/[\\/:*?"<>|\s]+/g, "-").replace(/^-+|-+$/g, "") || "exam-plan";
+      const blob = new Blob([formatPlanMarkdown(lastPlan)], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${safeName}-study-plan.md`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setExportStatus(t("exportDownloaded"));
+    }
+
     async function copyWxId() {
       const value = document.getElementById("wxId").textContent.trim();
       try {
         await navigator.clipboard.writeText(value);
-        setCopyTip("已复制，可直接去微信粘贴。");
+        setCopyTip(t("copySuccess"));
       } catch {
         const input = document.createElement("input");
         input.value = value;
@@ -410,7 +1334,7 @@
         input.select();
         document.execCommand("copy");
         input.remove();
-        setCopyTip("已复制，可直接去微信粘贴。");
+        setCopyTip(t("copySuccess"));
       }
     }
 
@@ -423,17 +1347,37 @@
 
     async function getHealth() {
       const resp = await fetch(`${getApiBase()}/api/health`, { method: "GET" });
-      if (!resp.ok) throw new Error(`健康检查失败：${resp.status}`);
+      if (!resp.ok) throw new Error(t("healthCheckFailed", { status: resp.status }));
       return resp.json();
     }
 
+    async function refreshHealth() {
+      try {
+        lastHealth = await getHealth();
+        renderHealthStatus();
+      } catch {
+        lastHealth = null;
+        setStatus(t("backendDisconnected"));
+      }
+    }
+
     function applyPlan(plan) {
-      document.getElementById("headline").innerHTML = `<span class="tag ok">${plan.headline || "已生成计划"}</span>`;
+      const headline = document.getElementById("headline");
+      const headlineTag = document.createElement("span");
+      headlineTag.className = "tag ok";
+      headlineTag.textContent = plan.headline || t("generatedFallback");
+      headline.replaceChildren(headlineTag);
       document.getElementById("summary").textContent = plan.summary || "";
       listToUl("must", Array.isArray(plan.must) ? plan.must : []);
       listToUl("drop", Array.isArray(plan.drop) ? plan.drop : []);
       listToUl("schedule", Array.isArray(plan.schedule) ? plan.schedule : []);
       listToUl("hits", Array.isArray(plan.hits) ? plan.hits : []);
+      lastPlan = plan;
+      hasGeneratedPlan = true;
+      copyPlanBtn.disabled = false;
+      downloadPlanBtn.disabled = false;
+      resultSection.classList.add("has-plan");
+      window.setTimeout(() => resultSection.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
     }
 
     function parseJsonFromText(text) {
@@ -443,15 +1387,16 @@
       if (fence && fence[1]) return JSON.parse(fence[1].trim());
       const block = raw.match(/\{[\s\S]*\}/);
       if (block) return JSON.parse(block[0]);
-      throw new Error("模型未返回可解析JSON");
+      throw new Error(t("parseError"));
     }
 
     async function fetchPlanByAI() {
-      const course = document.getElementById("course").value.trim() || "当前课程";
+      const course = document.getElementById("course").value.trim() || t("courseFallback");
       const date = document.getElementById("date").value;
       const hours = Number(document.getElementById("hours").value || 8);
       const goal = Number(document.getElementById("goal").value || 80);
       const keywords = document.getElementById("keywords").value.trim();
+      const inputLanguage = detectInputLanguage(`${course}\n${keywords}`);
       const d = daysLeft(date);
       const response = await fetch(`${getApiBase()}/api/plan`, {
         method: "POST",
@@ -464,19 +1409,21 @@
           days_left: d,
           hours_per_day: hours,
           goal_score: goal,
-          keywords
+          keywords,
+          language: currentLanguage,
+          input_language: inputLanguage
         })
       });
 
       if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`API调用失败：${response.status} ${errText.slice(0, 180)}`);
+        throw new Error(t("apiCallFailed", { status: response.status, detail: errText.slice(0, 180) }));
       }
       const data = await response.json();
       if (data?.ok && data?.plan) return data.plan;
       if (data?.plan) return data.plan;
       const content = data?.content || "";
-      if (!content) throw new Error("后端返回为空");
+      if (!content) throw new Error(t("emptyBackend"));
       return parseJsonFromText(content);
     }
 
@@ -485,6 +1432,7 @@
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const t = new Date(targetDate);
+      if (Number.isNaN(t.getTime())) return 1;
       t.setHours(0, 0, 0, 0);
       return Math.max(1, Math.ceil((t - today) / oneDay));
     }
@@ -501,46 +1449,56 @@
 
     async function generatePlan() {
       generateBtn.disabled = true;
-      generateBtn.textContent = "生成中...";
-      setStatus("正在请求模型...");
+      generateBtn.textContent = t("generating");
+      setStatus(t("requestingModel"));
+      startAnalysis();
       try {
         const aiPlan = await fetchPlanByAI();
         applyPlan(aiPlan);
-        setStatus("AI 生成成功");
+        setStatus(t("generationSuccess"));
       } catch (err) {
         const msg = String(err?.message || err);
         if (msg.includes("Failed to fetch")) {
-          setStatus("AI失败：无法连接后端。请先启动 server.py，并用 http://127.0.0.1:8010/mvp-study-sprint.html 打开页面。");
+          setStatus(t("fetchFailed"));
         } else if (msg.includes("401")) {
           try {
             const health = await getHealth();
             if (health?.service !== "study-sprint-api") {
-              setStatus("AI失败：你当前连接的不是本项目后端（服务标识不匹配）。");
+              setStatus(t("wrongService"));
             } else if (health?.require_app_token) {
-              setStatus("AI失败：后端仍在强制鉴权。请在 .env 将 REQUIRE_APP_TOKEN 设置为 false 并重启后端。");
+              setStatus(t("authRequired"));
             } else {
-              setStatus("AI失败：后端返回401，疑似端口上仍是旧进程，请关闭后重启。");
+              setStatus(t("staleBackend"));
             }
           } catch {
-            setStatus("AI失败：后端返回401，且健康检查不可用，极可能连到了错误服务。");
+            setStatus(t("authHealthFailed"));
           }
         } else {
-          setStatus(`AI失败：${msg}`);
+          setStatus(t("aiFailed", { message: msg }));
         }
       } finally {
+        stopAnalysis();
         generateBtn.disabled = false;
-        generateBtn.textContent = "一键生成计划";
+        generateBtn.textContent = t("generate");
       }
     }
 
     function fillDemo() {
-      document.getElementById("course").value = "工程力学";
+      const demo = currentLanguage === "en" ? {
+        course: "Engineering Mechanics",
+        keywords: "free-body diagrams, moment equilibrium, internal forces, mechanics of materials basics, calculation problems, short-answer questions"
+      } : {
+        course: "工程力学",
+        keywords: "受力分析, 力矩平衡, 杆件内力, 材料力学基础, 计算题, 简答题"
+      };
+      document.getElementById("course").value = demo.course;
       document.getElementById("hours").value = 7;
       document.getElementById("goal").value = 85;
-      document.getElementById("keywords").value = "受力分析, 力矩平衡, 杆件内力, 材料力学基础, 计算题, 简答题";
+      document.getElementById("keywords").value = demo.keywords;
       const d = new Date();
       d.setDate(d.getDate() + 4);
       document.getElementById("date").valueAsDate = d;
+      updateMetrics();
       generatePlan();
     }
 
@@ -548,13 +1506,23 @@
       const nextTheme = body.getAttribute("data-theme") === "dark" ? "light" : "dark";
       applyTheme(nextTheme);
     });
+    languageToggle.addEventListener("click", () => {
+      applyLanguage(currentLanguage === "zh" ? "en" : "zh");
+      if (hasGeneratedPlan) setStatus(t("regenerateForLanguage"));
+    });
     document.getElementById("generate").addEventListener("click", () => generatePlan());
     document.getElementById("fillDemo").addEventListener("click", fillDemo);
+    copyPlanBtn.addEventListener("click", copyFullPlan);
+    downloadPlanBtn.addEventListener("click", downloadPlanMarkdown);
     copyWxBtn.addEventListener("click", copyWxId);
-    getHealth()
-      .then((h) => setStatus(`后端已连接：${h.service} / 鉴权=${h.require_app_token ? "开" : "关"}`))
-      .catch(() => setStatus("后端未连接，请先启动 server.py"));
+    ["date", "hours", "goal"].forEach((id) => {
+      document.getElementById(id).addEventListener("input", updateMetrics);
+      document.getElementById(id).addEventListener("change", updateMetrics);
+    });
+    initLanguage();
     initTheme();
+    updateMetrics();
+    refreshHealth();
   </script>
 </body>
 </html>
