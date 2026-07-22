@@ -12,7 +12,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 APP_NAME = "study-sprint-api"
-APP_VERSION = "2026-07-16-i18n-1"
+APP_VERSION = "2026-07-21-p1-1"
 SYSTEM_PROMPT = (
     "You are an exam-cram planning assistant. Return only one JSON object with no explanation. "
     "Schema: headline:string, summary:string, must:string[5], drop:string[3], "
@@ -23,6 +23,10 @@ RATE_BUCKET = {}
 RATE_LOCK = threading.Lock()
 SESSIONS = {}
 SESSIONS_LOCK = threading.Lock()
+
+
+class PayloadValidationError(ValueError):
+    pass
 
 
 def load_env_file():
@@ -241,6 +245,62 @@ def normalize_list(v, count):
     return items + [""] * (count - len(items))
 
 
+def validate_plan_payload(payload: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise PayloadValidationError("Request body must be a JSON object")
+
+    course = str(payload.get("course", "")).strip()
+    if not 2 <= len(course) <= 80:
+        raise PayloadValidationError("course must contain 2-80 characters")
+
+    try:
+        days_left = int(payload.get("days_left"))
+    except (TypeError, ValueError):
+        raise PayloadValidationError("days_left must be an integer") from None
+    if not 1 <= days_left <= 365:
+        raise PayloadValidationError("days_left must be between 1 and 365")
+
+    try:
+        hours_per_day = float(payload.get("hours_per_day"))
+    except (TypeError, ValueError):
+        raise PayloadValidationError("hours_per_day must be a number") from None
+    if not 1 <= hours_per_day <= 20:
+        raise PayloadValidationError("hours_per_day must be between 1 and 20")
+
+    try:
+        goal_score = int(payload.get("goal_score"))
+    except (TypeError, ValueError):
+        raise PayloadValidationError("goal_score must be an integer") from None
+    if float(payload.get("goal_score")) != goal_score or not 60 <= goal_score <= 100:
+        raise PayloadValidationError("goal_score must be a whole number between 60 and 100")
+
+    keywords = str(payload.get("keywords", "")).strip()
+    keywords_max_chars = int(os.environ.get("KEYWORDS_MAX_CHARS", "1000"))
+    if not 3 <= len(keywords) <= keywords_max_chars:
+        raise PayloadValidationError(f"keywords must contain 3-{keywords_max_chars} characters")
+
+    language = normalize_language(payload.get("language", ""))
+    if payload.get("language") and not language:
+        raise PayloadValidationError("language must be zh or en")
+    input_language = normalize_language(payload.get("input_language", ""))
+    if payload.get("input_language") and not input_language:
+        raise PayloadValidationError("input_language must be zh or en")
+
+    clean = dict(payload)
+    clean.update(
+        {
+            "course": course,
+            "days_left": days_left,
+            "hours_per_day": hours_per_day,
+            "goal_score": goal_score,
+            "keywords": keywords,
+            "language": language,
+            "input_language": input_language,
+        }
+    )
+    return clean
+
+
 def call_model(payload: dict) -> dict:
     api_key = os.environ.get("AI_API_KEY", "").strip()
     if not api_key or api_key.startswith("<<"):
@@ -252,15 +312,15 @@ def call_model(payload: dict) -> dict:
     default_course = "Current course" if language == "en" else "当前课程"
     course = str(payload.get("course", default_course)).strip() or default_course
     days_left = int(payload.get("days_left", 3) or 3)
-    hours_per_day = int(payload.get("hours_per_day", 8) or 8)
+    hours_per_day = float(payload.get("hours_per_day", 8) or 8)
     goal_score = int(payload.get("goal_score", 80) or 80)
     keywords = str(payload.get("keywords", "")).strip()
-    keywords_max_chars = int(os.environ.get("KEYWORDS_MAX_CHARS", "800"))
+    keywords_max_chars = int(os.environ.get("KEYWORDS_MAX_CHARS", "1000"))
     if len(keywords) > keywords_max_chars:
         keywords = keywords[:keywords_max_chars]
     if language == "en":
         user_prompt = (
-            f"Course: {course}\nDays remaining: {days_left}\nStudy hours per day: {hours_per_day}\n"
+            f"Course: {course}\nDays remaining: {days_left}\nStudy hours per day: {hours_per_day:g}\n"
             f"Target score: {goal_score}\nMaterial keywords: {keywords}\nGenerate the plan in English."
         )
         runtime_language_contract = (
@@ -268,7 +328,7 @@ def call_model(payload: dict) -> dict:
             "Keep the JSON property names unchanged. Do not mix in Chinese except inside an untranslatable proper noun supplied by the user."
         )
     else:
-        user_prompt = f"课程：{course}\n剩余天数：{days_left}\n每日学习时长：{hours_per_day}\n目标分：{goal_score}\n资料关键词：{keywords}\n请用简体中文生成计划。"
+        user_prompt = f"课程：{course}\n剩余天数：{days_left}\n每日学习时长：{hours_per_day:g}\n目标分：{goal_score}\n资料关键词：{keywords}\n请用简体中文生成计划。"
         runtime_language_contract = (
             "运行时输出语言：简体中文。JSON 中的所有字符串值必须使用简体中文，JSON 属性名保持不变。"
         )
@@ -450,8 +510,11 @@ class Handler(SimpleHTTPRequestHandler):
                 return
             raw = self.rfile.read(length).decode("utf-8", errors="replace")
             payload = json.loads(raw or "{}")
+            payload = validate_plan_payload(payload)
             plan = call_model(payload)
             self._send_json(200, {"ok": True, "plan": plan})
+        except (json.JSONDecodeError, PayloadValidationError) as e:
+            self._send_json(400, {"ok": False, "error": str(e)})
         except Exception as e:
             self._send_json(500, {"ok": False, "error": str(e)})
 
