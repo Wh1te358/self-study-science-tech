@@ -286,8 +286,9 @@
       --accent-soft: rgba(23, 107, 255, 0.10);
       --signal: #00a67e;
       --warning: #e68019;
-      --btn-bg: #0a1020;
-      --btn-text: #ffffff;
+      --primary-bg: #1556d8;
+      --primary-text: #ffffff;
+      --focus: #0b63f6;
       --input-bg: rgba(249, 250, 253, 0.92);
       --list-text: #20283a;
       --tag-bg: #eef3ff;
@@ -308,8 +309,9 @@
       --accent-soft: rgba(85, 217, 255, 0.10);
       --signal: #58e6b3;
       --warning: #ffb45b;
-      --btn-bg: #f5f8ff;
-      --btn-text: #070b14;
+      --primary-bg: #73d7ff;
+      --primary-text: #06101c;
+      --focus: #73d7ff;
       --input-bg: rgba(6, 11, 22, 0.9);
       --list-text: #dce5f5;
       --tag-bg: rgba(85, 217, 255, 0.08);
@@ -363,7 +365,6 @@
     .brand-lockup,
     .system-line,
     .top-controls,
-    .metric,
     .section-index,
     .result-actions,
     .contact-actions {
@@ -411,7 +412,8 @@
     .top-controls button {
       width: auto;
       min-width: 72px;
-      padding: 8px 12px;
+      min-height: 44px;
+      padding: 10px 14px;
       border-radius: 999px;
       border-color: var(--line);
       background: var(--panel);
@@ -429,21 +431,35 @@
       gap: 0;
     }
 
+    .launch-shell {
+      display: grid;
+      grid-template-columns: minmax(260px, 4fr) minmax(0, 8fr);
+      gap: 24px;
+      align-items: stretch;
+      padding: 24px 0 0;
+    }
+
     .hero {
       position: relative;
-      min-height: 600px;
+      min-height: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 92px 12px 72px;
+      align-items: flex-start;
+      text-align: left;
+      padding: 32px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: linear-gradient(145deg, var(--accent-soft), transparent 65%);
+      overflow: hidden;
     }
     .hero::after {
       content: "";
       position: absolute;
-      width: 420px;
-      height: 420px;
+      right: -170px;
+      bottom: -130px;
+      width: 360px;
+      height: 360px;
       border: 1px solid var(--line);
       border-radius: 50%;
       box-shadow:
@@ -453,7 +469,7 @@
       opacity: 0.75;
     }
     .eyebrow {
-      margin: 0 0 24px;
+      margin: 0 0 16px;
       color: var(--accent);
       font-size: 12px;
       font-weight: 800;
@@ -461,11 +477,11 @@
       text-transform: uppercase;
     }
     .hero h1 {
-      max-width: 960px;
+      max-width: 420px;
       margin: 0;
-      font-size: clamp(52px, 7.4vw, 94px);
-      line-height: 0.98;
-      letter-spacing: -0.065em;
+      font-size: 56px;
+      line-height: 0.96;
+      letter-spacing: -0.055em;
       font-weight: 790;
     }
     .hero h1 span { display: block; }
@@ -477,58 +493,38 @@
       color: transparent;
     }
     .sub {
-      max-width: 650px;
-      margin: 28px auto 0;
+      max-width: 420px;
+      margin: 24px 0 0;
       color: var(--muted);
-      font-size: 17px;
-      line-height: 1.7;
+      font-size: 16px;
+      line-height: 1.6;
     }
-
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(150px, 1fr));
-      width: min(700px, 100%);
-      margin-top: 54px;
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      background: var(--panel);
-      box-shadow: var(--shadow-soft);
-      backdrop-filter: blur(18px);
-      overflow: hidden;
-    }
-    .metric {
-      justify-content: center;
-      min-height: 82px;
-      gap: 7px;
-      padding: 15px;
-      border-right: 1px solid var(--line);
-    }
-    .metric:last-child { border-right: 0; }
-    .metric span {
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.11em;
-      text-transform: uppercase;
-    }
-    .metric strong { font-size: 27px; letter-spacing: -0.05em; }
-    .metric small { align-self: flex-end; padding-bottom: 5px; color: var(--muted); }
 
     .stage {
-      margin-top: 28px;
-      padding: 34px;
+      margin-top: 24px;
+      padding: 32px;
       border: 1px solid var(--line);
       border-radius: 30px;
       background: var(--panel);
       box-shadow: var(--shadow);
       backdrop-filter: blur(26px) saturate(135%);
     }
+    #configurationStage {
+      margin-top: 0;
+      padding: 24px;
+      border-radius: 24px;
+    }
     .section-head {
       display: grid;
       grid-template-columns: 54px 1fr auto;
       gap: 18px;
       align-items: start;
-      margin-bottom: 30px;
+      margin-bottom: 24px;
+    }
+    #configurationStage .section-head {
+      grid-template-columns: 44px 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
     }
     .section-index {
       justify-content: center;
@@ -542,35 +538,42 @@
       font-weight: 800;
       letter-spacing: 0.12em;
     }
-    .section-kicker {
-      margin: 1px 0 7px;
-      color: var(--accent);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
     .section-title { margin: 0; font-size: 26px; letter-spacing: -0.035em; }
     .section-desc { margin: 7px 0 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
 
     .grid {
       margin-top: 0;
       grid-template-columns: repeat(12, 1fr);
-      gap: 16px;
+      gap: 12px 16px;
     }
     .field { grid-column: span 6; }
     .field.full { grid-column: 1 / -1; }
+    .field-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 18px;
+      margin-bottom: 6px;
+    }
     label {
-      margin-bottom: 9px;
+      margin-bottom: 0;
       color: var(--muted);
       font-size: 11px;
       font-weight: 760;
       letter-spacing: 0.09em;
       text-transform: uppercase;
     }
+    .field-metric {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
     input, textarea, button {
       border-radius: 14px;
-      padding: 15px 16px;
+      padding: 13px 14px;
       border-color: var(--line);
       background: var(--input-bg);
       font-size: 15px;
@@ -580,25 +583,47 @@
       border-color: var(--accent);
       box-shadow: 0 0 0 4px var(--accent-soft);
     }
-    textarea { min-height: 116px; line-height: 1.6; }
-    .actions { margin-top: 20px; gap: 12px; }
+    :where(button, input, textarea):focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+    textarea { min-height: 92px; line-height: 1.5; }
+    .actions { margin-top: 12px; gap: 8px; }
     .actions button { width: auto; min-width: 150px; }
     button:hover:not(:disabled) { transform: translateY(-1px); }
     button:disabled { cursor: not-allowed; opacity: 0.42; }
     .primary {
-      background: linear-gradient(115deg, var(--accent), var(--accent-2));
-      border-color: transparent;
-      color: #fff;
-      box-shadow: 0 14px 34px color-mix(in srgb, var(--accent) 24%, transparent);
+      background: var(--primary-bg);
+      border-color: var(--primary-bg);
+      color: var(--primary-text);
+      box-shadow: none;
     }
     .ghost { background: transparent; border-color: var(--line); }
     .hint {
-      margin: 15px 0 0;
-      padding-top: 14px;
+      margin: 12px 0 0;
+      padding-top: 12px;
       border-top: 1px solid var(--line);
       color: var(--muted);
       line-height: 1.55;
     }
+    .field-error {
+      display: block;
+      min-height: 16px;
+      margin-top: 4px;
+      color: #c2352a;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+    body[data-theme="dark"] .field-error { color: #ff8e84; }
+    .validation-summary {
+      flex-basis: 100%;
+      min-height: 18px;
+      margin: 0;
+      color: #c2352a;
+      font-size: 12px;
+    }
+    body[data-theme="dark"] .validation-summary { color: #ff8e84; }
+    [aria-invalid="true"] { border-color: #c2352a; }
 
     .analysis-panel {
       position: relative;
@@ -707,11 +732,10 @@
       .topbar { grid-template-columns: 1fr auto; padding: 0 16px; }
       .system-line { display: none; }
       .app { width: min(100% - 24px, 1180px); }
-      .hero { min-height: 540px; padding-top: 70px; }
+      .launch-shell { grid-template-columns: 1fr; gap: 16px; padding-top: 16px; }
+      .hero { min-height: 0; padding: 32px 24px; }
+      .hero h1 { font-size: 44px; }
       .hero::after { width: 300px; height: 300px; }
-      .metrics { grid-template-columns: 1fr; }
-      .metric { border-right: 0; border-bottom: 1px solid var(--line); }
-      .metric:last-child { border-bottom: 0; }
       .stage { padding: 22px; border-radius: 22px; }
       .section-head { grid-template-columns: 44px 1fr; }
       .section-head .result-actions { grid-column: 1 / -1; }
@@ -720,6 +744,27 @@
       .feedback-stage { grid-template-columns: 1fr; }
       .contact-actions { flex-wrap: wrap; }
       .copy-tip { text-align: left; }
+    }
+
+    @media (max-width: 520px) {
+      .topbar { min-height: 64px; padding: 0 12px; }
+      .brand-version { display: none; }
+      .brand-lockup { font-size: 13px; }
+      .top-controls { gap: 6px; }
+      .top-controls button { min-width: 64px; min-height: 44px; padding: 10px; }
+      .app { width: min(100% - 20px, 1180px); }
+      .hero { padding: 24px 20px; }
+      .hero h1 { font-size: 40px; }
+      .sub { margin-top: 16px; font-size: 14px; }
+      #configurationStage { padding: 18px; }
+      #configurationStage .section-index { display: none; }
+      #configurationStage .section-head { grid-template-columns: 1fr; }
+      .actions button { width: 100%; }
+    }
+
+    @media (forced-colors: active) {
+      :where(button, input, textarea):focus-visible { outline: 3px solid Highlight; }
+      .primary { border: 1px solid ButtonText; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -745,94 +790,95 @@
   </header>
 
   <main class="app">
-    <section class="hero">
-      <p class="eyebrow" id="heroEyebrow">EXAM SURVIVAL SYSTEM</p>
-      <h1>
-        <span id="heroLead">这把，</span>
-        <span class="hero-accent" id="heroAccent">稳了。</span>
-      </h1>
-      <p class="sub" id="appSubtitle">输入课程、时间和目标。系统替你完成取舍，发布一份可以立刻执行的期末方案。</p>
-      <div class="metrics" aria-label="Plan inputs overview">
-        <div class="metric">
-          <span id="daysMetricLabel">距考试</span>
-          <strong id="daysPreview">3</strong>
-          <small id="daysMetricUnit">天</small>
-        </div>
-        <div class="metric">
-          <span id="goalMetricLabel">目标分</span>
-          <strong id="goalPreview">80</strong>
-          <small>/ 100</small>
-        </div>
-        <div class="metric">
-          <span id="hoursMetricLabel">每日投入</span>
-          <strong id="hoursPreview">8</strong>
-          <small id="hoursMetricUnit">小时</small>
-        </div>
-      </div>
-    </section>
+    <div class="launch-shell">
+      <section class="hero">
+        <p class="eyebrow" id="heroEyebrow">EXAM SURVIVAL SYSTEM</p>
+        <h1>
+          <span id="heroLead">这把，</span>
+          <span class="hero-accent" id="heroAccent">稳了。</span>
+        </h1>
+        <p class="sub" id="appSubtitle">填完 5 项，拿走一份能直接执行的复习计划。</p>
+      </section>
 
-    <section class="stage" id="configurationStage">
-      <div class="section-head">
-        <div class="section-index">01</div>
-        <div>
-          <p class="section-kicker" id="configureKicker">CONFIGURE THE MISSION</p>
-          <h2 class="section-title" id="configureTitle">定义这场考试</h2>
-          <p class="section-desc" id="configureDesc">只输入会改变策略的信息。其余噪音，交给系统删除。</p>
-        </div>
-      </div>
-      <div class="grid">
-        <div class="field">
-          <label for="course" id="courseLabel">课程名</label>
-          <input id="course" type="text" value="大学物理" />
-        </div>
-        <div class="field">
-          <label for="date" id="dateLabel">考试日期</label>
-          <input id="date" type="date" />
-        </div>
-        <div class="field">
-          <label for="hours" id="hoursLabel">每天可用时间（小时）</label>
-          <input id="hours" type="number" min="1" max="20" value="8" />
-        </div>
-        <div class="field">
-          <label for="goal" id="goalLabel">目标分</label>
-          <input id="goal" type="number" min="60" max="100" value="80" />
-        </div>
-        <div class="field full">
-          <label for="keywords" id="keywordsLabel">资料关键词（可粘贴目录/题型词，逗号分隔）</label>
-          <textarea id="keywords">动量守恒, 刚体转动, 热力学第一定律, 简答题, 计算题</textarea>
-        </div>
-      </div>
-      <div class="actions">
-        <button id="generate" class="primary">一键生成计划</button>
-        <button id="fillDemo" class="ghost">加载示例</button>
-      </div>
-      <p class="hint" id="proxyHint">当前为后端代理模式：API密钥与系统提示词均在服务端读取（.env + prompt.md），首次会弹窗验证访问口令。</p>
-      <div class="analysis-panel" id="analysisPanel" hidden>
-        <div class="analysis-orb" aria-hidden="true"></div>
-        <div>
-          <p class="analysis-title" id="analysisTitle">正在压缩复习空间</p>
-          <p class="analysis-detail" id="analysisDetail">识别高收益模块，删除低回报任务。</p>
-        </div>
-        <div class="analysis-track" aria-hidden="true"><span></span></div>
-      </div>
-    </section>
+      <section class="stage" id="configurationStage">
+        <form id="planForm" novalidate>
+          <div class="section-head">
+            <div class="section-index" aria-hidden="true">IN</div>
+            <div>
+              <h2 class="section-title" id="configureTitle">输入考试信息</h2>
+              <p class="section-desc" id="configureDesc">范围写得越具体，生成的计划越能直接执行。</p>
+            </div>
+          </div>
+          <div class="grid">
+            <div class="field">
+              <div class="field-heading"><label for="course" id="courseLabel">课程名</label></div>
+              <input id="course" name="course" type="text" value="大学物理" required minlength="2" maxlength="80" aria-describedby="courseError" />
+              <small id="courseError" class="field-error" aria-live="polite"></small>
+            </div>
+            <div class="field">
+              <div class="field-heading">
+                <label for="date" id="dateLabel">考试日期</label>
+                <span class="field-metric" aria-hidden="true"><strong id="daysPreview">3</strong> <span id="daysMetricUnit">天</span></span>
+              </div>
+              <input id="date" name="date" type="date" required aria-describedby="dateError" />
+              <small id="dateError" class="field-error" aria-live="polite"></small>
+            </div>
+            <div class="field">
+              <div class="field-heading">
+                <label for="hours" id="hoursLabel">每天能学几小时（1–20）</label>
+                <span class="field-metric" aria-hidden="true"><strong id="hoursPreview">8</strong> <span id="hoursMetricUnit">小时</span></span>
+              </div>
+              <input id="hours" name="hours" type="number" min="1" max="20" step="0.5" value="8" required aria-describedby="hoursError" />
+              <small id="hoursError" class="field-error" aria-live="polite"></small>
+            </div>
+            <div class="field">
+              <div class="field-heading">
+                <label for="goal" id="goalLabel">目标分（60–100）</label>
+                <span class="field-metric" aria-hidden="true"><strong id="goalPreview">80</strong> / 100</span>
+              </div>
+              <input id="goal" name="goal" type="number" min="60" max="100" step="1" value="80" required aria-describedby="goalError" />
+              <small id="goalError" class="field-error" aria-live="polite"></small>
+            </div>
+            <div class="field full">
+              <div class="field-heading"><label for="keywords" id="keywordsLabel">考试范围与题型（用逗号分隔）</label></div>
+              <textarea id="keywords" name="keywords" required minlength="3" maxlength="1000" placeholder="例如：动量守恒，刚体转动，计算题" aria-describedby="keywordsError">动量守恒, 刚体转动, 热力学第一定律, 简答题, 计算题</textarea>
+              <small id="keywordsError" class="field-error" aria-live="polite"></small>
+            </div>
+          </div>
+          <div class="actions">
+            <button id="generate" class="primary" type="submit">生成复习计划</button>
+            <button id="cancelGenerate" class="ghost" type="button" hidden>取消生成</button>
+            <button id="fillDemo" class="ghost" type="button">加载示例</button>
+            <p id="validationSummary" class="validation-summary" aria-live="assertive"></p>
+          </div>
+          <p class="hint" id="proxyHint">生成通常需要 10–60 秒。你可以随时取消，输入会自动保留。</p>
+          <div class="analysis-panel" id="analysisPanel" hidden>
+            <div class="analysis-orb" aria-hidden="true"></div>
+            <div>
+              <p class="analysis-title" id="analysisTitle">正在生成复习计划</p>
+              <p class="analysis-detail" id="analysisDetail">正在检查剩余时间与目标分。</p>
+            </div>
+            <div class="analysis-track" aria-hidden="true"><span></span></div>
+          </div>
+        </form>
+      </section>
+    </div>
 
     <section class="stage" id="resultSection" aria-live="polite">
       <div class="section-head">
-        <div class="section-index">02</div>
+        <div class="section-index" aria-hidden="true">OUT</div>
         <div>
-          <p class="section-kicker" id="resultKicker">RELEASE THE PLAN</p>
-          <h2 class="section-title" id="resultTitle">发布你的复习方案</h2>
-          <p class="section-desc" id="resultDesc">不是建议合集，而是一份可以复制、保存并立即执行的计划。</p>
+          <h2 class="section-title" id="resultTitle">你的复习计划</h2>
+          <p class="section-desc" id="resultDesc">生成后可复制全文，或下载到本地保存。</p>
         </div>
         <div class="result-actions">
-          <button id="copyPlan" class="ghost" type="button" disabled>复制全部</button>
-          <button id="downloadPlan" class="primary" type="button" disabled>下载 Markdown</button>
+          <button id="copyPlan" class="ghost" type="button" disabled>复制计划</button>
+          <button id="downloadPlan" class="primary" type="button" disabled>下载计划</button>
         </div>
       </div>
       <div class="result-hero">
-        <h2 class="headline" id="headline">你的突击计划还没生成</h2>
-        <p class="empty" id="summary">点击上方按钮后，这里会给出“必做 / 可放弃 / 24小时安排 / 高频考点”。</p>
+        <h2 class="headline" id="headline">还没有复习计划</h2>
+        <p class="empty" id="summary">填完上方 5 项，然后点击“生成复习计划”。</p>
       </div>
       <div class="result-grid">
         <article class="plan-card">
@@ -844,11 +890,11 @@
           <ul id="drop"></ul>
         </article>
         <article class="plan-card">
-          <div class="plan-card-head"><h3 class="panel-title" id="scheduleTitle">24小时行动表</h3><span class="plan-code">EXEC / 06</span></div>
+          <div class="plan-card-head"><h3 class="panel-title" id="scheduleTitle">复习安排</h3><span class="plan-code">EXEC / 06</span></div>
           <ul id="schedule"></ul>
         </article>
         <article class="plan-card">
-          <div class="plan-card-head"><h3 class="panel-title" id="hitsTitle">高频押题点（10条）</h3><span class="plan-code">HITS / 10</span></div>
+          <div class="plan-card-head"><h3 class="panel-title" id="hitsTitle">优先考点（10条）</h3><span class="plan-code">HITS / 10</span></div>
           <ul id="hits"></ul>
         </article>
       </div>
@@ -857,9 +903,8 @@
 
     <section class="stage feedback-stage">
       <div>
-        <p class="section-kicker" id="feedbackKicker">FEEDBACK CHANNEL</p>
-        <h2 class="headline" id="feedbackHeading">把不好用的地方直接扔给我</h2>
-        <p id="feedbackDescription">产品建议、Bug 与体验问题都可以通过微信反馈；高频问题优先处理。</p>
+        <h2 class="headline" id="feedbackHeading">遇到问题，直接告诉我</h2>
+        <p id="feedbackDescription">反馈 Bug 或使用问题时，添加微信并备注“产品反馈”。</p>
       </div>
       <div>
         <div class="contact-actions">
@@ -876,11 +921,19 @@
   <script>
     const now = new Date();
     const defaultDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3);
-    document.getElementById("date").valueAsDate = defaultDate;
     const body = document.body;
     const themeToggle = document.getElementById("themeToggle");
     const languageToggle = document.getElementById("languageToggle");
+    const planForm = document.getElementById("planForm");
     const generateBtn = document.getElementById("generate");
+    const cancelGenerateBtn = document.getElementById("cancelGenerate");
+    const validationSummary = document.getElementById("validationSummary");
+    const courseInput = document.getElementById("course");
+    const dateInput = document.getElementById("date");
+    const hoursInput = document.getElementById("hours");
+    const goalInput = document.getElementById("goal");
+    const keywordsInput = document.getElementById("keywords");
+    const formInputs = [courseInput, dateInput, hoursInput, goalInput, keywordsInput];
     const apiStatus = document.getElementById("apiStatus");
     const copyWxBtn = document.getElementById("copyWx");
     const copyTip = document.getElementById("copyTip");
@@ -896,6 +949,13 @@
     let lastPlan = null;
     let analysisTimer = null;
     let exportTimer = null;
+    let generationController = null;
+    let generationTimeout = null;
+    let requestTimedOut = false;
+    let isGenerating = false;
+    const touchedFields = new Set();
+    const DRAFT_KEY = "study-sprint-draft-v1";
+    const REQUEST_TIMEOUT_MS = 90000;
 
     const translations = {
       zh: {
@@ -903,46 +963,42 @@
         heroEyebrow: "EXAM SURVIVAL SYSTEM",
         heroLead: "这把，",
         heroAccent: "稳了。",
-        appSubtitle: "输入课程、时间和目标。系统替你完成取舍，发布一份可以立刻执行的期末方案。",
-        daysMetricLabel: "距考试",
+        appSubtitle: "填完 5 项，拿走一份能直接执行的复习计划。",
         daysMetricUnit: "天",
-        goalMetricLabel: "目标分",
-        hoursMetricLabel: "每日投入",
         hoursMetricUnit: "小时",
-        configureKicker: "CONFIGURE THE MISSION",
-        configureTitle: "定义这场考试",
-        configureDesc: "只输入会改变策略的信息。其余噪音，交给系统删除。",
+        configureTitle: "输入考试信息",
+        configureDesc: "范围写得越具体，生成的计划越能直接执行。",
         courseLabel: "课程名",
         dateLabel: "考试日期",
-        hoursLabel: "每天可用时间（小时）",
-        goalLabel: "目标分",
-        keywordsLabel: "资料关键词（可粘贴目录/题型词，逗号分隔）",
-        generate: "一键生成计划",
-        generating: "生成中...",
+        hoursLabel: "每天能学几小时（1–20）",
+        goalLabel: "目标分（60–100）",
+        keywordsLabel: "考试范围与题型（用逗号分隔）",
+        keywordsPlaceholder: "例如：动量守恒，刚体转动，计算题",
+        generate: "生成复习计划",
+        generating: "正在生成…",
+        cancelGenerate: "取消生成",
         fillDemo: "加载示例",
         switchDark: "深色",
         switchLight: "浅色",
         languageToggleAria: "Switch interface to English",
-        proxyHint: "模型与系统提示词只在服务端运行。你输入的是考试信息，不是 API 密钥。",
-        analysisTitle: "正在压缩复习空间",
-        analysisSteps: ["审计目标分与剩余时间", "识别高收益知识模块", "删除低回报任务", "编排 24 小时执行流水线"],
-        resultKicker: "RELEASE THE PLAN",
-        resultTitle: "发布你的复习方案",
-        resultDesc: "不是建议合集，而是一份可以复制、保存并立即执行的计划。",
-        copyPlan: "复制全部",
-        downloadPlan: "下载 Markdown",
-        exportCopied: "完整计划已复制。",
-        exportDownloaded: "Markdown 计划已保存到本地。",
+        proxyHint: "生成通常需要 10–60 秒。你可以随时取消，输入会自动保留。",
+        analysisTitle: "正在生成复习计划",
+        analysisSteps: ["检查剩余时间与目标分", "提取高收益知识点", "排除低回报内容", "编排复习顺序"],
+        resultTitle: "你的复习计划",
+        resultDesc: "生成后可复制全文，或下载到本地保存。",
+        copyPlan: "复制计划",
+        downloadPlan: "下载计划",
+        exportCopied: "计划已复制，可粘贴到其他应用。",
+        exportDownloaded: "计划文件已下载。",
         exportEmpty: "先生成计划，再导出。",
-        emptyHeadline: "你的突击计划还没生成",
-        emptySummary: "点击上方按钮后，这里会给出“必做 / 可放弃 / 24小时安排 / 高频考点”。",
+        emptyHeadline: "还没有复习计划",
+        emptySummary: "填完上方 5 项，然后点击“生成复习计划”。",
         mustTitle: "必拿分模块",
         dropTitle: "可放弃清单",
-        scheduleTitle: "24小时行动表",
-        hitsTitle: "高频押题点（10条）",
-        feedbackKicker: "FEEDBACK CHANNEL",
-        feedbackHeading: "把不好用的地方直接扔给我",
-        feedbackDescription: "产品建议、Bug 与体验问题都可以通过微信反馈；高频问题优先处理。",
+        scheduleTitle: "复习安排",
+        hitsTitle: "优先考点（10条）",
+        feedbackHeading: "遇到问题，直接告诉我",
+        feedbackDescription: "反馈 Bug 或使用问题时，添加微信并备注“产品反馈”。",
         wechatHeading: "微信号",
         wechatLabel: "微信号：",
         copyWechat: "复制微信号",
@@ -952,69 +1008,76 @@
         copySuccess: "已复制，可直接去微信粘贴。",
         healthCheckFailed: "健康检查失败：{status}",
         generatedFallback: "已生成计划",
-        parseError: "模型未返回可解析JSON",
+        parseError: "计划格式有误，请重新生成。",
         courseFallback: "当前课程",
-        apiCallFailed: "API调用失败：{status} {detail}",
-        emptyBackend: "后端返回为空",
-        requestingModel: "正在请求模型...",
-        generationSuccess: "AI 生成成功",
-        fetchFailed: "AI失败：无法连接后端。请先启动 server.py，并用 http://127.0.0.1:8010/mvp-study-sprint.html 打开页面。",
-        wrongService: "AI失败：你当前连接的不是本项目后端（服务标识不匹配）。",
-        authRequired: "AI失败：后端仍在强制鉴权。请在 .env 将 REQUIRE_APP_TOKEN 设置为 false 并重启后端。",
-        staleBackend: "AI失败：后端返回401，疑似端口上仍是旧进程，请关闭后重启。",
-        authHealthFailed: "AI失败：后端返回401，且健康检查不可用，极可能连到了错误服务。",
-        aiFailed: "AI失败：{message}",
-        backendConnected: "后端已连接：{service} / 鉴权={auth}",
-        authOn: "开",
-        authOff: "关",
-        backendDisconnected: "后端未连接，请先启动 server.py",
-        regenerateForLanguage: "界面已切换；重新生成后，AI 结果会使用中文。"
+        apiCallFailed: "生成失败（错误 {status}）。请稍后重试；你的输入已保留。",
+        emptyBackend: "生成服务没有返回计划，请重试。",
+        requestingModel: "正在生成计划，通常需要 10–60 秒…",
+        generationSuccess: "计划已生成，可复制或下载。",
+        fetchFailed: "无法连接生成服务。请刷新页面后重试；本地预览还需确认 server.py 已启动。",
+        wrongService: "连接到了错误的本地服务。请释放 8010 端口，再启动本项目的 server.py。",
+        authRequired: "生成服务要求访问口令。请在 .env 设置 REQUIRE_APP_TOKEN=false 后重启 server.py。",
+        staleBackend: "8010 端口仍在运行旧服务。请关闭旧进程，再启动本项目的 server.py。",
+        authHealthFailed: "无法确认生成服务状态。请检查 server.py 是否在 8010 端口运行。",
+        aiFailed: "计划没有生成。请重试；你的输入已保留。",
+        backendConnected: "生成服务已就绪",
+        backendDisconnected: "生成服务未连接。本地预览请先启动 server.py。",
+        regenerateForLanguage: "界面已切换。再次生成后，计划将使用中文。",
+        courseRequired: "请输入课程名。",
+        courseLength: "课程名需为 2–80 个字符。",
+        dateRequired: "请选择考试日期。",
+        datePast: "考试日期不能早于今天。",
+        hoursRequired: "请输入每天可用时间。",
+        hoursRange: "每天可用时间必须在 1–20 小时之间。",
+        goalRequired: "请输入目标分。",
+        goalRange: "目标分必须是 60–100 的整数。",
+        keywordsRequired: "请输入考试范围、重点章节或题型。",
+        keywordsLength: "考试范围需为 3–1000 个字符。",
+        invalidForm: "请先修正标红字段。",
+        requestCancelled: "已停止生成，输入已保留。",
+        requestTimedOut: "等待超过 90 秒，已停止生成。输入已保留，请重试。"
       },
       en: {
         documentTitle: "Exam Survival Sprint MVP",
         heroEyebrow: "EXAM SURVIVAL SYSTEM",
         heroLead: "EXAM.",
         heroAccent: "SECURED.",
-        appSubtitle: "Enter the course, time, and target. The system cuts the noise and releases an exam plan you can execute immediately.",
-        daysMetricLabel: "Days left",
+        appSubtitle: "Complete five inputs. Leave with a study plan you can execute today.",
         daysMetricUnit: "days",
-        goalMetricLabel: "Target",
-        hoursMetricLabel: "Daily input",
         hoursMetricUnit: "hours",
-        configureKicker: "CONFIGURE THE MISSION",
-        configureTitle: "Define the exam",
-        configureDesc: "Enter only what changes the strategy. The system deletes the rest.",
+        configureTitle: "Enter exam details",
+        configureDesc: "The more specific the scope, the more actionable the plan.",
         courseLabel: "Course",
         dateLabel: "Exam date",
-        hoursLabel: "Available hours per day",
-        goalLabel: "Target score",
-        keywordsLabel: "Material keywords (paste topics or question types, separated by commas)",
-        generate: "Generate survival plan",
-        generating: "Generating...",
+        hoursLabel: "Study hours per day (1–20)",
+        goalLabel: "Target score (60–100)",
+        keywordsLabel: "Exam scope and question types (comma-separated)",
+        keywordsPlaceholder: "Example: momentum, rigid-body rotation, calculation problems",
+        generate: "Generate study plan",
+        generating: "Generating…",
+        cancelGenerate: "Stop generating",
         fillDemo: "Load demo",
         switchDark: "Dark",
         switchLight: "Light",
         languageToggleAria: "将界面切换为中文",
-        proxyHint: "The model and system prompt run only on the server. You enter exam data—not API credentials.",
-        analysisTitle: "Compressing the study space",
-        analysisSteps: ["Auditing the target and time left", "Finding high-return knowledge", "Deleting low-return work", "Sequencing the 24-hour execution pipeline"],
-        resultKicker: "RELEASE THE PLAN",
-        resultTitle: "Release your study plan",
-        resultDesc: "Not a pile of advice. A plan you can copy, save, and execute now.",
-        copyPlan: "Copy all",
-        downloadPlan: "Download Markdown",
-        exportCopied: "The full plan is copied.",
-        exportDownloaded: "The Markdown plan is saved locally.",
+        proxyHint: "Generation usually takes 10–60 seconds. You can cancel at any time; your inputs are saved.",
+        analysisTitle: "Generating your study plan",
+        analysisSteps: ["Checking the time left and target score", "Finding high-yield topics", "Removing low-return work", "Sequencing the study plan"],
+        resultTitle: "Your study plan",
+        resultDesc: "When it is ready, copy the full plan or download it for offline use.",
+        copyPlan: "Copy plan",
+        downloadPlan: "Download plan",
+        exportCopied: "Plan copied. Paste it into any other app.",
+        exportDownloaded: "Plan file downloaded.",
         exportEmpty: "Generate a plan before exporting.",
-        emptyHeadline: "No survival plan yet",
-        emptySummary: "Generate a plan to get high-yield targets, explicit skips, a 24-hour schedule, and likely exam hits.",
+        emptyHeadline: "No study plan yet",
+        emptySummary: "Complete the five inputs above, then select “Generate study plan.”",
         mustTitle: "High-yield modules",
         dropTitle: "Skip list",
-        scheduleTitle: "24-hour action plan",
-        hitsTitle: "Likely exam hits (10)",
-        feedbackKicker: "FEEDBACK CHANNEL",
-        feedbackHeading: "Throw every rough edge at me",
-        feedbackDescription: "Send product ideas, bugs, and usability problems through WeChat. Repeated issues get fixed first.",
+        scheduleTitle: "Study schedule",
+        hitsTitle: "Priority topics (10)",
+        feedbackHeading: "Found a problem? Tell me.",
+        feedbackDescription: "For bugs or usability feedback, add me on WeChat and include “Product feedback.”",
         wechatHeading: "WeChat ID",
         wechatLabel: "WeChat:",
         copyWechat: "Copy WeChat ID",
@@ -1024,23 +1087,34 @@
         copySuccess: "Copied. Paste it directly into WeChat.",
         healthCheckFailed: "Health check failed: {status}",
         generatedFallback: "Plan generated",
-        parseError: "The model did not return parseable JSON",
+        parseError: "The plan format was invalid. Generate it again.",
         courseFallback: "Current course",
-        apiCallFailed: "API call failed: {status} {detail}",
-        emptyBackend: "The backend returned an empty response",
-        requestingModel: "Requesting the model...",
-        generationSuccess: "AI plan generated",
-        fetchFailed: "AI failed: the backend is unreachable. Start server.py and open http://127.0.0.1:8010/mvp-study-sprint.html.",
-        wrongService: "AI failed: this port is not serving the Study Sprint backend.",
-        authRequired: "AI failed: backend authentication is still enforced. Set REQUIRE_APP_TOKEN=false in .env and restart the backend.",
-        staleBackend: "AI failed: the backend returned 401. An old process may still own the port; stop it and restart.",
-        authHealthFailed: "AI failed: the backend returned 401 and its health check is unavailable. This is probably the wrong service.",
-        aiFailed: "AI failed: {message}",
-        backendConnected: "Backend connected: {service} / Auth={auth}",
-        authOn: "on",
-        authOff: "off",
-        backendDisconnected: "Backend disconnected. Start server.py.",
-        regenerateForLanguage: "Interface switched. Regenerate to get the AI plan in English."
+        apiCallFailed: "Generation failed (error {status}). Try again; your inputs are saved.",
+        emptyBackend: "The generation service returned no plan. Try again.",
+        requestingModel: "Generating your plan. This usually takes 10–60 seconds…",
+        generationSuccess: "Plan ready. Copy it or download it.",
+        fetchFailed: "The generation service is unreachable. Refresh and try again; for local preview, confirm that server.py is running.",
+        wrongService: "Port 8010 is running the wrong local service. Free the port, then start this project's server.py.",
+        authRequired: "The generation service requires an access token. Set REQUIRE_APP_TOKEN=false in .env, then restart server.py.",
+        staleBackend: "Port 8010 is still running an older service. Stop it, then restart this project's server.py.",
+        authHealthFailed: "The generation service status is unavailable. Confirm that server.py is running on port 8010.",
+        aiFailed: "The plan was not generated. Try again; your inputs are saved.",
+        backendConnected: "Generation service ready",
+        backendDisconnected: "Generation service offline. For local preview, start server.py.",
+        regenerateForLanguage: "Interface switched. Generate again to get the plan in English.",
+        courseRequired: "Enter the course name.",
+        courseLength: "Use 2–80 characters for the course name.",
+        dateRequired: "Choose the exam date.",
+        datePast: "The exam date cannot be earlier than today.",
+        hoursRequired: "Enter your available study time.",
+        hoursRange: "Available time must be between 1 and 20 hours per day.",
+        goalRequired: "Enter a target score.",
+        goalRange: "The target must be a whole number from 60 to 100.",
+        keywordsRequired: "Enter the exam scope, priority chapters, or question types.",
+        keywordsLength: "Use 3–1000 characters for the exam scope.",
+        invalidForm: "Fix the highlighted fields first.",
+        requestCancelled: "Generation stopped. Your inputs are saved.",
+        requestTimedOut: "Generation stopped after 90 seconds. Your inputs are saved; try again."
       }
     };
 
@@ -1049,12 +1123,8 @@
       heroLead: "heroLead",
       heroAccent: "heroAccent",
       appSubtitle: "appSubtitle",
-      daysMetricLabel: "daysMetricLabel",
       daysMetricUnit: "daysMetricUnit",
-      goalMetricLabel: "goalMetricLabel",
-      hoursMetricLabel: "hoursMetricLabel",
       hoursMetricUnit: "hoursMetricUnit",
-      configureKicker: "configureKicker",
       configureTitle: "configureTitle",
       configureDesc: "configureDesc",
       courseLabel: "courseLabel",
@@ -1063,10 +1133,10 @@
       goalLabel: "goalLabel",
       keywordsLabel: "keywordsLabel",
       generate: "generate",
+      cancelGenerate: "cancelGenerate",
       fillDemo: "fillDemo",
       proxyHint: "proxyHint",
       analysisTitle: "analysisTitle",
-      resultKicker: "resultKicker",
       resultTitle: "resultTitle",
       resultDesc: "resultDesc",
       copyPlan: "copyPlan",
@@ -1075,7 +1145,6 @@
       dropTitle: "dropTitle",
       scheduleTitle: "scheduleTitle",
       hitsTitle: "hitsTitle",
-      feedbackKicker: "feedbackKicker",
       feedbackHeading: "feedbackHeading",
       feedbackDescription: "feedbackDescription",
       wechatLabel: "wechatLabel",
@@ -1100,6 +1169,93 @@
       const latinCount = (content.match(/[A-Za-z]/g) || []).length;
       if (!hanCount && !latinCount) return null;
       return hanCount > Math.max(1, latinCount * 0.12) ? "zh" : "en";
+    }
+
+    function toLocalDateValue(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function saveDraft() {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+          course: courseInput.value,
+          date: dateInput.value,
+          hours: hoursInput.value,
+          goal: goalInput.value,
+          keywords: keywordsInput.value
+        }));
+      } catch {
+        // Local storage is optional; the current form state still remains intact.
+      }
+    }
+
+    function loadDraft() {
+      let draft = null;
+      try {
+        draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+      } catch {
+        draft = null;
+      }
+      if (draft && typeof draft === "object") {
+        if (typeof draft.course === "string") courseInput.value = draft.course;
+        if (typeof draft.date === "string") dateInput.value = draft.date;
+        if (typeof draft.hours === "string") hoursInput.value = draft.hours;
+        if (typeof draft.goal === "string") goalInput.value = draft.goal;
+        if (typeof draft.keywords === "string") keywordsInput.value = draft.keywords;
+      }
+      if (!dateInput.value) dateInput.value = toLocalDateValue(defaultDate);
+    }
+
+    function getFieldError(input) {
+      const value = input.value.trim();
+      if (input === courseInput) {
+        if (!value) return t("courseRequired");
+        if (value.length < 2 || value.length > 80) return t("courseLength");
+      }
+      if (input === dateInput) {
+        if (!value) return t("dateRequired");
+        if (value < toLocalDateValue(now)) return t("datePast");
+      }
+      if (input === hoursInput) {
+        const hours = Number(value);
+        if (!value) return t("hoursRequired");
+        if (!Number.isFinite(hours) || hours < 1 || hours > 20) return t("hoursRange");
+      }
+      if (input === goalInput) {
+        const goal = Number(value);
+        if (!value) return t("goalRequired");
+        if (!Number.isInteger(goal) || goal < 60 || goal > 100) return t("goalRange");
+      }
+      if (input === keywordsInput) {
+        if (!value) return t("keywordsRequired");
+        if (value.length < 3 || value.length > 1000) return t("keywordsLength");
+      }
+      return "";
+    }
+
+    function validateField(input, showError = true) {
+      const message = getFieldError(input);
+      const errorElement = document.getElementById(`${input.id}Error`);
+      input.setAttribute("aria-invalid", message ? "true" : "false");
+      if (errorElement) errorElement.textContent = showError ? message : "";
+      return !message;
+    }
+
+    function validateForm(showErrors = true) {
+      if (showErrors) formInputs.forEach((input) => touchedFields.add(input.id));
+      const valid = formInputs.map((input) => validateField(input, showErrors || touchedFields.has(input.id))).every(Boolean);
+      validationSummary.textContent = !valid && showErrors ? t("invalidForm") : "";
+      return valid;
+    }
+
+    function revalidateTouchedFields() {
+      formInputs.forEach((input) => validateField(input, touchedFields.has(input.id)));
+      if (validationSummary.textContent) {
+        validationSummary.textContent = formInputs.every((input) => !getFieldError(input)) ? "" : t("invalidForm");
+      }
     }
 
     function translateKnownInputs(language) {
@@ -1127,10 +1283,7 @@
 
     function renderHealthStatus() {
       if (!lastHealth) return;
-      setStatus(t("backendConnected", {
-        service: lastHealth.service,
-        auth: lastHealth.require_app_token ? t("authOn") : t("authOff")
-      }));
+      setStatus(t("backendConnected"));
     }
 
     function applyLanguage(language) {
@@ -1146,6 +1299,7 @@
       languageToggle.setAttribute("aria-label", t("languageToggleAria"));
       const qrImage = document.getElementById("qrImage");
       qrImage.alt = t("qrAlt");
+      keywordsInput.placeholder = t("keywordsPlaceholder");
       translateKnownInputs(currentLanguage);
       if (analysisTimer) analysisDetail.textContent = translations[currentLanguage].analysisSteps[0];
       if (!hasGeneratedPlan) {
@@ -1153,6 +1307,9 @@
         document.getElementById("summary").textContent = t("emptySummary");
       }
       themeToggle.textContent = body.getAttribute("data-theme") === "dark" ? t("switchLight") : t("switchDark");
+      revalidateTouchedFields();
+      saveDraft();
+      updateMetrics();
       renderHealthStatus();
     }
 
@@ -1199,12 +1356,11 @@
     }
 
     function updateMetrics() {
-      const date = document.getElementById("date").value;
-      const goal = Number(document.getElementById("goal").value || 0);
-      const hours = Number(document.getElementById("hours").value || 0);
-      document.getElementById("daysPreview").textContent = date ? daysLeft(date) : "—";
-      document.getElementById("goalPreview").textContent = goal || "—";
-      document.getElementById("hoursPreview").textContent = hours || "—";
+      const goal = Number(goalInput.value || 0);
+      const hours = Number(hoursInput.value || 0);
+      document.getElementById("daysPreview").textContent = dateInput.value && !getFieldError(dateInput) ? daysLeft(dateInput.value) : "—";
+      document.getElementById("goalPreview").textContent = Number.isFinite(goal) && goal >= 60 && goal <= 100 ? goal : "—";
+      document.getElementById("hoursPreview").textContent = Number.isFinite(hours) && hours >= 1 && hours <= 20 ? hours : "—";
     }
 
     function startAnalysis() {
@@ -1235,25 +1391,25 @@
       const hours = document.getElementById("hours").value || "—";
       const goal = document.getElementById("goal").value || "—";
       const labels = currentLanguage === "en" ? {
-        title: "Exam Survival Plan",
+        title: "Exam Study Plan",
         course: "Course",
         date: "Exam date",
         hours: "Hours per day",
         goal: "Target score",
         must: "High-yield modules",
         drop: "Skip list",
-        schedule: "24-hour action plan",
-        hits: "Likely exam hits"
+        schedule: "Study schedule",
+        hits: "Priority topics"
       } : {
-        title: "期末突击计划",
+        title: "期末复习计划",
         course: "课程",
         date: "考试日期",
         hours: "每日投入",
         goal: "目标分",
         must: "必拿分模块",
         drop: "可放弃清单",
-        schedule: "24小时行动表",
-        hits: "高频押题点"
+        schedule: "复习安排",
+        hits: "优先考点"
       };
       return [
         `# ${labels.title}｜${course}`,
@@ -1390,17 +1546,18 @@
       throw new Error(t("parseError"));
     }
 
-    async function fetchPlanByAI() {
-      const course = document.getElementById("course").value.trim() || t("courseFallback");
-      const date = document.getElementById("date").value;
-      const hours = Number(document.getElementById("hours").value || 8);
-      const goal = Number(document.getElementById("goal").value || 80);
-      const keywords = document.getElementById("keywords").value.trim();
+    async function fetchPlanByAI(signal) {
+      const course = courseInput.value.trim();
+      const date = dateInput.value;
+      const hours = Number(hoursInput.value);
+      const goal = Number(goalInput.value);
+      const keywords = keywordsInput.value.trim();
       const inputLanguage = detectInputLanguage(`${course}\n${keywords}`);
       const d = daysLeft(date);
       const response = await fetch(`${getApiBase()}/api/plan`, {
         method: "POST",
         credentials: "include",
+        signal,
         headers: {
           "Content-Type": "application/json"
         },
@@ -1431,7 +1588,7 @@
       const oneDay = 1000 * 60 * 60 * 24;
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const t = new Date(targetDate);
+      const t = new Date(`${targetDate}T00:00:00`);
       if (Number.isNaN(t.getTime())) return 1;
       t.setHours(0, 0, 0, 0);
       return Math.max(1, Math.ceil((t - today) / oneDay));
@@ -1448,17 +1605,33 @@
     }
 
     async function generatePlan() {
+      if (isGenerating || !validateForm(true)) {
+        const firstInvalid = formInputs.find((input) => getFieldError(input));
+        if (firstInvalid) firstInvalid.focus();
+        return;
+      }
+      saveDraft();
+      isGenerating = true;
+      requestTimedOut = false;
+      generationController = new AbortController();
       generateBtn.disabled = true;
       generateBtn.textContent = t("generating");
+      cancelGenerateBtn.hidden = false;
       setStatus(t("requestingModel"));
       startAnalysis();
+      generationTimeout = window.setTimeout(() => {
+        requestTimedOut = true;
+        generationController?.abort();
+      }, REQUEST_TIMEOUT_MS);
       try {
-        const aiPlan = await fetchPlanByAI();
+        const aiPlan = await fetchPlanByAI(generationController.signal);
         applyPlan(aiPlan);
         setStatus(t("generationSuccess"));
       } catch (err) {
         const msg = String(err?.message || err);
-        if (msg.includes("Failed to fetch")) {
+        if (err?.name === "AbortError") {
+          setStatus(t(requestTimedOut ? "requestTimedOut" : "requestCancelled"));
+        } else if (msg.includes("Failed to fetch")) {
           setStatus(t("fetchFailed"));
         } else if (msg.includes("401")) {
           try {
@@ -1477,10 +1650,21 @@
           setStatus(t("aiFailed", { message: msg }));
         }
       } finally {
+        window.clearTimeout(generationTimeout);
+        generationTimeout = null;
+        generationController = null;
+        isGenerating = false;
         stopAnalysis();
+        cancelGenerateBtn.hidden = true;
         generateBtn.disabled = false;
         generateBtn.textContent = t("generate");
       }
+    }
+
+    function cancelGeneration() {
+      if (!generationController) return;
+      requestTimedOut = false;
+      generationController.abort();
     }
 
     function fillDemo() {
@@ -1491,15 +1675,18 @@
         course: "工程力学",
         keywords: "受力分析, 力矩平衡, 杆件内力, 材料力学基础, 计算题, 简答题"
       };
-      document.getElementById("course").value = demo.course;
-      document.getElementById("hours").value = 7;
-      document.getElementById("goal").value = 85;
-      document.getElementById("keywords").value = demo.keywords;
+      courseInput.value = demo.course;
+      hoursInput.value = 7;
+      goalInput.value = 85;
+      keywordsInput.value = demo.keywords;
       const d = new Date();
       d.setDate(d.getDate() + 4);
-      document.getElementById("date").valueAsDate = d;
+      dateInput.value = toLocalDateValue(d);
+      touchedFields.clear();
+      validationSummary.textContent = "";
+      formInputs.forEach((input) => validateField(input, false));
       updateMetrics();
-      generatePlan();
+      saveDraft();
     }
 
     themeToggle.addEventListener("click", () => {
@@ -1510,17 +1697,32 @@
       applyLanguage(currentLanguage === "zh" ? "en" : "zh");
       if (hasGeneratedPlan) setStatus(t("regenerateForLanguage"));
     });
-    document.getElementById("generate").addEventListener("click", () => generatePlan());
+    planForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      generatePlan();
+    });
+    cancelGenerateBtn.addEventListener("click", cancelGeneration);
     document.getElementById("fillDemo").addEventListener("click", fillDemo);
     copyPlanBtn.addEventListener("click", copyFullPlan);
     downloadPlanBtn.addEventListener("click", downloadPlanMarkdown);
     copyWxBtn.addEventListener("click", copyWxId);
-    ["date", "hours", "goal"].forEach((id) => {
-      document.getElementById(id).addEventListener("input", updateMetrics);
-      document.getElementById(id).addEventListener("change", updateMetrics);
+    formInputs.forEach((input) => {
+      input.addEventListener("input", () => {
+        if (touchedFields.has(input.id)) validateField(input, true);
+        validationSummary.textContent = "";
+        updateMetrics();
+        saveDraft();
+      });
+      input.addEventListener("blur", () => {
+        touchedFields.add(input.id);
+        validateField(input, true);
+      });
     });
+    dateInput.min = toLocalDateValue(now);
+    loadDraft();
     initLanguage();
     initTheme();
+    validateForm(false);
     updateMetrics();
     refreshHealth();
   </script>
