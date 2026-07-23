@@ -162,113 +162,10 @@
       font-size: 12px;
       color: var(--muted);
     }
-    .feedback-grid {
-      display: grid;
-      grid-template-columns: 1.35fr 1fr;
-      gap: 12px;
-      align-items: stretch;
-    }
-    .feedback-col {
-      display: grid;
-      gap: 12px;
-      align-content: start;
-    }
-    .feedback-block {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 14px;
-      background: var(--panel);
-    }
-    .feedback-main {
-      display: grid;
-      gap: 10px;
-    }
-    .feedback-item {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 12px;
-      background: var(--panel);
-    }
-    .feedback-item h4 {
-      margin: 0 0 8px;
-      font-size: 20px;
-      line-height: 1;
-    }
-    .feedback-item p {
-      margin: 0;
-      color: var(--text);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-    .feedback-title {
-      margin: 0 0 6px;
-      font-size: 16px;
-    }
-    .feedback-desc {
-      margin: 0 0 12px;
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-    .wx-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-    .wx-label {
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .wx-id {
-      padding: 4px 8px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      background: var(--tag-bg);
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.2px;
-    }
-    #copyWx {
-      width: auto;
-      min-width: 112px;
-      padding: 9px 12px;
-    }
-    .copy-tip {
-      margin: 8px 0 0;
-      min-height: 18px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .qr-box {
-      text-align: center;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-    .qr-box img {
-      width: 100%;
-      max-width: 250px;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background: #fff;
-      display: block;
-      margin: 0 auto;
-    }
-    .qr-note {
-      margin: 8px 0 0;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
     @media (max-width: 760px) {
       body { padding: 14px; }
       .card { padding: 14px; }
       .grid, .result-grid { grid-template-columns: 1fr; }
-      .feedback-grid { grid-template-columns: 1fr; }
-      .feedback-col { gap: 10px; }
-      .qr-box img { max-width: 220px; }
       #themeToggle { margin-left: 0; }
     }
   </style>
@@ -366,8 +263,7 @@
     .system-line,
     .top-controls,
     .section-index,
-    .result-actions,
-    .contact-actions {
+    .result-actions {
       display: flex;
       align-items: center;
     }
@@ -709,20 +605,162 @@
     .export-status { min-height: 18px; margin: 14px 0 0; color: var(--muted); font-size: 12px; text-align: right; }
 
     .feedback-stage {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 24px;
-      align-items: center;
+      display: block;
       margin: 28px 0 0;
-      padding: 28px 32px;
+      padding: 24px 28px;
+      border-radius: 16px;
+      box-shadow: none;
+      backdrop-filter: none;
     }
-    .feedback-stage .headline { font-size: 24px; }
-    .feedback-stage p { max-width: 640px; margin: 8px 0 0; color: var(--muted); line-height: 1.6; }
-    .contact-actions { gap: 10px; }
-    .wx-id { border-radius: 999px; padding: 8px 12px; }
-    #copyWx { min-width: auto; width: auto; }
-    .qr-mini { width: 58px; height: 58px; border-radius: 12px; border: 1px solid var(--line); background: #fff; }
-    .copy-tip { margin: 6px 0 0; text-align: right; }
+    .feedback-intro { margin-bottom: 20px; }
+    .feedback-stage .headline {
+      margin-bottom: 6px;
+      font-size: 24px;
+      letter-spacing: -0.03em;
+    }
+    .feedback-stage p {
+      max-width: none;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .feedback-routes {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      border-top: 1px solid var(--line);
+    }
+    .feedback-route {
+      position: relative;
+      display: flex;
+      min-width: 0;
+      padding: 20px 0 28px;
+      flex-direction: column;
+    }
+    .feedback-route + .feedback-route {
+      margin-left: 24px;
+      padding-left: 24px;
+      border-left: 1px solid var(--line);
+    }
+    .feedback-route-title {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+    .feedback-stage .feedback-route-description {
+      margin-top: 7px;
+      font-size: 13px;
+    }
+    .feedback-route-actions {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: auto;
+      padding-top: 18px;
+    }
+    .feedback-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      min-height: 46px;
+      padding: 11px 14px;
+      border: 1px solid var(--strong-line);
+      border-radius: 12px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 760;
+      line-height: 1.2;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: border-color 180ms ease, background 180ms ease, color 180ms ease, transform 180ms ease;
+    }
+    .feedback-action:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      transform: translateY(-1px);
+    }
+    .feedback-action:focus-visible,
+    .qr-disclosure summary:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+    .external-mark {
+      margin-left: 8px;
+      color: var(--accent);
+      font-size: 14px;
+    }
+    #copyWx { gap: 8px; }
+    #copyWx.is-success {
+      border-color: color-mix(in srgb, var(--signal) 62%, var(--line));
+      background: color-mix(in srgb, var(--signal) 10%, var(--input-bg));
+    }
+    .wx-id {
+      color: var(--accent);
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .qr-disclosure { min-width: 0; }
+    .qr-disclosure summary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 11px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.2;
+      cursor: pointer;
+      list-style: none;
+      transition: border-color 180ms ease, color 180ms ease, background 180ms ease;
+    }
+    .qr-disclosure summary::-webkit-details-marker { display: none; }
+    .qr-disclosure summary:hover {
+      border-color: var(--strong-line);
+      color: var(--text);
+      background: var(--input-bg);
+    }
+    .qr-disclosure[open] summary {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+    .qr-panel {
+      width: 206px;
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--input-bg);
+    }
+    .qr-image {
+      display: block;
+      width: 180px;
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      background: #fff;
+    }
+    .feedback-stage .qr-note {
+      margin-top: 9px;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .feedback-stage .copy-tip {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 24px;
+      min-height: 20px;
+      font-size: 12px;
+    }
+    .copy-tip[data-state="success"] { color: var(--signal); }
+    .copy-tip[data-state="error"] { color: #c2352a; }
+    body[data-theme="dark"] .copy-tip[data-state="error"] { color: #ff8e84; }
 
     @keyframes statusPulse { 50% { opacity: .42; transform: scale(.72); } }
     @keyframes orbBreathe { 50% { transform: scale(.86); filter: saturate(1.5); } }
@@ -741,9 +779,21 @@
       .section-head .result-actions { grid-column: 1 / -1; }
       .field { grid-column: 1 / -1; }
       .result-grid { grid-template-columns: 1fr; }
-      .feedback-stage { grid-template-columns: 1fr; }
-      .contact-actions { flex-wrap: wrap; }
-      .copy-tip { text-align: left; }
+      .feedback-stage {
+        padding: 22px;
+        border-radius: 16px;
+      }
+      .feedback-routes { grid-template-columns: 1fr; }
+      .feedback-route + .feedback-route {
+        margin: 18px 0 0;
+        padding: 18px 0 28px;
+        border-top: 1px solid var(--line);
+        border-left: 0;
+      }
+      .feedback-stage .copy-tip { left: 0; }
+      .feedback-route-actions { padding-top: 14px; }
+      .feedback-action,
+      .qr-disclosure summary { min-height: 48px; }
     }
 
     @media (max-width: 520px) {
@@ -760,6 +810,12 @@
       #configurationStage .section-index { display: none; }
       #configurationStage .section-head { grid-template-columns: 1fr; }
       .actions button { width: 100%; }
+      .feedback-route-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+      .feedback-action { width: 100%; }
+      .qr-disclosure { display: none; }
     }
 
     @media (forced-colors: active) {
@@ -901,19 +957,56 @@
       <p class="export-status" id="exportStatus"></p>
     </section>
 
-    <section class="stage feedback-stage">
-      <div>
+    <section class="stage feedback-stage" aria-labelledby="feedbackHeading">
+      <div class="feedback-intro">
         <h2 class="headline" id="feedbackHeading">遇到问题，直接告诉我</h2>
-        <p id="feedbackDescription">反馈 Bug 或使用问题时，添加微信并备注“产品反馈”。</p>
+        <p id="feedbackDescription">选择最适合的方式反馈，我会用它继续改进。</p>
       </div>
-      <div>
-        <div class="contact-actions">
-          <span class="wx-label" id="wechatLabel">微信号：</span>
-          <span id="wxId" class="wx-id">Wind12006</span>
-          <button id="copyWx" class="ghost" type="button">复制微信号</button>
-          <img id="qrImage" class="qr-mini" src="./contactme.jpg" alt="微信二维码" />
-        </div>
-        <p id="copyTip" class="copy-tip"></p>
+      <div class="feedback-routes">
+        <article class="feedback-route">
+          <div>
+            <h3 class="feedback-route-title" id="feedbackFormTitle">反馈问卷</h3>
+            <p class="feedback-route-description" id="feedbackFormDescription">适合 Bug、建议和一般使用问题，约 2 分钟。</p>
+          </div>
+          <div class="feedback-route-actions">
+            <a
+              id="feedbackFormLink"
+              class="feedback-action"
+              href="https://docs.google.com/forms/d/e/1FAIpQLSeoLjOHUnG22anZXWujwkWxYkisV6AL6qs9WplDtGuM9iPa_A/viewform?usp=publish-editor"
+              target="_blank"
+              rel="noopener noreferrer"
+            ><span id="feedbackFormAction">填写反馈问卷</span><span class="external-mark" aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+
+        <article class="feedback-route">
+          <div>
+            <h3 class="feedback-route-title" id="wechatRouteTitle">微信联系</h3>
+            <p class="feedback-route-description" id="wechatRouteDescription">适合无法生成、数据丢失等紧急问题。</p>
+          </div>
+          <div class="feedback-route-actions">
+            <button id="copyWx" class="feedback-action" type="button">
+              <span id="copyWxLabel">复制微信号</span>
+              <span id="wxId" class="wx-id">Wind12006</span>
+            </button>
+            <details id="qrDisclosure" class="qr-disclosure">
+              <summary id="qrToggle">查看二维码</summary>
+              <div class="qr-panel">
+                <img
+                  id="qrImage"
+                  class="qr-image"
+                  src="./contactme.jpg"
+                  width="1078"
+                  height="1472"
+                  loading="lazy"
+                  alt="微信二维码"
+                />
+                <p id="qrNote" class="qr-note">扫码添加微信，并备注“产品反馈”。</p>
+              </div>
+            </details>
+          </div>
+          <p id="copyTip" class="copy-tip" role="status" aria-live="polite" aria-atomic="true"></p>
+        </article>
       </div>
     </section>
   </main>
@@ -936,7 +1029,9 @@
     const formInputs = [courseInput, dateInput, hoursInput, goalInput, keywordsInput];
     const apiStatus = document.getElementById("apiStatus");
     const copyWxBtn = document.getElementById("copyWx");
+    const copyWxLabel = document.getElementById("copyWxLabel");
     const copyTip = document.getElementById("copyTip");
+    const feedbackFormLink = document.getElementById("feedbackFormLink");
     const copyPlanBtn = document.getElementById("copyPlan");
     const downloadPlanBtn = document.getElementById("downloadPlan");
     const exportStatus = document.getElementById("exportStatus");
@@ -949,6 +1044,8 @@
     let lastPlan = null;
     let analysisTimer = null;
     let exportTimer = null;
+    let copyTipTimer = null;
+    let copyButtonTimer = null;
     let generationController = null;
     let generationTimeout = null;
     let requestTimedOut = false;
@@ -998,14 +1095,20 @@
         scheduleTitle: "复习安排",
         hitsTitle: "优先考点（10条）",
         feedbackHeading: "遇到问题，直接告诉我",
-        feedbackDescription: "反馈 Bug 或使用问题时，添加微信并备注“产品反馈”。",
-        wechatHeading: "微信号",
-        wechatLabel: "微信号：",
+        feedbackDescription: "选择最适合的方式反馈，我会用它继续改进。",
+        feedbackFormTitle: "反馈问卷",
+        feedbackFormDescription: "适合 Bug、建议和一般使用问题，约 2 分钟。",
+        feedbackFormAction: "填写反馈问卷",
+        feedbackFormAria: "填写反馈问卷（将在新标签打开）",
+        wechatRouteTitle: "微信联系",
+        wechatRouteDescription: "适合无法生成、数据丢失等紧急问题。",
         copyWechat: "复制微信号",
-        qrHeading: "微信二维码",
+        copyWechatDone: "已复制",
+        qrToggle: "查看二维码",
         qrAlt: "微信二维码",
-        qrNote: "扫码添加微信并备注「产品反馈」，我会更快处理。",
-        copySuccess: "已复制，可直接去微信粘贴。",
+        qrNote: "扫码添加微信，并备注“产品反馈”。",
+        copySuccess: "微信号 {value} 已复制，可直接去微信粘贴。",
+        copyFailure: "复制失败，请手动复制微信号：{value}",
         healthCheckFailed: "健康检查失败：{status}",
         generatedFallback: "已生成计划",
         parseError: "计划格式有误，请重新生成。",
@@ -1077,14 +1180,20 @@
         scheduleTitle: "Study schedule",
         hitsTitle: "Priority topics (10)",
         feedbackHeading: "Found a problem? Tell me.",
-        feedbackDescription: "For bugs or usability feedback, add me on WeChat and include “Product feedback.”",
-        wechatHeading: "WeChat ID",
-        wechatLabel: "WeChat:",
+        feedbackDescription: "Choose the route that fits. Your feedback will shape the next iteration.",
+        feedbackFormTitle: "Feedback form",
+        feedbackFormDescription: "Best for bugs, suggestions, and general usability feedback. About 2 minutes.",
+        feedbackFormAction: "Open feedback form",
+        feedbackFormAria: "Open feedback form in a new tab",
+        wechatRouteTitle: "WeChat",
+        wechatRouteDescription: "Best for urgent issues such as failed generation or lost data.",
         copyWechat: "Copy WeChat ID",
-        qrHeading: "WeChat QR code",
+        copyWechatDone: "Copied",
+        qrToggle: "Show QR code",
         qrAlt: "WeChat QR code",
-        qrNote: "Scan and add the note “Product feedback” so I can triage it faster.",
-        copySuccess: "Copied. Paste it directly into WeChat.",
+        qrNote: "Scan to add me on WeChat and include “Product feedback.”",
+        copySuccess: "WeChat ID {value} copied. Paste it into WeChat.",
+        copyFailure: "Copy failed. Manually copy this WeChat ID: {value}",
         healthCheckFailed: "Health check failed: {status}",
         generatedFallback: "Plan generated",
         parseError: "The plan format was invalid. Generate it again.",
@@ -1147,8 +1256,14 @@
       hitsTitle: "hitsTitle",
       feedbackHeading: "feedbackHeading",
       feedbackDescription: "feedbackDescription",
-      wechatLabel: "wechatLabel",
-      copyWx: "copyWechat"
+      feedbackFormTitle: "feedbackFormTitle",
+      feedbackFormDescription: "feedbackFormDescription",
+      feedbackFormAction: "feedbackFormAction",
+      wechatRouteTitle: "wechatRouteTitle",
+      wechatRouteDescription: "wechatRouteDescription",
+      copyWxLabel: "copyWechat",
+      qrToggle: "qrToggle",
+      qrNote: "qrNote"
     };
 
     function t(key, replacements = {}) {
@@ -1297,8 +1412,14 @@
       });
       languageToggle.textContent = currentLanguage === "zh" ? "English" : "中文";
       languageToggle.setAttribute("aria-label", t("languageToggleAria"));
+      feedbackFormLink.setAttribute("aria-label", t("feedbackFormAria"));
       const qrImage = document.getElementById("qrImage");
       qrImage.alt = t("qrAlt");
+      window.clearTimeout(copyButtonTimer);
+      copyWxBtn.classList.remove("is-success");
+      copyWxBtn.disabled = false;
+      copyWxBtn.removeAttribute("aria-busy");
+      setCopyTip("");
       keywordsInput.placeholder = t("keywordsPlaceholder");
       translateKnownInputs(currentLanguage);
       if (analysisTimer) analysisDetail.textContent = translations[currentLanguage].analysisSteps[0];
@@ -1338,12 +1459,18 @@
       apiStatus.textContent = text;
     }
 
-    function setCopyTip(text) {
+    function setCopyTip(text, state = "") {
+      window.clearTimeout(copyTipTimer);
       copyTip.textContent = text;
+      if (state) {
+        copyTip.dataset.state = state;
+      } else {
+        delete copyTip.dataset.state;
+      }
       if (!text) return;
-      window.setTimeout(() => {
-        if (copyTip.textContent === text) copyTip.textContent = "";
-      }, 1800);
+      copyTipTimer = window.setTimeout(() => {
+        if (copyTip.textContent === text) setCopyTip("");
+      }, 5000);
     }
 
     function setExportStatus(text) {
@@ -1478,20 +1605,61 @@
       setExportStatus(t("exportDownloaded"));
     }
 
+    async function copyText(value) {
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(value);
+          return true;
+        } catch {
+          // Use the selection fallback below when clipboard permission is unavailable.
+        }
+      }
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = value;
+      input.readOnly = true;
+      input.style.position = "fixed";
+      input.style.left = "-9999px";
+      input.style.opacity = "0";
+      document.body.appendChild(input);
+      input.select();
+      input.setSelectionRange(0, value.length);
+
+      let copied = false;
+      try {
+        copied = document.execCommand("copy");
+      } catch {
+        copied = false;
+      }
+      input.remove();
+      return copied;
+    }
+
     async function copyWxId() {
       const value = document.getElementById("wxId").textContent.trim();
-      try {
-        await navigator.clipboard.writeText(value);
-        setCopyTip(t("copySuccess"));
-      } catch {
-        const input = document.createElement("input");
-        input.value = value;
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand("copy");
-        input.remove();
-        setCopyTip(t("copySuccess"));
+      window.clearTimeout(copyButtonTimer);
+      copyWxBtn.disabled = true;
+      copyWxBtn.setAttribute("aria-busy", "true");
+
+      const copied = await copyText(value);
+      copyWxBtn.disabled = false;
+      copyWxBtn.removeAttribute("aria-busy");
+
+      if (!copied) {
+        copyWxBtn.classList.remove("is-success");
+        copyWxLabel.textContent = t("copyWechat");
+        setCopyTip(t("copyFailure", { value }), "error");
+        return;
       }
+
+      copyWxBtn.classList.add("is-success");
+      copyWxLabel.textContent = t("copyWechatDone");
+      setCopyTip(t("copySuccess", { value }), "success");
+      copyButtonTimer = window.setTimeout(() => {
+        copyWxBtn.classList.remove("is-success");
+        copyWxLabel.textContent = t("copyWechat");
+      }, 2200);
     }
 
     function getApiBase() {
