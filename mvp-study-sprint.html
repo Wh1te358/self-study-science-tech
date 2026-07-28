@@ -327,6 +327,256 @@
       gap: 0;
     }
 
+    .workspace-shell {
+      width: 100%;
+      margin: 0;
+      display: block;
+    }
+
+    .subject-menu-toggle {
+      display: block;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--text);
+      box-shadow: none;
+    }
+    .subject-menu-toggle:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .subject-menu-toggle span,
+    .subject-menu-toggle::before,
+    .subject-menu-toggle::after {
+      display: block;
+      width: 18px;
+      height: 2px;
+      margin: 0 auto;
+      border-radius: 999px;
+      background: currentColor;
+      content: "";
+    }
+    .subject-menu-toggle span { margin-block: 4px; }
+
+    .subject-sidebar {
+      position: fixed;
+      top: 68px;
+      bottom: 0;
+      left: 0;
+      width: min(292px, calc(100vw - 48px));
+      height: auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 18px;
+      border-right: 1px solid var(--line);
+      background: color-mix(in srgb, var(--bg) 90%, transparent);
+      backdrop-filter: blur(22px) saturate(135%);
+      overflow-y: auto;
+      transform: translateX(-104%);
+      transition: transform 220ms cubic-bezier(.22, 1, .36, 1);
+      box-shadow: 12px 0 36px rgba(6, 12, 28, 0.18);
+      z-index: 20;
+    }
+    body.sidebar-open { overflow: hidden; }
+    body.sidebar-open .subject-sidebar { transform: translateX(0); }
+    .subject-sidebar-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .subject-sidebar-title {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+    .subject-count {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+    }
+    .new-subject {
+      width: 100%;
+      min-height: 44px;
+      margin-bottom: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 760;
+    }
+    .calendar-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      min-height: 44px;
+      margin-bottom: 18px;
+      padding: 10px 12px;
+      border-color: var(--line);
+      border-radius: 12px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 760;
+      text-align: left;
+      box-shadow: none;
+    }
+    .calendar-nav:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+      transform: none;
+    }
+    .calendar-conflict-badge {
+      min-width: 22px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--signal) 13%, transparent);
+      color: var(--signal);
+      font-size: 10px;
+      font-weight: 850;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+    .calendar-conflict-badge.has-conflict {
+      background: color-mix(in srgb, #d84343 13%, transparent);
+      color: #c2352a;
+    }
+    body[data-theme="dark"] .calendar-conflict-badge.has-conflict { color: #ff8e84; }
+    .subject-list {
+      display: grid;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .subject-item {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 4px;
+      align-items: center;
+      padding: 7px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+    }
+    .subject-item.is-active {
+      border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+      background: var(--accent-soft);
+    }
+    .subject-select {
+      min-width: 0;
+      display: grid;
+      gap: 4px;
+      padding: 7px 6px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text);
+      text-align: left;
+      box-shadow: none;
+    }
+    .subject-select:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--accent) 7%, transparent);
+      transform: none;
+    }
+    .subject-name {
+      overflow: hidden;
+      font-size: 13px;
+      font-weight: 760;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .subject-date {
+      color: var(--muted);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+    .subject-actions {
+      display: flex;
+      gap: 2px;
+    }
+    .subject-action {
+      width: 30px;
+      min-width: 30px;
+      height: 30px;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 15px;
+      box-shadow: none;
+    }
+    .subject-action:hover:not(:disabled) {
+      background: var(--input-bg);
+      color: var(--text);
+      transform: none;
+    }
+    .subject-action.delete:hover:not(:disabled) { color: #c2352a; }
+    .subject-rename-form {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 4px;
+      padding: 3px;
+    }
+    .subject-rename-input {
+      min-width: 0;
+      height: 38px;
+      padding: 8px 10px;
+      border-radius: 9px;
+      font-size: 13px;
+    }
+    .subject-rename-form button {
+      width: auto;
+      min-width: 42px;
+      height: 38px;
+      padding: 7px 9px;
+      border-radius: 9px;
+      font-size: 11px;
+      box-shadow: none;
+    }
+    .subject-empty {
+      margin: 10px 4px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .subject-storage-note {
+      margin: auto 4px 0;
+      padding-top: 18px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .sidebar-backdrop {
+      position: fixed;
+      inset: 68px 0 0;
+      display: block;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+      background: rgba(3, 6, 13, 0.52);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+      z-index: 19;
+    }
+    body.sidebar-open .sidebar-backdrop {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
     .launch-shell {
       display: grid;
       grid-template-columns: minmax(260px, 4fr) minmax(0, 8fr);
@@ -604,6 +854,318 @@
     li::marker { color: var(--accent); }
     .export-status { min-height: 18px; margin: 14px 0 0; color: var(--muted); font-size: 12px; text-align: right; }
 
+    .hits-card,
+    .todo-card {
+      grid-column: 1 / -1;
+      min-height: 0;
+    }
+    .todo-progress {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+    }
+    .todo-list {
+      display: grid;
+      gap: 8px;
+    }
+    .todo-row {
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr) auto;
+      gap: 11px;
+      align-items: center;
+      min-height: 52px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+    }
+    .todo-row:last-child { border-bottom: 0; }
+    .todo-checkbox {
+      width: 20px;
+      height: 20px;
+      margin: 0;
+      padding: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .todo-copy {
+      min-width: 0;
+      display: grid;
+      gap: 3px;
+    }
+    .todo-title {
+      color: var(--list-text);
+      font-size: 14px;
+      font-weight: 650;
+      line-height: 1.45;
+    }
+    .todo-index {
+      color: var(--muted);
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+    }
+    .todo-duration {
+      color: var(--muted);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .todo-row.is-complete .todo-title {
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-thickness: 1px;
+    }
+    .todo-row.is-complete .todo-duration { color: var(--signal); }
+    .todo-empty {
+      margin: 0;
+      padding: 14px 0 2px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .calendar-stage { overflow: hidden; }
+    .calendar-stage .section-head { margin-bottom: 18px; }
+    .calendar-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 0 16px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .calendar-week-controls {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .calendar-week-controls button {
+      width: auto;
+      min-width: 42px;
+      min-height: 40px;
+      padding: 8px 11px;
+      border-radius: 10px;
+      background: var(--input-bg);
+      color: var(--text);
+      box-shadow: none;
+    }
+    .calendar-week-controls button:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: none;
+    }
+    .calendar-week-label {
+      min-width: 168px;
+      margin: 0 5px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 780;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+    .calendar-capacity {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 760;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .calendar-capacity input {
+      width: 72px;
+      min-height: 40px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .calendar-summary {
+      min-height: 20px;
+      margin: 14px 0 0;
+      color: var(--signal);
+      font-size: 12px;
+      font-weight: 720;
+    }
+    .calendar-summary.has-conflict { color: #c2352a; }
+    body[data-theme="dark"] .calendar-summary.has-conflict { color: #ff8e84; }
+    .calendar-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      margin: 14px 0;
+      padding: 0;
+      list-style: none;
+    }
+    .calendar-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .calendar-legend-dot {
+      width: 8px;
+      height: 8px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--subject-color);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--subject-color) 15%, transparent);
+    }
+    .calendar-scroll {
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      scrollbar-width: thin;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(136px, 1fr));
+      min-width: 980px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--input-bg);
+    }
+    .calendar-day {
+      min-height: 236px;
+      padding: 12px 10px 14px;
+      border-right: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel-solid) 66%, transparent);
+      transition: background 150ms ease, box-shadow 150ms ease;
+    }
+    .calendar-day:last-child { border-right: 0; }
+    .calendar-day.is-today { background: color-mix(in srgb, var(--accent) 6%, var(--panel-solid)); }
+    .calendar-day.has-conflict {
+      background: color-mix(in srgb, #d84343 7%, var(--panel-solid));
+      box-shadow: inset 0 3px 0 #d84343;
+    }
+    .calendar-day.is-drop-target {
+      background: color-mix(in srgb, var(--accent) 12%, var(--panel-solid));
+      box-shadow: inset 0 0 0 2px var(--accent);
+    }
+    .calendar-day.is-drop-invalid {
+      background: color-mix(in srgb, #d84343 10%, var(--panel-solid));
+      box-shadow: inset 0 0 0 2px #d84343;
+    }
+    .calendar-day-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 43px;
+      margin-bottom: 10px;
+    }
+    .calendar-day-name {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 820;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .calendar-day-date {
+      display: block;
+      margin-top: 3px;
+      color: var(--text);
+      font-size: 17px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+    .calendar-load {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 760;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .calendar-day.has-conflict .calendar-load { color: #c2352a; }
+    body[data-theme="dark"] .calendar-day.has-conflict .calendar-load { color: #ff8e84; }
+    .calendar-tasks {
+      display: grid;
+      gap: 7px;
+    }
+    .calendar-task {
+      width: 100%;
+      min-height: 50px;
+      display: grid;
+      gap: 4px;
+      padding: 9px 10px;
+      border: 1px solid color-mix(in srgb, var(--subject-color) 42%, var(--line));
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--subject-color) 9%, var(--panel-solid));
+      color: var(--text);
+      text-align: left;
+      cursor: grab;
+      touch-action: pan-y;
+      user-select: none;
+      -webkit-user-select: none;
+      box-shadow: none;
+    }
+    .calendar-task:hover:not(:disabled) {
+      border-color: var(--subject-color);
+      background: color-mix(in srgb, var(--subject-color) 14%, var(--panel-solid));
+      transform: none;
+    }
+    .calendar-task.is-pressing { box-shadow: inset 0 0 0 1px var(--subject-color); }
+    .calendar-task.is-dragging {
+      opacity: 0.3;
+      cursor: grabbing;
+    }
+    .calendar-task.is-complete { opacity: 0.58; }
+    .calendar-task-title {
+      overflow: hidden;
+      font-size: 11px;
+      font-weight: 740;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .calendar-task-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 720;
+    }
+    .calendar-empty {
+      grid-column: 1 / -1;
+      margin: 0;
+      padding: 28px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .calendar-hint {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .calendar-drag-ghost {
+      position: fixed;
+      z-index: 90;
+      width: 184px;
+      max-width: calc(100vw - 24px);
+      padding: 10px 12px;
+      border: 1px solid var(--subject-color);
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--subject-color) 14%, var(--panel-solid));
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 760;
+      line-height: 1.35;
+      pointer-events: none;
+      box-shadow: var(--shadow-soft);
+      transform: translate(12px, 12px) rotate(1deg);
+    }
+    body.calendar-drag-active { cursor: grabbing; user-select: none; }
+
     .feedback-stage {
       display: block;
       margin: 28px 0 0;
@@ -794,10 +1356,16 @@
       .feedback-route-actions { padding-top: 14px; }
       .feedback-action,
       .qr-disclosure summary { min-height: 48px; }
+      .todo-row { grid-template-columns: 22px minmax(0, 1fr); }
+      .todo-duration { grid-column: 2; }
+      .calendar-controls { align-items: flex-start; flex-direction: column; }
+      .calendar-capacity { width: 100%; justify-content: space-between; }
     }
 
     @media (max-width: 520px) {
       .topbar { min-height: 64px; padding: 0 12px; }
+      .subject-sidebar { top: 64px; }
+      .sidebar-backdrop { inset: 64px 0 0; }
       .brand-version { display: none; }
       .brand-lockup { font-size: 13px; }
       .top-controls { gap: 6px; }
@@ -816,6 +1384,9 @@
       }
       .feedback-action { width: 100%; }
       .qr-disclosure { display: none; }
+      .calendar-week-controls { width: 100%; }
+      .calendar-week-label { min-width: 0; flex: 1; }
+      .calendar-week-controls button { min-width: 44px; padding-inline: 9px; }
     }
 
     @media (forced-colors: active) {
@@ -831,6 +1402,14 @@
 <body>
   <header class="topbar">
     <div class="brand-lockup" aria-label="Finals OS">
+      <button
+        id="subjectMenuToggle"
+        class="subject-menu-toggle"
+        type="button"
+        aria-controls="subjectSidebar"
+        aria-expanded="false"
+        aria-label="打开科目菜单"
+      ><span aria-hidden="true"></span></button>
       <span class="brand-glyph" aria-hidden="true"></span>
       <span>FINALS / OS</span>
       <span class="brand-version">V1.0</span>
@@ -845,7 +1424,24 @@
     </div>
   </header>
 
-  <main class="app">
+  <div class="workspace-shell">
+    <aside class="subject-sidebar" id="subjectSidebar" aria-labelledby="subjectsTitle" aria-hidden="true" inert>
+      <div class="subject-sidebar-head">
+        <h2 class="subject-sidebar-title" id="subjectsTitle">科目</h2>
+        <span class="subject-count" id="subjectCount">0</span>
+      </div>
+      <button class="primary new-subject" id="newSubject" type="button">＋ 新建科目</button>
+      <button class="calendar-nav" id="openCalendar" type="button">
+        <span id="calendarNavLabel">日历检查</span>
+        <span class="calendar-conflict-badge" id="calendarConflictBadge" aria-label="0 个冲突">0</span>
+      </button>
+      <ul class="subject-list" id="subjectList"></ul>
+      <p class="subject-empty" id="subjectEmpty">生成第一份计划后，它会自动保存在这里。</p>
+      <p class="subject-storage-note" id="subjectStorageNote">只保存在当前浏览器，不会上传科目记录。</p>
+    </aside>
+    <button class="sidebar-backdrop" id="sidebarBackdrop" type="button" aria-label="关闭科目菜单"></button>
+
+    <main class="app">
     <div class="launch-shell">
       <section class="hero">
         <p class="eyebrow" id="heroEyebrow">EXAM SURVIVAL SYSTEM</p>
@@ -945,16 +1541,50 @@
           <div class="plan-card-head"><h3 class="panel-title" id="dropTitle">可放弃清单</h3><span class="plan-code">DROP / 03</span></div>
           <ul id="drop"></ul>
         </article>
-        <article class="plan-card">
-          <div class="plan-card-head"><h3 class="panel-title" id="scheduleTitle">复习安排</h3><span class="plan-code">EXEC / 06</span></div>
-          <ul id="schedule"></ul>
-        </article>
-        <article class="plan-card">
+        <article class="plan-card hits-card">
           <div class="plan-card-head"><h3 class="panel-title" id="hitsTitle">优先考点（10条）</h3><span class="plan-code">HITS / 10</span></div>
           <ul id="hits"></ul>
         </article>
+        <article class="plan-card todo-card">
+          <div class="plan-card-head">
+            <div><h3 class="panel-title" id="todoTitle">Todo</h3><span class="plan-code">TODO / 06</span></div>
+            <span class="todo-progress" id="todoProgress">0 / 0</span>
+          </div>
+          <div class="todo-list" id="todoList">
+            <p class="todo-empty" id="todoEmpty">生成计划后，复习安排会变成可勾选任务。</p>
+          </div>
+        </article>
       </div>
       <p class="export-status" id="exportStatus"></p>
+    </section>
+
+    <section class="stage calendar-stage" id="calendarSection" aria-labelledby="calendarTitle">
+      <div class="section-head">
+        <div class="section-index" aria-hidden="true">CAL</div>
+        <div>
+          <h2 class="section-title" id="calendarTitle">多科目日历检查</h2>
+          <p class="section-desc" id="calendarDesc">把所有科目的 Todo 放到同一条时间线上，自动找出每天总时长超载的位置。</p>
+        </div>
+      </div>
+      <div class="calendar-controls">
+        <div class="calendar-week-controls" aria-label="周导航">
+          <button class="ghost" id="previousWeek" type="button" aria-label="上一周">←</button>
+          <button class="ghost" id="currentWeek" type="button">本周</button>
+          <p class="calendar-week-label" id="calendarWeekLabel"></p>
+          <button class="ghost" id="nextWeek" type="button" aria-label="下一周">→</button>
+        </div>
+        <label class="calendar-capacity" for="calendarDailyCapacity">
+          <span id="calendarCapacityLabel">每日总可用时间</span>
+          <input id="calendarDailyCapacity" type="number" min="1" max="20" step="0.5" inputmode="decimal" value="8">
+          <span id="calendarCapacityUnit">小时</span>
+        </label>
+      </div>
+      <p class="calendar-summary" id="calendarSummary" aria-live="polite"></p>
+      <ul class="calendar-legend" id="calendarLegend" aria-label="科目颜色"></ul>
+      <div class="calendar-scroll">
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+      <p class="calendar-hint" id="calendarDragHint">鼠标可直接拖动；触屏长按约 0.45 秒后拖到同周其他日期。松手后会立即保存并重新检查冲突。</p>
     </section>
 
     <section class="stage feedback-stage" aria-labelledby="feedbackHeading">
@@ -1009,7 +1639,8 @@
         </article>
       </div>
     </section>
-  </main>
+    </main>
+  </div>
 
   <script>
     const now = new Date();
@@ -1038,10 +1669,33 @@
     const analysisPanel = document.getElementById("analysisPanel");
     const analysisDetail = document.getElementById("analysisDetail");
     const resultSection = document.getElementById("resultSection");
+    const subjectMenuToggle = document.getElementById("subjectMenuToggle");
+    const subjectSidebar = document.getElementById("subjectSidebar");
+    const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+    const newSubjectBtn = document.getElementById("newSubject");
+    const subjectList = document.getElementById("subjectList");
+    const subjectEmpty = document.getElementById("subjectEmpty");
+    const subjectCount = document.getElementById("subjectCount");
+    const todoList = document.getElementById("todoList");
+    const todoProgress = document.getElementById("todoProgress");
+    const openCalendarBtn = document.getElementById("openCalendar");
+    const calendarSection = document.getElementById("calendarSection");
+    const calendarConflictBadge = document.getElementById("calendarConflictBadge");
+    const calendarWeekLabel = document.getElementById("calendarWeekLabel");
+    const calendarDailyCapacity = document.getElementById("calendarDailyCapacity");
+    const calendarSummary = document.getElementById("calendarSummary");
+    const calendarLegend = document.getElementById("calendarLegend");
+    const calendarGrid = document.getElementById("calendarGrid");
+    const previousWeekBtn = document.getElementById("previousWeek");
+    const currentWeekBtn = document.getElementById("currentWeek");
+    const nextWeekBtn = document.getElementById("nextWeek");
     let currentLanguage = "zh";
     let hasGeneratedPlan = false;
     let lastHealth = null;
     let lastPlan = null;
+    let subjects = [];
+    let activeSubjectId = null;
+    let editingSubjectId = null;
     let analysisTimer = null;
     let exportTimer = null;
     let copyTipTimer = null;
@@ -1050,8 +1704,15 @@
     let generationTimeout = null;
     let requestTimedOut = false;
     let isGenerating = false;
+    let calendarWeekStart = "";
+    let calendarSettings = { dailyCapacityHours: 8 };
+    let calendarDragState = null;
     const touchedFields = new Set();
     const DRAFT_KEY = "study-sprint-draft-v1";
+    const SUBJECTS_KEY = "finals-os-subjects-v1";
+    const CALENDAR_SETTINGS_KEY = "finals-os-calendar-settings-v1";
+    const SUBJECT_COLORS = ["#176bff", "#6d4aff", "#00a67e", "#e68019", "#d6538a", "#2b9bbd"];
+    const LONG_PRESS_MS = 450;
     const REQUEST_TIMEOUT_MS = 90000;
 
     const translations = {
@@ -1092,7 +1753,53 @@
         emptySummary: "填完上方 5 项，然后点击“生成复习计划”。",
         mustTitle: "必拿分模块",
         dropTitle: "可放弃清单",
-        scheduleTitle: "复习安排",
+        todoTitle: "Todo",
+        todoEmpty: "生成计划后，复习安排会变成可勾选任务。",
+        subjectsTitle: "科目",
+        newSubject: "＋ 新建科目",
+        calendarNav: "日历检查",
+        calendarTitle: "多科目日历检查",
+        calendarDesc: "把所有科目的 Todo 放到同一条时间线上，自动找出每天总时长超载的位置。",
+        previousWeek: "上一周",
+        currentWeek: "本周",
+        nextWeek: "下一周",
+        calendarWeekNav: "周导航",
+        calendarCapacity: "每日总可用时间",
+        calendarCapacityUnit: "小时",
+        calendarNoSubjects: "还没有可检查的科目。先生成至少一份复习计划。",
+        calendarNoTasks: "这一周没有任务。使用左右箭头检查其他周。",
+        calendarNoConflict: "当前排期没有发现时间冲突。",
+        calendarConflictSummary: "发现 {count} 个超载日，最严重的一天超出 {duration}。",
+        calendarConflictDay: "天",
+        calendarConflictDays: "天",
+        calendarConflictBadge: "{count} 个时间冲突",
+        calendarOverBy: "超出 {duration}",
+        calendarDragHint: "鼠标可直接拖动；触屏长按约 0.45 秒后拖到同周其他日期。松手后会立即保存并重新检查冲突。",
+        calendarMoveInvalid: "不能把任务移到该科目的考试日或考试之后。",
+        calendarMoved: "已把“{title}”移到 {date}，冲突检查已更新。",
+        calendarTaskAria: "{subject}：{title}，{duration}，安排在 {date}。鼠标拖动或触屏长按可改期。",
+        calendarToday: "今天",
+        calendarUnscheduled: "待排期",
+        calendarSubjectLegend: "科目颜色",
+        calendarCapacityAria: "每天所有科目合计可用小时数",
+        calendarCapacityInvalid: "每日总可用时间必须在 1–20 小时之间。",
+        calendarDayNames: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
+        subjectsEmpty: "生成第一份计划后，它会自动保存在这里。",
+        subjectStorageNote: "只保存在当前浏览器，不会上传科目记录。",
+        openSubjectMenu: "打开科目菜单",
+        closeSubjectMenu: "关闭科目菜单",
+        renameSubject: "重命名科目",
+        deleteSubject: "删除科目",
+        saveRename: "保存",
+        cancelRename: "取消",
+        deleteSubjectConfirm: "删除“{name}”及其 Todo？此操作无法撤销。",
+        subjectSaved: "计划已生成，并保存到科目库。",
+        subjectStorageFailed: "无法保存科目。请检查浏览器是否允许本地存储。",
+        subjectRenamed: "科目已重命名。",
+        subjectDeleted: "科目及其 Todo 已删除。",
+        todoItemAria: "将“{title}”标记为{state}",
+        todoCompleteState: "未完成",
+        todoIncompleteState: "完成",
         hitsTitle: "优先考点（10条）",
         feedbackHeading: "遇到问题，直接告诉我",
         feedbackDescription: "选择最适合的方式反馈，我会用它继续改进。",
@@ -1116,7 +1823,7 @@
         apiCallFailed: "生成失败（错误 {status}）。请稍后重试；你的输入已保留。",
         emptyBackend: "生成服务没有返回计划，请重试。",
         requestingModel: "正在生成计划，通常需要 10–60 秒…",
-        generationSuccess: "计划已生成，可复制或下载。",
+        generationSuccess: "计划已生成，并保存到科目库。",
         fetchFailed: "无法连接生成服务。请刷新页面后重试；本地预览还需确认 server.py 已启动。",
         wrongService: "连接到了错误的本地服务。请释放 8010 端口，再启动本项目的 server.py。",
         authRequired: "生成服务要求访问口令。请在 .env 设置 REQUIRE_APP_TOKEN=false 后重启 server.py。",
@@ -1177,7 +1884,53 @@
         emptySummary: "Complete the five inputs above, then select “Generate study plan.”",
         mustTitle: "High-yield modules",
         dropTitle: "Skip list",
-        scheduleTitle: "Study schedule",
+        todoTitle: "Todo",
+        todoEmpty: "Generate a plan to turn the schedule into checkable tasks.",
+        subjectsTitle: "Subjects",
+        newSubject: "+ New subject",
+        calendarNav: "Calendar check",
+        calendarTitle: "Multi-subject calendar",
+        calendarDesc: "Put every subject's Todos on one timeline and flag days whose combined workload exceeds your capacity.",
+        previousWeek: "Previous week",
+        currentWeek: "This week",
+        nextWeek: "Next week",
+        calendarWeekNav: "Week navigation",
+        calendarCapacity: "Total daily capacity",
+        calendarCapacityUnit: "hours",
+        calendarNoSubjects: "There are no subjects to check yet. Generate at least one study plan.",
+        calendarNoTasks: "No tasks are scheduled this week. Use the arrows to check another week.",
+        calendarNoConflict: "No time conflicts found in the current schedule.",
+        calendarConflictSummary: "{count} overloaded {countLabel}; the worst day exceeds capacity by {duration}.",
+        calendarConflictDay: "day",
+        calendarConflictDays: "days",
+        calendarConflictBadge: "{count} time conflicts",
+        calendarOverBy: "{duration} over",
+        calendarDragHint: "Drag with a mouse, or press and hold for about 0.45 seconds on touch, then move the task within this week. Changes save instantly.",
+        calendarMoveInvalid: "A task cannot be moved to its subject's exam date or later.",
+        calendarMoved: "Moved “{title}” to {date}. Conflict check updated.",
+        calendarTaskAria: "{subject}: {title}, {duration}, scheduled for {date}. Drag with a mouse or press and hold on touch to reschedule.",
+        calendarToday: "Today",
+        calendarUnscheduled: "Unscheduled",
+        calendarSubjectLegend: "Subject colors",
+        calendarCapacityAria: "Total available hours per day across all subjects",
+        calendarCapacityInvalid: "Total daily capacity must be between 1 and 20 hours.",
+        calendarDayNames: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        subjectsEmpty: "Generate your first plan. It will be saved here automatically.",
+        subjectStorageNote: "Saved only in this browser. Subject records are not uploaded.",
+        openSubjectMenu: "Open subject menu",
+        closeSubjectMenu: "Close subject menu",
+        renameSubject: "Rename subject",
+        deleteSubject: "Delete subject",
+        saveRename: "Save",
+        cancelRename: "Cancel",
+        deleteSubjectConfirm: "Delete “{name}” and its Todos? This cannot be undone.",
+        subjectSaved: "Plan generated and saved to the subject library.",
+        subjectStorageFailed: "The subject could not be saved. Check whether browser storage is available.",
+        subjectRenamed: "Subject renamed.",
+        subjectDeleted: "Subject and its Todos deleted.",
+        todoItemAria: "Mark “{title}” as {state}",
+        todoCompleteState: "incomplete",
+        todoIncompleteState: "complete",
         hitsTitle: "Priority topics (10)",
         feedbackHeading: "Found a problem? Tell me.",
         feedbackDescription: "Choose the route that fits. Your feedback will shape the next iteration.",
@@ -1201,7 +1954,7 @@
         apiCallFailed: "Generation failed (error {status}). Try again; your inputs are saved.",
         emptyBackend: "The generation service returned no plan. Try again.",
         requestingModel: "Generating your plan. This usually takes 10–60 seconds…",
-        generationSuccess: "Plan ready. Copy it or download it.",
+        generationSuccess: "Plan generated and saved to the subject library.",
         fetchFailed: "The generation service is unreachable. Refresh and try again; for local preview, confirm that server.py is running.",
         wrongService: "Port 8010 is running the wrong local service. Free the port, then start this project's server.py.",
         authRequired: "The generation service requires an access token. Set REQUIRE_APP_TOKEN=false in .env, then restart server.py.",
@@ -1252,8 +2005,19 @@
       downloadPlan: "downloadPlan",
       mustTitle: "mustTitle",
       dropTitle: "dropTitle",
-      scheduleTitle: "scheduleTitle",
+      todoTitle: "todoTitle",
       hitsTitle: "hitsTitle",
+      subjectsTitle: "subjectsTitle",
+      newSubject: "newSubject",
+      calendarNavLabel: "calendarNav",
+      calendarTitle: "calendarTitle",
+      calendarDesc: "calendarDesc",
+      currentWeek: "currentWeek",
+      calendarCapacityLabel: "calendarCapacity",
+      calendarCapacityUnit: "calendarCapacityUnit",
+      calendarDragHint: "calendarDragHint",
+      subjectEmpty: "subjectsEmpty",
+      subjectStorageNote: "subjectStorageNote",
       feedbackHeading: "feedbackHeading",
       feedbackDescription: "feedbackDescription",
       feedbackFormTitle: "feedbackFormTitle",
@@ -1293,6 +2057,826 @@
       return `${year}-${month}-${day}`;
     }
 
+    function parseLocalDate(value) {
+      const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!match) return null;
+      const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+      return toLocalDateValue(date) === value ? date : null;
+    }
+
+    function addDaysToDateValue(value, days) {
+      const date = parseLocalDate(value) || new Date();
+      date.setDate(date.getDate() + Number(days || 0));
+      return toLocalDateValue(date);
+    }
+
+    function getWeekStartValue(value = toLocalDateValue(new Date())) {
+      const date = parseLocalDate(value) || new Date();
+      const day = date.getDay();
+      date.setDate(date.getDate() - (day === 0 ? 6 : day - 1));
+      return toLocalDateValue(date);
+    }
+
+    function isValidDateValue(value) {
+      return Boolean(parseLocalDate(value));
+    }
+
+    function createLocalId(prefix) {
+      if (window.crypto?.randomUUID) return `${prefix}-${window.crypto.randomUUID()}`;
+      return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function normalizeTask(task, index) {
+      const source = task && typeof task === "object" ? task : { title: String(task || "") };
+      const duration = Number(source.durationMinutes ?? source.duration_minutes ?? 0);
+      return {
+        id: typeof source.id === "string" && source.id ? source.id : createLocalId(`task-${index + 1}`),
+        title: String(source.title || "").trim(),
+        durationMinutes: Number.isFinite(duration) && duration > 0 ? Math.round(duration) : 60,
+        completed: Boolean(source.completed),
+        scheduledDate: isValidDateValue(source.scheduledDate) ? source.scheduledDate : ""
+      };
+    }
+
+    function normalizePlan(plan) {
+      const source = plan && typeof plan === "object" ? plan : {};
+      const rawTasks = Array.isArray(source.tasks)
+        ? source.tasks
+        : (Array.isArray(source.schedule) ? source.schedule : []);
+      return {
+        headline: String(source.headline || ""),
+        summary: String(source.summary || ""),
+        must: Array.isArray(source.must) ? source.must.map(String) : [],
+        drop: Array.isArray(source.drop) ? source.drop.map(String) : [],
+        tasks: rawTasks.map(normalizeTask).filter((task) => task.title),
+        hits: Array.isArray(source.hits) ? source.hits.map(String) : []
+      };
+    }
+
+    function normalizeSubjectRecord(record, index = 0) {
+      if (!record || typeof record !== "object") return null;
+      const name = String(record.name || record.inputs?.course || "").trim();
+      if (!name || !record.plan) return null;
+      const storedColor = typeof record.color === "string" && /^#[0-9a-f]{6}$/i.test(record.color)
+        ? record.color
+        : SUBJECT_COLORS[index % SUBJECT_COLORS.length];
+      return {
+        id: typeof record.id === "string" && record.id ? record.id : createLocalId("subject"),
+        name,
+        color: storedColor,
+        examDate: String(record.examDate || record.inputs?.date || ""),
+        inputs: {
+          course: String(record.inputs?.course || name),
+          date: String(record.inputs?.date || record.examDate || ""),
+          hours: String(record.inputs?.hours ?? "8"),
+          goal: String(record.inputs?.goal ?? "80"),
+          keywords: String(record.inputs?.keywords || "")
+        },
+        plan: normalizePlan(record.plan),
+        scheduleVersion: Number(record.scheduleVersion) >= 3 ? 3 : (Number(record.scheduleVersion) >= 2 ? 2 : 1),
+        createdAt: String(record.createdAt || new Date().toISOString()),
+        updatedAt: String(record.updatedAt || record.createdAt || new Date().toISOString())
+      };
+    }
+
+    function loadSubjectStore() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(SUBJECTS_KEY) || "[]");
+        subjects = Array.isArray(raw) ? raw.map(normalizeSubjectRecord).filter(Boolean) : [];
+      } catch {
+        subjects = [];
+      }
+    }
+
+    function saveSubjectStore() {
+      try {
+        localStorage.setItem(SUBJECTS_KEY, JSON.stringify(subjects));
+      } catch {
+        setExportStatus(t("subjectStorageFailed"));
+      }
+    }
+
+    function loadCalendarSettings() {
+      const inferredHours = subjects.reduce((maximum, subject) => {
+        const hours = Number(subject.inputs?.hours);
+        return Number.isFinite(hours) ? Math.max(maximum, hours) : maximum;
+      }, 0) || 8;
+      try {
+        const stored = JSON.parse(localStorage.getItem(CALENDAR_SETTINGS_KEY) || "null");
+        const value = Number(stored?.dailyCapacityHours);
+        calendarSettings.dailyCapacityHours = Number.isFinite(value) && value >= 1 && value <= 20
+          ? value
+          : inferredHours;
+      } catch {
+        calendarSettings.dailyCapacityHours = inferredHours;
+      }
+      calendarDailyCapacity.value = String(calendarSettings.dailyCapacityHours);
+    }
+
+    function saveCalendarSettings() {
+      try {
+        localStorage.setItem(CALENDAR_SETTINGS_KEY, JSON.stringify(calendarSettings));
+      } catch {
+        setExportStatus(t("subjectStorageFailed"));
+      }
+    }
+
+    function getSubjectScheduleDates(subject) {
+      const todayValue = toLocalDateValue(new Date());
+      const examDate = parseLocalDate(subject.examDate || subject.inputs?.date);
+      const dates = [];
+      let cursor = parseLocalDate(todayValue);
+      if (examDate && cursor < examDate) {
+        while (cursor < examDate) {
+          dates.push(toLocalDateValue(cursor));
+          cursor.setDate(cursor.getDate() + 1);
+        }
+      }
+      return dates.length ? dates : [todayValue];
+    }
+
+    function ensureSubjectTaskSchedule(subject) {
+      const tasks = Array.isArray(subject.plan?.tasks) ? subject.plan.tasks : [];
+      if (!tasks.length) return false;
+      const dates = getSubjectScheduleDates(subject);
+      const dailyLimit = Math.max(60, Math.round((Number(subject.inputs?.hours) || 8) * 60));
+      const needsBalancedMigration = subject.scheduleVersion < 3 && dates.length > 1 && tasks.length > 1;
+      if (needsBalancedMigration) {
+        tasks.forEach((task) => {
+          task.scheduledDate = "";
+        });
+      }
+
+      const loads = new Map(dates.map((date) => [date, 0]));
+      const taskCounts = new Map(dates.map((date) => [date, 0]));
+      tasks.forEach((task) => {
+        if (isValidDateValue(task.scheduledDate) && loads.has(task.scheduledDate)) {
+          loads.set(task.scheduledDate, loads.get(task.scheduledDate) + task.durationMinutes);
+          taskCounts.set(task.scheduledDate, taskCounts.get(task.scheduledDate) + 1);
+        }
+      });
+
+      let changed = needsBalancedMigration;
+      tasks.forEach((task) => {
+        if (isValidDateValue(task.scheduledDate)) return;
+        const duration = Number(task.durationMinutes) || 60;
+        const datesWithinLimit = dates.filter((date) => loads.get(date) + duration <= dailyLimit);
+        const candidates = datesWithinLimit.length ? datesWithinLimit : dates;
+        const target = candidates.reduce((best, date) => {
+          const loadDifference = loads.get(date) - loads.get(best);
+          if (loadDifference < 0) return date;
+          if (loadDifference === 0 && taskCounts.get(date) < taskCounts.get(best)) return date;
+          return best;
+        }, candidates[0]);
+        task.scheduledDate = target;
+        loads.set(target, loads.get(target) + duration);
+        taskCounts.set(target, taskCounts.get(target) + 1);
+        changed = true;
+      });
+      if (subject.scheduleVersion < 3) {
+        subject.scheduleVersion = 3;
+        changed = true;
+      }
+      return changed;
+    }
+
+    function setSidebarOpen(open) {
+      const shouldOpen = Boolean(open);
+      body.classList.toggle("sidebar-open", shouldOpen);
+      subjectMenuToggle.setAttribute("aria-expanded", String(shouldOpen));
+      subjectMenuToggle.setAttribute("aria-label", t(shouldOpen ? "closeSubjectMenu" : "openSubjectMenu"));
+      subjectSidebar.setAttribute("aria-hidden", String(!shouldOpen));
+      if (shouldOpen) {
+        subjectSidebar.removeAttribute("inert");
+      } else {
+        subjectSidebar.setAttribute("inert", "");
+      }
+    }
+
+    function collectCurrentInputs() {
+      return {
+        course: courseInput.value.trim(),
+        date: dateInput.value,
+        hours: hoursInput.value,
+        goal: goalInput.value,
+        keywords: keywordsInput.value.trim()
+      };
+    }
+
+    function renderSubjectList() {
+      subjectList.replaceChildren();
+      subjectCount.textContent = String(subjects.length);
+      subjectEmpty.hidden = subjects.length > 0;
+
+      subjects.forEach((subject) => {
+        const item = document.createElement("li");
+        item.className = `subject-item${subject.id === activeSubjectId ? " is-active" : ""}`;
+
+        if (editingSubjectId === subject.id) {
+          const form = document.createElement("form");
+          form.className = "subject-rename-form";
+          const input = document.createElement("input");
+          input.className = "subject-rename-input";
+          input.type = "text";
+          input.value = subject.name;
+          input.maxLength = 80;
+          input.required = true;
+          input.setAttribute("aria-label", t("renameSubject"));
+
+          const save = document.createElement("button");
+          save.className = "primary";
+          save.type = "submit";
+          save.textContent = t("saveRename");
+
+          const cancel = document.createElement("button");
+          cancel.className = "ghost";
+          cancel.type = "button";
+          cancel.textContent = t("cancelRename");
+          cancel.addEventListener("click", () => {
+            editingSubjectId = null;
+            renderSubjectList();
+          });
+
+          form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const nextName = input.value.trim();
+            if (!nextName || nextName.length > 80) {
+              input.focus();
+              return;
+            }
+            subject.name = nextName;
+            subject.inputs.course = nextName;
+            subject.updatedAt = new Date().toISOString();
+            if (subject.id === activeSubjectId) courseInput.value = nextName;
+            editingSubjectId = null;
+            saveSubjectStore();
+            saveDraft();
+            renderSubjectList();
+            renderCalendar();
+            setExportStatus(t("subjectRenamed"));
+          });
+
+          form.append(input, save, cancel);
+          item.appendChild(form);
+          subjectList.appendChild(item);
+          window.setTimeout(() => {
+            input.focus();
+            input.select();
+          }, 0);
+          return;
+        }
+
+        const select = document.createElement("button");
+        select.className = "subject-select";
+        select.type = "button";
+        select.setAttribute("aria-current", subject.id === activeSubjectId ? "page" : "false");
+        const name = document.createElement("span");
+        name.className = "subject-name";
+        name.textContent = subject.name;
+        const date = document.createElement("span");
+        date.className = "subject-date";
+        date.textContent = subject.examDate || "—";
+        select.append(name, date);
+        select.addEventListener("click", () => selectSubject(subject.id));
+
+        const actions = document.createElement("div");
+        actions.className = "subject-actions";
+        const rename = document.createElement("button");
+        rename.className = "subject-action";
+        rename.type = "button";
+        rename.textContent = "✎";
+        rename.setAttribute("aria-label", `${t("renameSubject")}：${subject.name}`);
+        rename.addEventListener("click", () => {
+          editingSubjectId = subject.id;
+          renderSubjectList();
+        });
+        const remove = document.createElement("button");
+        remove.className = "subject-action delete";
+        remove.type = "button";
+        remove.textContent = "×";
+        remove.setAttribute("aria-label", `${t("deleteSubject")}：${subject.name}`);
+        remove.addEventListener("click", () => deleteSubject(subject.id));
+        actions.append(rename, remove);
+
+        item.append(select, actions);
+        subjectList.appendChild(item);
+      });
+    }
+
+    function clearPlanState() {
+      lastPlan = null;
+      hasGeneratedPlan = false;
+      document.getElementById("headline").textContent = t("emptyHeadline");
+      document.getElementById("summary").textContent = t("emptySummary");
+      listToUl("must", []);
+      listToUl("drop", []);
+      listToUl("hits", []);
+      renderTodoList();
+      copyPlanBtn.disabled = true;
+      downloadPlanBtn.disabled = true;
+      resultSection.classList.remove("has-plan");
+    }
+
+    function startNewSubject() {
+      activeSubjectId = null;
+      editingSubjectId = null;
+      try {
+        localStorage.removeItem("finals-os-active-subject-v1");
+      } catch {
+        // The unsaved form still works without persistent storage.
+      }
+      courseInput.value = "";
+      dateInput.value = toLocalDateValue(defaultDate);
+      hoursInput.value = "8";
+      goalInput.value = "80";
+      keywordsInput.value = "";
+      touchedFields.clear();
+      validationSummary.textContent = "";
+      clearPlanState();
+      renderSubjectList();
+      updateMetrics();
+      saveDraft();
+      setSidebarOpen(false);
+      courseInput.focus();
+    }
+
+    function selectSubject(id) {
+      const subject = subjects.find((item) => item.id === id);
+      if (!subject) return;
+      activeSubjectId = subject.id;
+      editingSubjectId = null;
+      courseInput.value = subject.inputs.course;
+      dateInput.value = subject.inputs.date || subject.examDate;
+      hoursInput.value = subject.inputs.hours;
+      goalInput.value = subject.inputs.goal;
+      keywordsInput.value = subject.inputs.keywords;
+      touchedFields.clear();
+      validationSummary.textContent = "";
+      applyPlan(subject.plan, { scroll: false });
+      renderSubjectList();
+      updateMetrics();
+      saveDraft();
+      try {
+        localStorage.setItem("finals-os-active-subject-v1", activeSubjectId);
+      } catch {
+        // Active selection is optional persistence.
+      }
+      setSidebarOpen(false);
+    }
+
+    function deleteSubject(id) {
+      const subject = subjects.find((item) => item.id === id);
+      if (!subject || !window.confirm(t("deleteSubjectConfirm", { name: subject.name }))) return;
+      subjects = subjects.filter((item) => item.id !== id);
+      saveSubjectStore();
+      editingSubjectId = null;
+      if (activeSubjectId === id) {
+        if (subjects.length) {
+          selectSubject(subjects[0].id);
+        } else {
+          startNewSubject();
+        }
+      } else {
+        renderSubjectList();
+      }
+      renderCalendar();
+      setExportStatus(t("subjectDeleted"));
+    }
+
+    function saveGeneratedSubject() {
+      const inputs = collectCurrentInputs();
+      const timestamp = new Date().toISOString();
+      let subject = subjects.find((item) => item.id === activeSubjectId);
+      if (!subject) {
+        subject = {
+          id: createLocalId("subject"),
+          name: inputs.course,
+          color: SUBJECT_COLORS[subjects.length % SUBJECT_COLORS.length],
+          examDate: inputs.date,
+          inputs,
+          plan: lastPlan,
+          scheduleVersion: 3,
+          createdAt: timestamp,
+          updatedAt: timestamp
+        };
+        subjects.unshift(subject);
+        activeSubjectId = subject.id;
+      } else {
+        subject.name = inputs.course;
+        subject.examDate = inputs.date;
+        subject.inputs = inputs;
+        subject.plan = lastPlan;
+        subject.updatedAt = timestamp;
+      }
+      ensureSubjectTaskSchedule(subject);
+      saveSubjectStore();
+      renderSubjectList();
+      renderTodoList();
+      renderCalendar();
+      try {
+        localStorage.setItem("finals-os-active-subject-v1", activeSubjectId);
+      } catch {
+        // Active selection is optional persistence.
+      }
+    }
+
+    function persistActivePlan() {
+      const subject = subjects.find((item) => item.id === activeSubjectId);
+      if (!subject || !lastPlan) return;
+      subject.plan = lastPlan;
+      subject.updatedAt = new Date().toISOString();
+      saveSubjectStore();
+    }
+
+    function formatCompactMinutes(minutes) {
+      const total = Math.max(0, Math.round(Number(minutes) || 0));
+      const hours = Math.floor(total / 60);
+      const rest = total % 60;
+      if (currentLanguage === "en") {
+        return rest ? `${hours ? `${hours}h ` : ""}${rest}m` : `${hours}h`;
+      }
+      return rest ? `${hours ? `${hours}时` : ""}${rest}分` : `${hours}时`;
+    }
+
+    function formatCalendarDate(value, options = {}) {
+      const date = parseLocalDate(value);
+      if (!date) return value || "—";
+      const locale = currentLanguage === "en" ? "en-US" : "zh-CN";
+      return new Intl.DateTimeFormat(locale, options).format(date);
+    }
+
+    function getCalendarTaskEntries() {
+      return subjects.flatMap((subject) => {
+        const tasks = Array.isArray(subject.plan?.tasks) ? subject.plan.tasks : [];
+        return tasks
+          .filter((task) => isValidDateValue(task.scheduledDate))
+          .map((task) => ({ subject, task }));
+      });
+    }
+
+    function getCalendarLoadMap() {
+      const loads = new Map();
+      getCalendarTaskEntries().forEach(({ task }) => {
+        if (task.completed) return;
+        loads.set(task.scheduledDate, (loads.get(task.scheduledDate) || 0) + task.durationMinutes);
+      });
+      return loads;
+    }
+
+    function getCalendarConflicts(loads = getCalendarLoadMap()) {
+      const capacityMinutes = calendarSettings.dailyCapacityHours * 60;
+      const todayValue = toLocalDateValue(new Date());
+      return [...loads.entries()]
+        .filter(([date, minutes]) => date >= todayValue && minutes > capacityMinutes)
+        .map(([date, minutes]) => ({ date, minutes, excess: minutes - capacityMinutes }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    function renderCalendarLegend() {
+      calendarLegend.replaceChildren();
+      calendarLegend.setAttribute("aria-label", t("calendarSubjectLegend"));
+      subjects.forEach((subject) => {
+        const item = document.createElement("li");
+        item.className = "calendar-legend-item";
+        item.style.setProperty("--subject-color", subject.color);
+        const dot = document.createElement("span");
+        dot.className = "calendar-legend-dot";
+        dot.setAttribute("aria-hidden", "true");
+        const name = document.createElement("span");
+        name.textContent = subject.name;
+        item.append(dot, name);
+        calendarLegend.appendChild(item);
+      });
+    }
+
+    function renderCalendarStatus(loads) {
+      const conflicts = getCalendarConflicts(loads);
+      calendarConflictBadge.textContent = String(conflicts.length);
+      calendarConflictBadge.classList.toggle("has-conflict", conflicts.length > 0);
+      calendarConflictBadge.setAttribute("aria-label", t("calendarConflictBadge", { count: conflicts.length }));
+      calendarSummary.classList.toggle("has-conflict", conflicts.length > 0);
+      if (!subjects.length) {
+        calendarSummary.textContent = t("calendarNoSubjects");
+        return;
+      }
+      if (!conflicts.length) {
+        calendarSummary.textContent = t("calendarNoConflict");
+        return;
+      }
+      const worst = conflicts.reduce((maximum, conflict) => Math.max(maximum, conflict.excess), 0);
+      const countLabel = t(conflicts.length === 1 ? "calendarConflictDay" : "calendarConflictDays");
+      calendarSummary.textContent = t("calendarConflictSummary", {
+        count: conflicts.length,
+        countLabel,
+        duration: formatDuration(worst)
+      });
+    }
+
+    function renderCalendar() {
+      if (!calendarWeekStart) calendarWeekStart = getWeekStartValue();
+      if (calendarDragState) cancelCalendarDrag();
+      const weekEnd = addDaysToDateValue(calendarWeekStart, 6);
+      const rangeStart = formatCalendarDate(calendarWeekStart, { year: "numeric", month: "short", day: "numeric" });
+      const rangeEnd = formatCalendarDate(weekEnd, { month: "short", day: "numeric" });
+      calendarWeekLabel.textContent = `${rangeStart} – ${rangeEnd}`;
+      calendarDailyCapacity.value = String(calendarSettings.dailyCapacityHours);
+      calendarDailyCapacity.setAttribute("aria-label", t("calendarCapacityAria"));
+      previousWeekBtn.setAttribute("aria-label", t("previousWeek"));
+      nextWeekBtn.setAttribute("aria-label", t("nextWeek"));
+      document.querySelector(".calendar-week-controls")?.setAttribute("aria-label", t("calendarWeekNav"));
+
+      renderCalendarLegend();
+      const loads = getCalendarLoadMap();
+      renderCalendarStatus(loads);
+      calendarGrid.replaceChildren();
+
+      if (!subjects.length) {
+        const empty = document.createElement("p");
+        empty.className = "calendar-empty";
+        empty.textContent = t("calendarNoSubjects");
+        calendarGrid.appendChild(empty);
+        return;
+      }
+
+      const entries = getCalendarTaskEntries();
+      const capacityMinutes = calendarSettings.dailyCapacityHours * 60;
+      const dayNames = translations[currentLanguage].calendarDayNames;
+      const todayValue = toLocalDateValue(new Date());
+      let weekTaskCount = 0;
+
+      for (let index = 0; index < 7; index += 1) {
+        const dateValue = addDaysToDateValue(calendarWeekStart, index);
+        const dayEntries = entries.filter(({ task }) => task.scheduledDate === dateValue);
+        const dayLoad = loads.get(dateValue) || 0;
+        const hasConflict = dayLoad > capacityMinutes;
+        weekTaskCount += dayEntries.length;
+
+        const day = document.createElement("article");
+        day.className = `calendar-day${dateValue === todayValue ? " is-today" : ""}${hasConflict ? " has-conflict" : ""}`;
+        day.dataset.date = dateValue;
+        day.setAttribute("aria-label", `${dayNames[index]} ${formatCalendarDate(dateValue, { month: "long", day: "numeric" })}`);
+
+        const head = document.createElement("div");
+        head.className = "calendar-day-head";
+        const dateCopy = document.createElement("div");
+        const dayName = document.createElement("span");
+        dayName.className = "calendar-day-name";
+        dayName.textContent = `${dayNames[index]}${dateValue === todayValue ? ` · ${t("calendarToday")}` : ""}`;
+        const dateNumber = document.createElement("span");
+        dateNumber.className = "calendar-day-date";
+        dateNumber.textContent = formatCalendarDate(dateValue, { month: "numeric", day: "numeric" });
+        dateCopy.append(dayName, dateNumber);
+
+        const load = document.createElement("span");
+        load.className = "calendar-load";
+        load.textContent = `${formatCompactMinutes(dayLoad)} / ${formatCompactMinutes(capacityMinutes)}`;
+        if (hasConflict) {
+          load.title = t("calendarOverBy", { duration: formatDuration(dayLoad - capacityMinutes) });
+        }
+        head.append(dateCopy, load);
+
+        const taskList = document.createElement("div");
+        taskList.className = "calendar-tasks";
+        dayEntries.forEach(({ subject, task }) => {
+          const taskButton = document.createElement("button");
+          taskButton.className = `calendar-task${task.completed ? " is-complete" : ""}`;
+          taskButton.type = "button";
+          taskButton.style.setProperty("--subject-color", subject.color);
+          taskButton.dataset.subjectId = subject.id;
+          taskButton.dataset.taskId = task.id;
+          taskButton.setAttribute("aria-label", t("calendarTaskAria", {
+            subject: subject.name,
+            title: task.title,
+            duration: formatDuration(task.durationMinutes),
+            date: formatCalendarDate(dateValue, { year: "numeric", month: "long", day: "numeric" })
+          }));
+
+          const title = document.createElement("span");
+          title.className = "calendar-task-title";
+          title.textContent = task.title;
+          const meta = document.createElement("span");
+          meta.className = "calendar-task-meta";
+          const subjectName = document.createElement("span");
+          subjectName.textContent = subject.name;
+          const duration = document.createElement("span");
+          duration.textContent = formatCompactMinutes(task.durationMinutes);
+          meta.append(subjectName, duration);
+          taskButton.append(title, meta);
+          bindCalendarTaskDrag(taskButton, subject, task);
+          taskList.appendChild(taskButton);
+        });
+
+        day.append(head, taskList);
+        calendarGrid.appendChild(day);
+      }
+
+      if (!weekTaskCount && !getCalendarConflicts(loads).length) {
+        calendarSummary.textContent = t("calendarNoTasks");
+      }
+    }
+
+    function canScheduleTaskOnDate(subject, dateValue) {
+      const todayValue = toLocalDateValue(new Date());
+      if (!isValidDateValue(dateValue) || dateValue < todayValue) return false;
+      const examValue = isValidDateValue(subject.examDate) ? subject.examDate : subject.inputs?.date;
+      if (!isValidDateValue(examValue)) return true;
+      if (examValue === todayValue) return dateValue === todayValue;
+      return dateValue < examValue;
+    }
+
+    function clearCalendarDropTarget() {
+      document.querySelectorAll(".calendar-day.is-drop-target, .calendar-day.is-drop-invalid").forEach((day) => {
+        day.classList.remove("is-drop-target", "is-drop-invalid");
+      });
+    }
+
+    function updateCalendarDragTarget(state, clientX, clientY) {
+      if (!state.active) return;
+      state.lastX = clientX;
+      state.lastY = clientY;
+      if (state.ghost) {
+        state.ghost.style.left = `${clientX}px`;
+        state.ghost.style.top = `${clientY}px`;
+      }
+      clearCalendarDropTarget();
+      const day = document.elementFromPoint(clientX, clientY)?.closest(".calendar-day");
+      state.targetDate = day?.dataset.date || "";
+      state.targetValid = Boolean(day && canScheduleTaskOnDate(state.subject, state.targetDate));
+      if (day) day.classList.add(state.targetValid ? "is-drop-target" : "is-drop-invalid");
+    }
+
+    function activateCalendarDrag(state) {
+      if (calendarDragState !== state) return;
+      state.active = true;
+      state.button.classList.remove("is-pressing");
+      state.button.classList.add("is-dragging");
+      body.classList.add("calendar-drag-active");
+      const ghost = document.createElement("div");
+      ghost.className = "calendar-drag-ghost";
+      ghost.style.setProperty("--subject-color", state.subject.color);
+      ghost.textContent = state.task.title;
+      document.body.appendChild(ghost);
+      state.ghost = ghost;
+      updateCalendarDragTarget(state, state.lastX, state.lastY);
+    }
+
+    function cancelCalendarDrag() {
+      const state = calendarDragState;
+      if (!state) return;
+      window.clearTimeout(state.timer);
+      state.button.classList.remove("is-pressing", "is-dragging");
+      state.ghost?.remove();
+      clearCalendarDropTarget();
+      body.classList.remove("calendar-drag-active");
+      calendarDragState = null;
+      if (state.button.hasPointerCapture?.(state.pointerId)) {
+        state.button.releasePointerCapture(state.pointerId);
+      }
+    }
+
+    function rescheduleCalendarTask(subjectId, taskId, dateValue) {
+      const subject = subjects.find((item) => item.id === subjectId);
+      const task = subject?.plan?.tasks?.find((item) => item.id === taskId);
+      if (!subject || !task || !canScheduleTaskOnDate(subject, dateValue)) {
+        setExportStatus(t("calendarMoveInvalid"));
+        return;
+      }
+      task.scheduledDate = dateValue;
+      subject.updatedAt = new Date().toISOString();
+      if (subject.id === activeSubjectId && lastPlan) {
+        const activeTask = lastPlan.tasks.find((item) => item.id === taskId);
+        if (activeTask) activeTask.scheduledDate = dateValue;
+      }
+      saveSubjectStore();
+      renderTodoList();
+      renderCalendar();
+      setExportStatus(t("calendarMoved", {
+        title: task.title,
+        date: formatCalendarDate(dateValue, { year: "numeric", month: "long", day: "numeric" })
+      }));
+    }
+
+    function finishCalendarDrag(state) {
+      if (!state || calendarDragState !== state) return;
+      const shouldMove = state.active && state.targetValid && state.targetDate;
+      const invalidTarget = state.active && state.targetDate && !state.targetValid;
+      const targetDate = state.targetDate;
+      const subjectId = state.subject.id;
+      const taskId = state.task.id;
+      cancelCalendarDrag();
+      if (shouldMove) {
+        rescheduleCalendarTask(subjectId, taskId, targetDate);
+      } else if (invalidTarget) {
+        setExportStatus(t("calendarMoveInvalid"));
+      }
+    }
+
+    function bindCalendarTaskDrag(button, subject, task) {
+      button.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0 || calendarDragState) return;
+        if ((event.pointerType || "mouse") === "mouse") return;
+        const state = {
+          button,
+          subject,
+          task,
+          inputKind: "touch",
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          lastX: event.clientX,
+          lastY: event.clientY,
+          targetDate: task.scheduledDate,
+          targetValid: true,
+          active: false,
+          ghost: null,
+          timer: null
+        };
+        calendarDragState = state;
+        button.classList.add("is-pressing");
+        button.setPointerCapture?.(event.pointerId);
+        state.timer = window.setTimeout(() => activateCalendarDrag(state), LONG_PRESS_MS);
+      });
+
+      button.addEventListener("pointermove", (event) => {
+        const state = calendarDragState;
+        if (!state || state.button !== button || state.pointerId !== event.pointerId) return;
+        state.lastX = event.clientX;
+        state.lastY = event.clientY;
+        if (!state.active) {
+          const distance = Math.hypot(event.clientX - state.startX, event.clientY - state.startY);
+          if (distance > 8) cancelCalendarDrag();
+          return;
+        }
+        event.preventDefault();
+        updateCalendarDragTarget(state, event.clientX, event.clientY);
+      }, { passive: false });
+
+      button.addEventListener("pointerup", (event) => {
+        const state = calendarDragState;
+        if (!state || state.button !== button || state.pointerId !== event.pointerId) return;
+        finishCalendarDrag(state);
+      });
+
+      button.addEventListener("mousedown", (event) => {
+        if (event.button !== 0 || calendarDragState) return;
+        calendarDragState = {
+          button,
+          subject,
+          task,
+          inputKind: "mouse",
+          pointerId: null,
+          startX: event.clientX,
+          startY: event.clientY,
+          lastX: event.clientX,
+          lastY: event.clientY,
+          targetDate: task.scheduledDate,
+          targetValid: true,
+          active: false,
+          ghost: null,
+          timer: null
+        };
+      });
+      button.addEventListener("pointercancel", cancelCalendarDrag);
+      button.addEventListener("lostpointercapture", () => {
+        if (calendarDragState?.button === button) cancelCalendarDrag();
+      });
+      button.addEventListener("dragstart", (event) => event.preventDefault());
+      button.addEventListener("contextmenu", (event) => {
+        if (calendarDragState?.button === button) event.preventDefault();
+      });
+    }
+
+    function initCalendar() {
+      loadCalendarSettings();
+      calendarWeekStart = getWeekStartValue();
+      let changed = false;
+      subjects.forEach((subject) => {
+        if (ensureSubjectTaskSchedule(subject)) changed = true;
+      });
+      if (changed) saveSubjectStore();
+      const active = subjects.find((subject) => subject.id === activeSubjectId);
+      if (active) lastPlan = active.plan;
+      renderTodoList();
+      renderCalendar();
+    }
+
+    function initSubjectLibrary() {
+      loadSubjectStore();
+      let savedId = null;
+      try {
+        savedId = localStorage.getItem("finals-os-active-subject-v1");
+      } catch {
+        savedId = null;
+      }
+      const initial = subjects.find((subject) => subject.id === savedId) || subjects[0];
+      if (initial) {
+        selectSubject(initial.id);
+      } else {
+        renderSubjectList();
+        clearPlanState();
+      }
+    }
+
     function saveDraft() {
       try {
         localStorage.setItem(DRAFT_KEY, JSON.stringify({
@@ -1321,7 +2905,9 @@
         if (typeof draft.goal === "string") goalInput.value = draft.goal;
         if (typeof draft.keywords === "string") keywordsInput.value = draft.keywords;
       }
-      if (!dateInput.value) dateInput.value = toLocalDateValue(defaultDate);
+      if (!dateInput.value || dateInput.value < toLocalDateValue(now)) {
+        dateInput.value = toLocalDateValue(defaultDate);
+      }
     }
 
     function getFieldError(input) {
@@ -1427,6 +3013,11 @@
         document.getElementById("headline").textContent = t("emptyHeadline");
         document.getElementById("summary").textContent = t("emptySummary");
       }
+      sidebarBackdrop.setAttribute("aria-label", t("closeSubjectMenu"));
+      setSidebarOpen(body.classList.contains("sidebar-open"));
+      renderSubjectList();
+      renderTodoList();
+      renderCalendar();
       themeToggle.textContent = body.getAttribute("data-theme") === "dark" ? t("switchLight") : t("switchDark");
       revalidateTouchedFields();
       saveDraft();
@@ -1512,6 +3103,25 @@
       return (Array.isArray(items) ? items : []).map((item) => `- ${item}`).join("\n");
     }
 
+    function formatDuration(minutes) {
+      const total = Math.max(0, Math.round(Number(minutes) || 0));
+      const hours = Math.floor(total / 60);
+      const rest = total % 60;
+      if (currentLanguage === "en") {
+        if (!hours) return `${rest} min`;
+        return rest ? `${hours} hr ${rest} min` : `${hours} hr`;
+      }
+      if (!hours) return `${rest} 分钟`;
+      return rest ? `${hours} 小时 ${rest} 分钟` : `${hours} 小时`;
+    }
+
+    function markdownTasks(tasks) {
+      return (Array.isArray(tasks) ? tasks : []).map((task) => {
+        const mark = task.completed ? "x" : " ";
+        return `- [${mark}] ${task.title}（${formatDuration(task.durationMinutes)}）`;
+      }).join("\n");
+    }
+
     function formatPlanMarkdown(plan) {
       const course = document.getElementById("course").value.trim() || t("courseFallback");
       const examDate = document.getElementById("date").value || "—";
@@ -1525,7 +3135,7 @@
         goal: "Target score",
         must: "High-yield modules",
         drop: "Skip list",
-        schedule: "Study schedule",
+        tasks: "Todo",
         hits: "Priority topics"
       } : {
         title: "期末复习计划",
@@ -1535,7 +3145,7 @@
         goal: "目标分",
         must: "必拿分模块",
         drop: "可放弃清单",
-        schedule: "复习安排",
+        tasks: "Todo",
         hits: "优先考点"
       };
       return [
@@ -1556,8 +3166,8 @@
         `## ${labels.drop}`,
         markdownList(plan.drop),
         "",
-        `## ${labels.schedule}`,
-        markdownList(plan.schedule),
+        `## ${labels.tasks}`,
+        markdownTasks(plan.tasks),
         "",
         `## ${labels.hits}`,
         markdownList(plan.hits),
@@ -1685,23 +3295,92 @@
       }
     }
 
-    function applyPlan(plan) {
+    function updateTodoProgress() {
+      const tasks = Array.isArray(lastPlan?.tasks) ? lastPlan.tasks : [];
+      const completed = tasks.filter((task) => task.completed).length;
+      todoProgress.textContent = `${completed} / ${tasks.length}`;
+    }
+
+    function renderTodoList() {
+      todoList.replaceChildren();
+      const tasks = Array.isArray(lastPlan?.tasks) ? lastPlan.tasks : [];
+      updateTodoProgress();
+      if (!tasks.length) {
+        const empty = document.createElement("p");
+        empty.className = "todo-empty";
+        empty.id = "todoEmpty";
+        empty.textContent = t("todoEmpty");
+        todoList.appendChild(empty);
+        return;
+      }
+
+      tasks.forEach((task, index) => {
+        const row = document.createElement("label");
+        row.className = `todo-row${task.completed ? " is-complete" : ""}`;
+
+        const checkbox = document.createElement("input");
+        checkbox.className = "todo-checkbox";
+        checkbox.type = "checkbox";
+        checkbox.checked = task.completed;
+        checkbox.setAttribute("aria-label", t("todoItemAria", {
+          title: task.title,
+          state: t(task.completed ? "todoCompleteState" : "todoIncompleteState")
+        }));
+
+        const copy = document.createElement("span");
+        copy.className = "todo-copy";
+        const title = document.createElement("span");
+        title.className = "todo-title";
+        title.textContent = task.title;
+        const taskIndex = document.createElement("span");
+        taskIndex.className = "todo-index";
+        const taskDate = isValidDateValue(task.scheduledDate)
+          ? formatCalendarDate(task.scheduledDate, { month: "short", day: "numeric" })
+          : t("calendarUnscheduled");
+        taskIndex.textContent = `TASK ${String(index + 1).padStart(2, "0")} · ${taskDate}`;
+        copy.append(title, taskIndex);
+
+        const duration = document.createElement("span");
+        duration.className = "todo-duration";
+        duration.textContent = formatDuration(task.durationMinutes);
+
+        checkbox.addEventListener("change", () => {
+          task.completed = checkbox.checked;
+          row.classList.toggle("is-complete", task.completed);
+          checkbox.setAttribute("aria-label", t("todoItemAria", {
+            title: task.title,
+            state: t(task.completed ? "todoCompleteState" : "todoIncompleteState")
+          }));
+          persistActivePlan();
+          updateTodoProgress();
+          renderCalendar();
+        });
+
+        row.append(checkbox, copy, duration);
+        todoList.appendChild(row);
+      });
+    }
+
+    function applyPlan(plan, options = {}) {
+      const normalized = normalizePlan(plan);
       const headline = document.getElementById("headline");
       const headlineTag = document.createElement("span");
       headlineTag.className = "tag ok";
-      headlineTag.textContent = plan.headline || t("generatedFallback");
+      headlineTag.textContent = normalized.headline || t("generatedFallback");
       headline.replaceChildren(headlineTag);
-      document.getElementById("summary").textContent = plan.summary || "";
-      listToUl("must", Array.isArray(plan.must) ? plan.must : []);
-      listToUl("drop", Array.isArray(plan.drop) ? plan.drop : []);
-      listToUl("schedule", Array.isArray(plan.schedule) ? plan.schedule : []);
-      listToUl("hits", Array.isArray(plan.hits) ? plan.hits : []);
-      lastPlan = plan;
+      document.getElementById("summary").textContent = normalized.summary || "";
+      listToUl("must", normalized.must);
+      listToUl("drop", normalized.drop);
+      listToUl("hits", normalized.hits);
+      lastPlan = normalized;
+      renderTodoList();
       hasGeneratedPlan = true;
       copyPlanBtn.disabled = false;
       downloadPlanBtn.disabled = false;
       resultSection.classList.add("has-plan");
-      window.setTimeout(() => resultSection.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+      if (options.scroll !== false) {
+        window.setTimeout(() => resultSection.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+      }
     }
 
     function parseJsonFromText(text) {
@@ -1794,6 +3473,7 @@
       try {
         const aiPlan = await fetchPlanByAI(generationController.signal);
         applyPlan(aiPlan);
+        saveGeneratedSubject();
         setStatus(t("generationSuccess"));
       } catch (err) {
         const msg = String(err?.message || err);
@@ -1865,6 +3545,76 @@
       applyLanguage(currentLanguage === "zh" ? "en" : "zh");
       if (hasGeneratedPlan) setStatus(t("regenerateForLanguage"));
     });
+    subjectMenuToggle.addEventListener("click", () => {
+      setSidebarOpen(!body.classList.contains("sidebar-open"));
+    });
+    sidebarBackdrop.addEventListener("click", () => {
+      setSidebarOpen(false);
+      subjectMenuToggle.focus();
+    });
+    newSubjectBtn.addEventListener("click", startNewSubject);
+    openCalendarBtn.addEventListener("click", () => {
+      setSidebarOpen(false);
+      calendarSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    previousWeekBtn.addEventListener("click", () => {
+      calendarWeekStart = addDaysToDateValue(calendarWeekStart, -7);
+      renderCalendar();
+    });
+    currentWeekBtn.addEventListener("click", () => {
+      calendarWeekStart = getWeekStartValue();
+      renderCalendar();
+    });
+    nextWeekBtn.addEventListener("click", () => {
+      calendarWeekStart = addDaysToDateValue(calendarWeekStart, 7);
+      renderCalendar();
+    });
+    calendarDailyCapacity.addEventListener("input", () => {
+      const rawValue = calendarDailyCapacity.value.trim();
+      if (!rawValue) return;
+      const value = Number(rawValue);
+      if (!Number.isFinite(value) || value < 1 || value > 20) return;
+      calendarSettings.dailyCapacityHours = Math.round(value * 2) / 2;
+      saveCalendarSettings();
+      renderCalendar();
+    });
+    calendarDailyCapacity.addEventListener("change", () => {
+      const value = Number(calendarDailyCapacity.value);
+      if (!Number.isFinite(value) || value < 1 || value > 20) {
+        calendarDailyCapacity.value = String(calendarSettings.dailyCapacityHours);
+        setExportStatus(t("calendarCapacityInvalid"));
+        return;
+      }
+      calendarSettings.dailyCapacityHours = Math.round(value * 2) / 2;
+      saveCalendarSettings();
+      renderCalendar();
+    });
+    window.addEventListener("mousemove", (event) => {
+      const state = calendarDragState;
+      if (!state || state.inputKind !== "mouse") return;
+      if (!state.active) {
+        const distance = Math.hypot(event.clientX - state.startX, event.clientY - state.startY);
+        if (distance <= 4) return;
+        activateCalendarDrag(state);
+      }
+      event.preventDefault();
+      updateCalendarDragTarget(state, event.clientX, event.clientY);
+    });
+    window.addEventListener("mouseup", (event) => {
+      const state = calendarDragState;
+      if (!state || state.inputKind !== "mouse" || event.button !== 0) return;
+      finishCalendarDrag(state);
+    });
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        if (calendarDragState) {
+          cancelCalendarDrag();
+        } else if (body.classList.contains("sidebar-open")) {
+          setSidebarOpen(false);
+          subjectMenuToggle.focus();
+        }
+      }
+    });
     planForm.addEventListener("submit", (event) => {
       event.preventDefault();
       generatePlan();
@@ -1890,6 +3640,8 @@
     loadDraft();
     initLanguage();
     initTheme();
+    initSubjectLibrary();
+    initCalendar();
     validateForm(false);
     updateMetrics();
     refreshHealth();
