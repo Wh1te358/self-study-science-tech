@@ -12,11 +12,12 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 APP_NAME = "study-sprint-api"
-APP_VERSION = "2026-07-21-p1-1"
+APP_VERSION = "2026-07-27-subject-todo-v1"
 SYSTEM_PROMPT = (
     "You are an exam-cram planning assistant. Return only one JSON object with no explanation. "
     "Schema: headline:string, summary:string, must:string[5], drop:string[3], "
-    "schedule:string[6], hits:string[10]. Follow the runtime output-language instruction exactly; "
+    "tasks:object[6] where each object has title:string and duration_minutes:integer, hits:string[10]. "
+    "Follow the runtime output-language instruction exactly; "
     "if it is absent, match the language used in the course name and keywords. Keep every sentence short and action-oriented."
 )
 RATE_BUCKET = {}
@@ -151,7 +152,7 @@ def sanitize_plan(plan: dict, payload: dict) -> dict:
 
     must = [normalize_sentence(x) for x in normalize_list(plan.get("must", []), 5)]
     drop = [normalize_sentence(x) for x in normalize_list(plan.get("drop", []), 3)]
-    schedule = [normalize_sentence(x) for x in normalize_list(plan.get("schedule", []), 6)]
+    tasks = normalize_tasks(plan.get("tasks", []), 6)
     hits = [normalize_sentence(x) for x in normalize_list(plan.get("hits", []), 10)]
 
     for i, item in enumerate(hits):
@@ -198,16 +199,29 @@ def sanitize_plan(plan: dict, payload: dict) -> dict:
             suffix = "high-yield core marks" if language == "en" else "高频核心拿分"
             must[i] = f"{kw_fallback[i % len(kw_fallback)]}: {suffix}"
 
-    for i, item in enumerate(schedule):
-        if not item:
+    capacity_minutes = min(
+        24 * 60,
+        max(90, int(float(payload.get("hours_per_day", 8)) * int(payload.get("days_left", 3)) * 60)),
+    )
+    fallback_duration = max(15, int(round((capacity_minutes / 6) / 15) * 15))
+    for i, task in enumerate(tasks):
+        if not task["title"]:
             if language == "en":
-                schedule[i] = f"Hours {i * 4 + 1}-{(i + 1) * 4}: pressure-test {kw_fallback[i % len(kw_fallback)]}"
+                task["title"] = f"Pressure-test {kw_fallback[i % len(kw_fallback)]}"
             else:
-                schedule[i] = f"第{i * 4 + 1}-{(i + 1) * 4}小时：围绕{kw_fallback[i % len(kw_fallback)]}高压训练"
+                task["title"] = f"围绕{kw_fallback[i % len(kw_fallback)]}完成高压训练"
+        if task["duration_minutes"] <= 0:
+            task["duration_minutes"] = fallback_duration
+
+    total_minutes = sum(task["duration_minutes"] for task in tasks)
+    if total_minutes > capacity_minutes:
+        ratio = capacity_minutes / total_minutes
+        for task in tasks:
+            task["duration_minutes"] = max(15, int(round((task["duration_minutes"] * ratio) / 15) * 15))
 
     plan["must"] = must
     plan["drop"] = drop
-    plan["schedule"] = schedule
+    plan["tasks"] = tasks
     plan["hits"] = hits
     if not str(plan.get("headline", "")).strip():
         if language == "en":
@@ -243,6 +257,28 @@ def normalize_list(v, count):
     if len(items) >= count:
         return items[:count]
     return items + [""] * (count - len(items))
+
+
+def normalize_tasks(value, count):
+    raw_items = value if isinstance(value, list) else []
+    tasks = []
+    for item in raw_items[:count]:
+        if isinstance(item, dict):
+            title = normalize_sentence(item.get("title", ""))
+            raw_duration = item.get("duration_minutes", item.get("durationMinutes", 0))
+        else:
+            title = normalize_sentence(item)
+            raw_duration = 0
+        try:
+            duration = int(float(raw_duration))
+        except (TypeError, ValueError):
+            duration = 0
+        if duration > 0:
+            duration = min(480, max(15, int(round(duration / 15) * 15)))
+        tasks.append({"title": title, "duration_minutes": duration})
+    while len(tasks) < count:
+        tasks.append({"title": "", "duration_minutes": 0})
+    return tasks
 
 
 def validate_plan_payload(payload: dict) -> dict:
@@ -385,7 +421,7 @@ def call_model(payload: dict) -> dict:
         "summary": str(raw_plan.get("summary", "")),
         "must": normalize_list(raw_plan.get("must", []), 5),
         "drop": normalize_list(raw_plan.get("drop", []), 3),
-        "schedule": normalize_list(raw_plan.get("schedule", []), 6),
+        "tasks": normalize_tasks(raw_plan.get("tasks", raw_plan.get("schedule", [])), 6),
         "hits": normalize_list(raw_plan.get("hits", []), 10),
     }
     return sanitize_plan(plan, payload)
