@@ -412,6 +412,51 @@
       font-size: 13px;
       font-weight: 760;
     }
+    .workspace-import-card {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--input-bg);
+    }
+    .workspace-import-title {
+      margin: 0;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .workspace-import-select {
+      width: 100%;
+      min-width: 0;
+      min-height: 40px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel);
+      color: var(--text);
+      font: inherit;
+      font-size: 12px;
+    }
+    .workspace-import-button {
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 10px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 780;
+      box-shadow: none;
+    }
+    .workspace-import-status {
+      min-height: 16px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+    }
     .calendar-nav {
       display: flex;
       align-items: center;
@@ -695,12 +740,16 @@
     .field { grid-column: span 6; }
     .field.full { grid-column: 1 / -1; }
     .field-heading {
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: baseline;
-      justify-content: space-between;
       gap: 8px;
       min-height: 18px;
       margin-bottom: 6px;
+    }
+    .field-heading > label {
+      min-width: 0;
+      white-space: nowrap;
     }
     label {
       margin-bottom: 0;
@@ -717,7 +766,15 @@
       letter-spacing: 0.04em;
       white-space: nowrap;
     }
-    input, textarea, button {
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0.72;
+    }
+    body[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1) brightness(1.35);
+      opacity: 0.92;
+    }
+    input, textarea, select, button {
       border-radius: 14px;
       padding: 13px 14px;
       border-color: var(--line);
@@ -725,11 +782,11 @@
       font-size: 15px;
       transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
     }
-    input:focus, textarea:focus {
+    input:focus, textarea:focus, select:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 4px var(--accent-soft);
     }
-    :where(button, input, textarea):focus-visible {
+    :where(button, input, textarea, select):focus-visible {
       outline: 3px solid var(--focus);
       outline-offset: 2px;
     }
@@ -761,6 +818,42 @@
       line-height: 1.3;
     }
     body[data-theme="dark"] .field-error { color: #ff8e84; }
+    .content-language-control {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 8px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+    .content-language-copy {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+    .content-language-label {
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 780;
+    }
+    .content-language-status {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .content-language-status[data-confidence="low"] { color: var(--warning); }
+    .content-language-select {
+      width: auto;
+      min-width: 132px;
+      flex: 0 0 auto;
+      padding: 9px 34px 9px 11px;
+      border-radius: 10px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 720;
+    }
     .validation-summary {
       flex-basis: 100%;
       min-height: 18px;
@@ -867,19 +960,58 @@
     }
     .todo-list {
       display: grid;
-      gap: 8px;
+      gap: 18px;
     }
-    .todo-row {
+    .todo-phase {
+      min-width: 0;
+      border-top: 1px solid var(--line);
+    }
+    .todo-phase:first-child { border-top: 0; }
+    .todo-phase-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 12px 10px;
+    }
+    .todo-phase-copy { min-width: 0; }
+    .todo-phase-title {
+      margin: 0;
+      color: var(--list-text);
+      font-size: 15px;
+      font-weight: 780;
+      line-height: 1.4;
+      text-wrap: balance;
+    }
+    .todo-phase-goal {
+      max-width: 70ch;
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      text-wrap: pretty;
+    }
+    .todo-phase-progress {
+      flex: 0 0 auto;
+      color: var(--accent);
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 10px;
+      font-weight: 780;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    .todo-session-list { display: grid; }
+    .todo-session {
+      border-top: 1px solid var(--line);
+    }
+    .todo-session-summary {
       display: grid;
-      grid-template-columns: 22px minmax(0, 1fr) auto;
+      grid-template-columns: 22px minmax(0, 1fr);
       gap: 11px;
       align-items: center;
-      min-height: 52px;
+      min-height: 58px;
       padding: 10px 12px;
-      border-bottom: 1px solid var(--line);
-      cursor: pointer;
     }
-    .todo-row:last-child { border-bottom: 0; }
     .todo-checkbox {
       width: 20px;
       height: 20px;
@@ -888,11 +1020,27 @@
       accent-color: var(--accent);
       cursor: pointer;
     }
-    .todo-copy {
+    .todo-session-toggle {
+      width: 100%;
       min-width: 0;
       display: grid;
-      gap: 3px;
+      grid-template-columns: minmax(0, 1fr) auto 14px;
+      gap: 12px;
+      align-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: inherit;
+      text-align: left;
+      box-shadow: none;
     }
+    .todo-session-toggle:hover .todo-title { color: var(--accent); }
+    .todo-session-toggle:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 5px;
+    }
+    .todo-copy { min-width: 0; display: grid; gap: 4px; }
     .todo-title {
       color: var(--list-text);
       font-size: 14px;
@@ -911,12 +1059,116 @@
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
-    .todo-row.is-complete .todo-title {
+    .todo-chevron {
+      width: 8px;
+      height: 8px;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      color: var(--muted);
+      transform: rotate(45deg) translate(-2px, -2px);
+      transition: transform 180ms cubic-bezier(.22, 1, .36, 1);
+    }
+    .todo-session.is-open .todo-chevron { transform: rotate(225deg) translate(-1px, -1px); }
+    .todo-guide {
+      margin: 0 12px 14px 45px;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--accent-soft);
+    }
+    .todo-session:not(.is-open) .todo-guide { display: none; }
+    .todo-guide-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+    .todo-guide-title { margin: 0; color: var(--list-text); font-size: 12px; font-weight: 780; }
+    .todo-guide-note { margin: 3px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .todo-guide-progress { color: var(--accent); font-size: 11px; font-weight: 780; white-space: nowrap; }
+    .todo-next-action {
+      margin: 0 0 10px;
+      padding: 9px 10px;
+      border-radius: 9px;
+      background: var(--panel-solid);
+      color: var(--list-text);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .todo-guide-list { display: grid; }
+    .todo-guide-step {
+      display: grid;
+      grid-template-columns: 20px 78px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 10px 0;
+      border-top: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+      margin: 0;
+      color: inherit;
+      cursor: pointer;
+    }
+    .todo-guide-step:first-child { border-top: 0; }
+    .todo-guide-step input {
+      width: 18px;
+      height: 18px;
+      margin: 1px 0 0;
+      padding: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .todo-guide-time {
+      color: var(--accent);
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 10px;
+      font-weight: 760;
+      line-height: 1.6;
+      white-space: nowrap;
+    }
+    .todo-guide-copy { min-width: 0; display: grid; gap: 3px; }
+    .todo-guide-copy strong { color: var(--list-text); font-size: 12px; line-height: 1.45; }
+    .todo-guide-copy span { color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .todo-guide-copy small { color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .todo-guide-step.is-complete { opacity: 0.58; }
+    .todo-guide-step.is-complete strong { text-decoration: line-through; text-decoration-thickness: 1px; }
+    .todo-success {
+      margin: 1px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .todo-sources {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 2px;
+    }
+    .todo-source {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 7px;
+      border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 720;
+      line-height: 1.2;
+      text-decoration: none;
+    }
+    .todo-source:hover {
+      border-color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .todo-session.is-complete .todo-title {
       color: var(--muted);
       text-decoration: line-through;
       text-decoration-thickness: 1px;
     }
-    .todo-row.is-complete .todo-duration { color: var(--signal); }
+    .todo-session.is-complete .todo-success,
+    .todo-session.is-complete .todo-source { opacity: 0.58; }
+    .todo-session.is-complete .todo-duration { color: var(--signal); }
     .todo-empty {
       margin: 0;
       padding: 14px 0 2px;
@@ -1029,6 +1281,7 @@
       background: var(--input-bg);
     }
     .calendar-day {
+      position: relative;
       min-height: 236px;
       padding: 12px 10px 14px;
       border-right: 1px solid var(--line);
@@ -1048,6 +1301,26 @@
     .calendar-day.is-drop-invalid {
       background: color-mix(in srgb, #d84343 10%, var(--panel-solid));
       box-shadow: inset 0 0 0 2px #d84343;
+    }
+    .calendar-day.is-drop-target::after,
+    .calendar-day.is-drop-invalid::after {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      left: 8px;
+      z-index: 2;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      content: attr(data-drop-message);
+      font-size: 9px;
+      font-weight: 780;
+      line-height: 1.35;
+      pointer-events: none;
+    }
+    .calendar-day.is-drop-invalid::after {
+      background: #c2352a;
     }
     .calendar-day-head {
       display: flex;
@@ -1147,11 +1420,72 @@
       font-size: 11px;
       line-height: 1.5;
     }
+    .calendar-drag-status {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 120;
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr);
+      align-items: start;
+      gap: 10px;
+      width: min(390px, calc(100vw - 32px));
+      min-height: 52px;
+      margin: 0;
+      padding: 14px 16px;
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      background: var(--panel-solid);
+      box-shadow: 0 6px 8px rgba(3, 8, 22, 0.18);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 720;
+      line-height: 1.5;
+    }
+    .calendar-drag-status[hidden] { display: none; }
+    .calendar-drag-status::before {
+      content: "i";
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--panel-solid);
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .calendar-drag-status.is-visible { animation: calendarToastIn 180ms ease-out both; }
+    .calendar-drag-status[data-tone="invalid"] {
+      border: 2px solid #d84343;
+      background: color-mix(in srgb, #d84343 18%, var(--panel-solid));
+      color: #a9231d;
+    }
+    .calendar-drag-status[data-tone="invalid"]::before { content: "!"; background: #d84343; color: #fff; }
+    .calendar-drag-status[data-tone="success"] {
+      border: 2px solid var(--signal);
+      background: color-mix(in srgb, var(--signal) 16%, var(--panel-solid));
+      color: color-mix(in srgb, var(--signal) 78%, #071a13);
+    }
+    .calendar-drag-status[data-tone="success"]::before { content: "\2713"; background: var(--signal); color: #04140f; }
+    body[data-theme="dark"] .calendar-drag-status[data-tone="invalid"] {
+      border-color: #ff6f66;
+      background: #3b171d;
+      color: #ffe1de;
+    }
+    body[data-theme="dark"] .calendar-drag-status[data-tone="success"] {
+      border-color: #58e6b3;
+      background: #102d26;
+      color: #d7fff0;
+    }
     .calendar-drag-ghost {
       position: fixed;
       z-index: 90;
       width: 184px;
       max-width: calc(100vw - 24px);
+      display: grid;
+      gap: 5px;
       padding: 10px 12px;
       border: 1px solid var(--subject-color);
       border-radius: 10px;
@@ -1164,6 +1498,14 @@
       box-shadow: var(--shadow-soft);
       transform: translate(12px, 12px) rotate(1deg);
     }
+    .calendar-drag-ghost-note {
+      color: var(--accent);
+      font-size: 9px;
+      font-weight: 720;
+      line-height: 1.35;
+    }
+    .calendar-drag-ghost[data-tone="invalid"] .calendar-drag-ghost-note { color: #c2352a; }
+    body[data-theme="dark"] .calendar-drag-ghost[data-tone="invalid"] .calendar-drag-ghost-note { color: #ff8e84; }
     body.calendar-drag-active { cursor: grabbing; user-select: none; }
 
     .feedback-stage {
@@ -1327,6 +1669,10 @@
     @keyframes statusPulse { 50% { opacity: .42; transform: scale(.72); } }
     @keyframes orbBreathe { 50% { transform: scale(.86); filter: saturate(1.5); } }
     @keyframes scanTrack { from { transform: translateX(-120%); } to { transform: translateX(360%); } }
+    @keyframes calendarToastIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
     @media (max-width: 820px) {
       .topbar { grid-template-columns: 1fr auto; padding: 0 16px; }
@@ -1356,8 +1702,8 @@
       .feedback-route-actions { padding-top: 14px; }
       .feedback-action,
       .qr-disclosure summary { min-height: 48px; }
-      .todo-row { grid-template-columns: 22px minmax(0, 1fr); }
-      .todo-duration { grid-column: 2; }
+      .todo-session-toggle { grid-template-columns: minmax(0, 1fr) auto 14px; }
+      .todo-guide { margin-left: 12px; }
       .calendar-controls { align-items: flex-start; flex-direction: column; }
       .calendar-capacity { width: 100%; justify-content: space-between; }
     }
@@ -1387,6 +1733,20 @@
       .calendar-week-controls { width: 100%; }
       .calendar-week-label { min-width: 0; flex: 1; }
       .calendar-week-controls button { min-width: 44px; padding-inline: 9px; }
+      .todo-phase-head { padding-inline: 4px; }
+      .todo-session-summary { padding-inline: 4px; }
+      .todo-guide { margin-inline: 0; }
+      .todo-guide-step { grid-template-columns: 20px minmax(0, 1fr); }
+      .todo-guide-time { grid-column: 2; }
+      .todo-guide-copy { grid-column: 2; }
+      .content-language-control { align-items: stretch; flex-direction: column; }
+      .content-language-select { width: 100%; }
+      .calendar-drag-status {
+        right: 12px;
+        bottom: max(12px, env(safe-area-inset-bottom));
+        left: 12px;
+        width: auto;
+      }
     }
 
     @media (forced-colors: active) {
@@ -1431,13 +1791,21 @@
         <span class="subject-count" id="subjectCount">0</span>
       </div>
       <button class="primary new-subject" id="newSubject" type="button">＋ 新建科目</button>
+      <section class="workspace-import-card" aria-labelledby="workspaceImportTitle">
+        <p class="workspace-import-title" id="workspaceImportTitle">本地课程工作区</p>
+        <select class="workspace-import-select" id="workspaceSelect" aria-label="选择本地课程工作区">
+          <option value="">正在读取本地资料…</option>
+        </select>
+        <button class="ghost workspace-import-button" id="importWorkspace" type="button" disabled>导入计划与资料</button>
+        <p class="workspace-import-status" id="workspaceStatus" aria-live="polite">仅从本机读取，不上传课程文件。</p>
+      </section>
       <button class="calendar-nav" id="openCalendar" type="button">
         <span id="calendarNavLabel">日历检查</span>
         <span class="calendar-conflict-badge" id="calendarConflictBadge" aria-label="0 个冲突">0</span>
       </button>
       <ul class="subject-list" id="subjectList"></ul>
       <p class="subject-empty" id="subjectEmpty">生成第一份计划后，它会自动保存在这里。</p>
-      <p class="subject-storage-note" id="subjectStorageNote">只保存在当前浏览器，不会上传科目记录。</p>
+      <p class="subject-storage-note" id="subjectStorageNote">内容保存在当前浏览器，关闭页面不会丢失；清除网站数据或删除科目后将无法恢复。科目记录不会上传。</p>
     </aside>
     <button class="sidebar-backdrop" id="sidebarBackdrop" type="button" aria-label="关闭科目菜单"></button>
 
@@ -1495,6 +1863,17 @@
               <div class="field-heading"><label for="keywords" id="keywordsLabel">考试范围与题型（用逗号分隔）</label></div>
               <textarea id="keywords" name="keywords" required minlength="3" maxlength="1000" placeholder="例如：动量守恒，刚体转动，计算题" aria-describedby="keywordsError">动量守恒, 刚体转动, 热力学第一定律, 简答题, 计算题</textarea>
               <small id="keywordsError" class="field-error" aria-live="polite"></small>
+              <label class="content-language-control" for="contentLanguagePreference">
+                <span class="content-language-copy">
+                  <span class="content-language-label" id="contentLanguageLabel">内容语言</span>
+                  <span class="content-language-status" id="contentLanguageStatus" role="status" aria-live="polite"></span>
+                </span>
+                <select class="content-language-select" id="contentLanguagePreference" name="content_language_preference" aria-label="选择计划内容语言">
+                  <option value="auto">自动</option>
+                  <option value="zh">中文</option>
+                  <option value="en">English</option>
+                </select>
+              </label>
             </div>
           </div>
           <div class="actions">
@@ -1547,7 +1926,7 @@
         </article>
         <article class="plan-card todo-card">
           <div class="plan-card-head">
-            <div><h3 class="panel-title" id="todoTitle">Todo</h3><span class="plan-code">TODO / 06</span></div>
+            <div><h3 class="panel-title" id="todoTitle">可执行 Todo</h3><span class="plan-code" id="todoPlanCode">PHASE → SESSION → GUIDE</span></div>
             <span class="todo-progress" id="todoProgress">0 / 0</span>
           </div>
           <div class="todo-list" id="todoList">
@@ -1586,6 +1965,7 @@
       </div>
       <p class="calendar-hint" id="calendarDragHint">鼠标可直接拖动；触屏长按约 0.45 秒后拖到同周其他日期。松手后会立即保存并重新检查冲突。</p>
     </section>
+    <p class="calendar-drag-status" id="calendarDragStatus" role="status" aria-live="polite" aria-atomic="true" hidden></p>
 
     <section class="stage feedback-stage" aria-labelledby="feedbackHeading">
       <div class="feedback-intro">
@@ -1657,6 +2037,8 @@
     const hoursInput = document.getElementById("hours");
     const goalInput = document.getElementById("goal");
     const keywordsInput = document.getElementById("keywords");
+    const contentLanguageSelect = document.getElementById("contentLanguagePreference");
+    const contentLanguageStatus = document.getElementById("contentLanguageStatus");
     const formInputs = [courseInput, dateInput, hoursInput, goalInput, keywordsInput];
     const apiStatus = document.getElementById("apiStatus");
     const copyWxBtn = document.getElementById("copyWx");
@@ -1676,6 +2058,9 @@
     const subjectList = document.getElementById("subjectList");
     const subjectEmpty = document.getElementById("subjectEmpty");
     const subjectCount = document.getElementById("subjectCount");
+    const workspaceSelect = document.getElementById("workspaceSelect");
+    const importWorkspaceBtn = document.getElementById("importWorkspace");
+    const workspaceStatus = document.getElementById("workspaceStatus");
     const todoList = document.getElementById("todoList");
     const todoProgress = document.getElementById("todoProgress");
     const openCalendarBtn = document.getElementById("openCalendar");
@@ -1684,6 +2069,7 @@
     const calendarWeekLabel = document.getElementById("calendarWeekLabel");
     const calendarDailyCapacity = document.getElementById("calendarDailyCapacity");
     const calendarSummary = document.getElementById("calendarSummary");
+    const calendarDragStatus = document.getElementById("calendarDragStatus");
     const calendarLegend = document.getElementById("calendarLegend");
     const calendarGrid = document.getElementById("calendarGrid");
     const previousWeekBtn = document.getElementById("previousWeek");
@@ -1694,6 +2080,8 @@
     let lastHealth = null;
     let lastPlan = null;
     let subjects = [];
+    let availableWorkspaces = [];
+    let workspaceStatusState = { key: "workspaceLoading", replacements: {} };
     let activeSubjectId = null;
     let editingSubjectId = null;
     let analysisTimer = null;
@@ -1707,6 +2095,9 @@
     let calendarWeekStart = "";
     let calendarSettings = { dailyCapacityHours: 8 };
     let calendarDragState = null;
+    let calendarDragFeedbackTimer = null;
+    let openSessionIds = new Set();
+    let todoDisclosureInitialized = false;
     const touchedFields = new Set();
     const DRAFT_KEY = "study-sprint-draft-v1";
     const SUBJECTS_KEY = "finals-os-subjects-v1";
@@ -1732,6 +2123,14 @@
         goalLabel: "目标分（60–100）",
         keywordsLabel: "考试范围与题型（用逗号分隔）",
         keywordsPlaceholder: "例如：动量守恒，刚体转动，计算题",
+        contentLanguageLabel: "内容语言",
+        contentLanguageSelectAria: "选择计划内容语言",
+        contentLanguageAuto: "自动",
+        contentLanguageZh: "中文",
+        contentLanguageEn: "English",
+        contentLanguageDetected: "根据课程与考试范围自动识别为 {language}",
+        contentLanguageUncertain: "输入语言信号较弱，暂按 {language} 生成；可手动更改",
+        contentLanguageManual: "已手动指定计划内容为 {language}",
         generate: "生成复习计划",
         generating: "正在生成…",
         cancelGenerate: "取消生成",
@@ -1753,13 +2152,33 @@
         emptySummary: "填完上方 5 项，然后点击“生成复习计划”。",
         mustTitle: "必拿分模块",
         dropTitle: "可放弃清单",
-        todoTitle: "Todo",
-        todoEmpty: "生成计划后，复习安排会变成可勾选任务。",
+        todoTitle: "可执行 Todo",
+        todoEmpty: "生成计划后，阶段会拆成可排期 Session；打开 Session 即可看到分钟级步骤。",
+        todoPhaseProgress: "{completed}/{total} Session 完成",
+        todoSessionMeta: "SESSION {index} · {date} · {completed}/{total} 步骤",
+        todoGuideTitle: "执行说明书",
+        todoGuideNote: "分钟是建议时间盒；产出才是完成证据。",
+        todoNextAction: "下一步：用 {minutes} 分钟{action}；完成证据是“{output}”。",
+        todoSessionDone: "学习任务已完成。阶段进度已更新。",
+        todoStepOutput: "完成证据：{output}",
+        todoStepSource: "材料：{source}",
         subjectsTitle: "科目",
         newSubject: "＋ 新建科目",
+        workspaceImportTitle: "本地课程工作区",
+        workspaceSelectAria: "选择本地课程工作区",
+        workspacePlaceholder: "选择一个已审核的课程",
+        workspaceImport: "导入计划与资料",
+        workspaceLoading: "正在读取本地课程清单…",
+        workspaceLocalOnly: "仅从本机读取，不上传课程文件。",
+        workspaceEmpty: "没有找到可导入的课程工作区。",
+        workspaceLoadFailed: "本地课程清单读取失败。请确认 server.py 正在运行。",
+        workspaceImporting: "正在导入课程、计划和资料索引…",
+        workspaceImported: "已导入“{name}”：{materialCount} 份原始证据、{sessionCount} 个 Session。",
+        workspaceImportFailed: "导入失败。请检查课程清单与本地服务。",
+        workspaceMaterialCount: "{count} 份证据",
         calendarNav: "日历检查",
         calendarTitle: "多科目日历检查",
-        calendarDesc: "把所有科目的 Todo 放到同一条时间线上，自动找出每天总时长超载的位置。",
+        calendarDesc: "只把可独立改期的 Session 放进日历，并按所有科目的总负载检查超载。",
         previousWeek: "上一周",
         currentWeek: "本周",
         nextWeek: "下一周",
@@ -1775,7 +2194,11 @@
         calendarConflictBadge: "{count} 个时间冲突",
         calendarOverBy: "超出 {duration}",
         calendarDragHint: "鼠标可直接拖动；触屏长按约 0.45 秒后拖到同周其他日期。松手后会立即保存并重新检查冲突。",
-        calendarMoveInvalid: "不能把任务移到该科目的考试日或考试之后。",
+        calendarMoveInvalid: "这个日期不能放置该任务。",
+        calendarMovePast: "不能移到过去。请选择今天或之后的日期。",
+        calendarMoveExamBoundary: "这个科目的考试是 {date}，不能再往后排。",
+        calendarDropOutside: "请放到当前周的一天；暂不支持跨周拖动。",
+        calendarDropReady: "松手后移到 {date}。",
         calendarMoved: "已把“{title}”移到 {date}，冲突检查已更新。",
         calendarTaskAria: "{subject}：{title}，{duration}，安排在 {date}。鼠标拖动或触屏长按可改期。",
         calendarToday: "今天",
@@ -1785,14 +2208,14 @@
         calendarCapacityInvalid: "每日总可用时间必须在 1–20 小时之间。",
         calendarDayNames: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
         subjectsEmpty: "生成第一份计划后，它会自动保存在这里。",
-        subjectStorageNote: "只保存在当前浏览器，不会上传科目记录。",
+        subjectStorageNote: "内容保存在当前浏览器，关闭页面不会丢失；清除网站数据或删除科目后将无法恢复。科目记录不会上传。",
         openSubjectMenu: "打开科目菜单",
         closeSubjectMenu: "关闭科目菜单",
         renameSubject: "重命名科目",
         deleteSubject: "删除科目",
         saveRename: "保存",
         cancelRename: "取消",
-        deleteSubjectConfirm: "删除“{name}”及其 Todo？此操作无法撤销。",
+        deleteSubjectConfirm: "删除“{name}”及其全部 Session？此操作无法撤销。",
         subjectSaved: "计划已生成，并保存到科目库。",
         subjectStorageFailed: "无法保存科目。请检查浏览器是否允许本地存储。",
         subjectRenamed: "科目已重命名。",
@@ -1800,6 +2223,8 @@
         todoItemAria: "将“{title}”标记为{state}",
         todoCompleteState: "未完成",
         todoIncompleteState: "完成",
+        todoSuccessCriteria: "完成标准",
+        todoSource: "资料",
         hitsTitle: "优先考点（10条）",
         feedbackHeading: "遇到问题，直接告诉我",
         feedbackDescription: "选择最适合的方式反馈，我会用它继续改进。",
@@ -1832,7 +2257,6 @@
         aiFailed: "计划没有生成。请重试；你的输入已保留。",
         backendConnected: "生成服务已就绪",
         backendDisconnected: "生成服务未连接。本地预览请先启动 server.py。",
-        regenerateForLanguage: "界面已切换。再次生成后，计划将使用中文。",
         courseRequired: "请输入课程名。",
         courseLength: "课程名需为 2–80 个字符。",
         dateRequired: "请选择考试日期。",
@@ -1859,10 +2283,18 @@
         configureDesc: "The more specific the scope, the more actionable the plan.",
         courseLabel: "Course",
         dateLabel: "Exam date",
-        hoursLabel: "Study hours per day (1–20)",
+        hoursLabel: "Daily hours (1–20)",
         goalLabel: "Target score (60–100)",
         keywordsLabel: "Exam scope and question types (comma-separated)",
         keywordsPlaceholder: "Example: momentum, rigid-body rotation, calculation problems",
+        contentLanguageLabel: "Plan content language",
+        contentLanguageSelectAria: "Choose the plan content language",
+        contentLanguageAuto: "Auto",
+        contentLanguageZh: "中文",
+        contentLanguageEn: "English",
+        contentLanguageDetected: "Detected {language} from the course and exam scope",
+        contentLanguageUncertain: "Language signal is weak; using {language} for now. You can override it.",
+        contentLanguageManual: "Plan content manually set to {language}",
         generate: "Generate study plan",
         generating: "Generating…",
         cancelGenerate: "Stop generating",
@@ -1884,13 +2316,33 @@
         emptySummary: "Complete the five inputs above, then select “Generate study plan.”",
         mustTitle: "High-yield modules",
         dropTitle: "Skip list",
-        todoTitle: "Todo",
-        todoEmpty: "Generate a plan to turn the schedule into checkable tasks.",
+        todoTitle: "Executable Todos",
+        todoEmpty: "Generate a plan to split phases into schedulable Sessions with minute-level guidance.",
+        todoPhaseProgress: "{completed}/{total} Sessions complete",
+        todoSessionMeta: "SESSION {index} · {date} · {completed}/{total} steps",
+        todoGuideTitle: "Execution guide",
+        todoGuideNote: "Minutes are timeboxes; outputs are proof of completion.",
+        todoNextAction: "Next: spend {minutes} minutes on {action}; produce “{output}.”",
+        todoSessionDone: "Session complete. Phase progress updated.",
+        todoStepOutput: "Proof: {output}",
+        todoStepSource: "Source: {source}",
         subjectsTitle: "Subjects",
         newSubject: "+ New subject",
+        workspaceImportTitle: "Local course workspace",
+        workspaceSelectAria: "Select a local course workspace",
+        workspacePlaceholder: "Select a reviewed course",
+        workspaceImport: "Import plan and sources",
+        workspaceLoading: "Reading local course workspaces…",
+        workspaceLocalOnly: "Course files stay on this machine and are not uploaded.",
+        workspaceEmpty: "No importable course workspace was found.",
+        workspaceLoadFailed: "Could not read local courses. Confirm that server.py is running.",
+        workspaceImporting: "Importing the course, plan, and source index…",
+        workspaceImported: "Imported “{name}”: {materialCount} primary sources and {sessionCount} Sessions.",
+        workspaceImportFailed: "Import failed. Check the course manifests and local service.",
+        workspaceMaterialCount: "{count} sources",
         calendarNav: "Calendar check",
         calendarTitle: "Multi-subject calendar",
-        calendarDesc: "Put every subject's Todos on one timeline and flag days whose combined workload exceeds your capacity.",
+        calendarDesc: "Schedule only independently movable Sessions and check overload against the combined workload of every subject.",
         previousWeek: "Previous week",
         currentWeek: "This week",
         nextWeek: "Next week",
@@ -1906,7 +2358,11 @@
         calendarConflictBadge: "{count} time conflicts",
         calendarOverBy: "{duration} over",
         calendarDragHint: "Drag with a mouse, or press and hold for about 0.45 seconds on touch, then move the task within this week. Changes save instantly.",
-        calendarMoveInvalid: "A task cannot be moved to its subject's exam date or later.",
+        calendarMoveInvalid: "This task cannot be placed on that date.",
+        calendarMovePast: "Tasks cannot be moved into the past. Choose today or a later date.",
+        calendarMoveExamBoundary: "This subject's exam is on {date}. The task cannot be scheduled any later.",
+        calendarDropOutside: "Drop on a day in this week. Cross-week dragging is not supported yet.",
+        calendarDropReady: "Release to move to {date}.",
         calendarMoved: "Moved “{title}” to {date}. Conflict check updated.",
         calendarTaskAria: "{subject}: {title}, {duration}, scheduled for {date}. Drag with a mouse or press and hold on touch to reschedule.",
         calendarToday: "Today",
@@ -1916,14 +2372,14 @@
         calendarCapacityInvalid: "Total daily capacity must be between 1 and 20 hours.",
         calendarDayNames: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
         subjectsEmpty: "Generate your first plan. It will be saved here automatically.",
-        subjectStorageNote: "Saved only in this browser. Subject records are not uploaded.",
+        subjectStorageNote: "Content is saved in this browser and remains after you close the page. Clearing site data or deleting a subject removes it permanently. Subject records are not uploaded.",
         openSubjectMenu: "Open subject menu",
         closeSubjectMenu: "Close subject menu",
         renameSubject: "Rename subject",
         deleteSubject: "Delete subject",
         saveRename: "Save",
         cancelRename: "Cancel",
-        deleteSubjectConfirm: "Delete “{name}” and its Todos? This cannot be undone.",
+        deleteSubjectConfirm: "Delete “{name}” and all of its Sessions? This cannot be undone.",
         subjectSaved: "Plan generated and saved to the subject library.",
         subjectStorageFailed: "The subject could not be saved. Check whether browser storage is available.",
         subjectRenamed: "Subject renamed.",
@@ -1931,6 +2387,8 @@
         todoItemAria: "Mark “{title}” as {state}",
         todoCompleteState: "incomplete",
         todoIncompleteState: "complete",
+        todoSuccessCriteria: "Done when",
+        todoSource: "Source",
         hitsTitle: "Priority topics (10)",
         feedbackHeading: "Found a problem? Tell me.",
         feedbackDescription: "Choose the route that fits. Your feedback will shape the next iteration.",
@@ -1963,7 +2421,6 @@
         aiFailed: "The plan was not generated. Try again; your inputs are saved.",
         backendConnected: "Generation service ready",
         backendDisconnected: "Generation service offline. For local preview, start server.py.",
-        regenerateForLanguage: "Interface switched. Generate again to get the plan in English.",
         courseRequired: "Enter the course name.",
         courseLength: "Use 2–80 characters for the course name.",
         dateRequired: "Choose the exam date.",
@@ -1994,6 +2451,7 @@
       hoursLabel: "hoursLabel",
       goalLabel: "goalLabel",
       keywordsLabel: "keywordsLabel",
+      contentLanguageLabel: "contentLanguageLabel",
       generate: "generate",
       cancelGenerate: "cancelGenerate",
       fillDemo: "fillDemo",
@@ -2009,6 +2467,8 @@
       hitsTitle: "hitsTitle",
       subjectsTitle: "subjectsTitle",
       newSubject: "newSubject",
+      workspaceImportTitle: "workspaceImportTitle",
+      importWorkspace: "workspaceImport",
       calendarNavLabel: "calendarNav",
       calendarTitle: "calendarTitle",
       calendarDesc: "calendarDesc",
@@ -2030,9 +2490,99 @@
       qrNote: "qrNote"
     };
 
-    function t(key, replacements = {}) {
-      const template = translations[currentLanguage]?.[key] ?? translations.zh[key] ?? key;
+    function translate(language, key, replacements = {}) {
+      const normalizedLanguage = language === "en" ? "en" : "zh";
+      const template = translations[normalizedLanguage]?.[key] ?? translations.zh[key] ?? key;
       return String(template).replace(/\{(\w+)\}/g, (_, name) => replacements[name] ?? `{${name}}`);
+    }
+
+    function t(key, replacements = {}) {
+      return translate(currentLanguage, key, replacements);
+    }
+
+    function normalizeLanguageCode(value) {
+      const normalized = String(value || "").trim().toLowerCase().replace("_", "-");
+      if (normalized === "zh" || normalized.startsWith("zh-") || ["chinese", "中文", "简体中文"].includes(normalized)) return "zh";
+      if (normalized === "en" || normalized.startsWith("en-") || ["english", "英文", "英语"].includes(normalized)) return "en";
+      return "";
+    }
+
+    function countLanguageSignals(text) {
+      const content = String(text || "");
+      return {
+        han: (content.match(/[\u3400-\u9fff]/g) || []).length,
+        latin: (content.match(/[A-Za-z]/g) || []).length
+      };
+    }
+
+    function analyzeLanguageScores(hanCount, latinCount) {
+      const zhUnits = Math.max(0, Number(hanCount) || 0);
+      const enUnits = Math.max(0, Number(latinCount) || 0) / 5;
+      const total = zhUnits + enUnits;
+      if (!total) return { language: "", confidence: 0 };
+      const language = zhUnits >= enUnits ? "zh" : "en";
+      return {
+        language,
+        confidence: Math.round((Math.max(zhUnits, enUnits) / total) * 1000) / 1000
+      };
+    }
+
+    function analyzeTextLanguage(text) {
+      const signals = countLanguageSignals(text);
+      return analyzeLanguageScores(signals.han, signals.latin);
+    }
+
+    function analyzeInputLanguage(course, keywords) {
+      const courseSignals = countLanguageSignals(course);
+      const scopeSignals = countLanguageSignals(keywords);
+      return analyzeLanguageScores(
+        courseSignals.han + scopeSignals.han * 3,
+        courseSignals.latin + scopeSignals.latin * 3
+      );
+    }
+
+    function detectInputLanguage(text) {
+      return analyzeTextLanguage(text).language || null;
+    }
+
+    function contentLanguageName(language, uiLanguage = currentLanguage) {
+      return translate(uiLanguage, language === "en" ? "contentLanguageEn" : "contentLanguageZh");
+    }
+
+    function getContentLanguageResolution() {
+      const preference = normalizeLanguageCode(contentLanguageSelect.value);
+      if (preference) {
+        return { language: preference, source: "manual", confidence: 1, detectedLanguage: "" };
+      }
+      const detected = analyzeInputLanguage(courseInput.value, keywordsInput.value);
+      return {
+        language: detected.language || currentLanguage,
+        source: "auto",
+        confidence: detected.confidence,
+        detectedLanguage: detected.language
+      };
+    }
+
+    function renderContentLanguageControl() {
+      const selectedValue = contentLanguageSelect.value || "auto";
+      const optionLabels = {
+        auto: t("contentLanguageAuto"),
+        zh: t("contentLanguageZh"),
+        en: t("contentLanguageEn")
+      };
+      Array.from(contentLanguageSelect.options).forEach((option) => {
+        option.textContent = optionLabels[option.value] || option.value;
+      });
+      contentLanguageSelect.value = ["auto", "zh", "en"].includes(selectedValue) ? selectedValue : "auto";
+      contentLanguageSelect.setAttribute("aria-label", t("contentLanguageSelectAria"));
+      const resolution = getContentLanguageResolution();
+      const language = contentLanguageName(resolution.language);
+      const lowConfidence = resolution.source === "auto" && (!resolution.detectedLanguage || resolution.confidence < 0.68);
+      contentLanguageStatus.dataset.confidence = lowConfidence ? "low" : "high";
+      contentLanguageStatus.textContent = resolution.source === "manual"
+        ? t("contentLanguageManual", { language })
+        : t(lowConfidence ? "contentLanguageUncertain" : "contentLanguageDetected", { language });
+      return resolution;
     }
 
     function detectBrowserLanguage() {
@@ -2040,14 +2590,6 @@
         ? navigator.languages
         : [navigator.language || ""];
       return languages.some((language) => String(language).toLowerCase().startsWith("zh")) ? "zh" : "en";
-    }
-
-    function detectInputLanguage(text) {
-      const content = String(text || "");
-      const hanCount = (content.match(/[\u3400-\u9fff]/g) || []).length;
-      const latinCount = (content.match(/[A-Za-z]/g) || []).length;
-      if (!hanCount && !latinCount) return null;
-      return hanCount > Math.max(1, latinCount * 0.12) ? "zh" : "en";
     }
 
     function toLocalDateValue(date) {
@@ -2086,29 +2628,363 @@
       return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     }
 
-    function normalizeTask(task, index) {
-      const source = task && typeof task === "object" ? task : { title: String(task || "") };
-      const duration = Number(source.durationMinutes ?? source.duration_minutes ?? 0);
-      return {
-        id: typeof source.id === "string" && source.id ? source.id : createLocalId(`task-${index + 1}`),
-        title: String(source.title || "").trim(),
-        durationMinutes: Number.isFinite(duration) && duration > 0 ? Math.round(duration) : 60,
-        completed: Boolean(source.completed),
-        scheduledDate: isValidDateValue(source.scheduledDate) ? source.scheduledDate : ""
+    function allocateMinuteBlocks(totalMinutes, weights) {
+      const totalUnits = Math.max(1, Math.round((Number(totalMinutes) || 0) / 5));
+      const count = Math.min(weights.length, totalUnits);
+      if (!count) return [];
+      const safeWeights = weights.slice(0, count).map((value) => Math.max(1, Number(value) || 0));
+      const allocated = Array(count).fill(1);
+      const remaining = totalUnits - count;
+      if (remaining > 0) {
+        const sum = safeWeights.reduce((total, value) => total + value, 0);
+        const exact = safeWeights.map((value) => remaining * value / sum);
+        const floors = exact.map(Math.floor);
+        floors.forEach((value, index) => { allocated[index] += value; });
+        const order = exact.map((value, index) => ({ index, fraction: value - floors[index] }))
+          .sort((a, b) => b.fraction - a.fraction);
+        for (let index = 0; index < remaining - floors.reduce((total, value) => total + value, 0); index += 1) {
+          allocated[order[index].index] += 1;
+        }
+      }
+      return allocated.map((units) => units * 5);
+    }
+
+    function roundToFive(value) {
+      return Math.max(5, Math.round((Number(value) || 0) / 5) * 5);
+    }
+
+    function sessionStepBudgets(totalMinutes) {
+      const total = Math.max(15, Math.round((Number(totalMinutes) || 0) / 5) * 5);
+      const setup = Math.min(10, Math.max(5, roundToFive(total * 0.05)), Math.max(5, total - 10));
+      const reviewCeiling = Math.max(5, total - setup - 5);
+      const baseReviewMinimum = total < 60 ? 5 : 15;
+      const reviewMinimum = Math.min(reviewCeiling, Math.max(baseReviewMinimum, roundToFive(total * 0.15)));
+      const reviewTarget = Math.min(reviewCeiling, 40, Math.max(reviewMinimum, roundToFive(total * 0.20)));
+      const reviewMaximum = Math.min(reviewCeiling, 40, Math.max(reviewTarget, roundToFive(total * 0.25)));
+      return { setup, reviewMinimum, reviewTarget, reviewMaximum };
+    }
+
+    function normalizeStepRole(value, action = "") {
+      const raw = String(value || "").trim().toLowerCase();
+      const aliases = {
+        setup: "setup", prepare: "setup", preparation: "setup", "准备": "setup",
+        execute: "execute", practice: "execute", study: "execute", "执行": "execute",
+        review: "review", check: "review", "复盘": "review", "检查": "review"
       };
+      const text = String(action || "").trim().toLowerCase();
+      const setupSignals = [
+        "定位本次目标", "所需材料", "准备材料", "确认本次题型", "输入检查清单",
+        "locate the", "required material", "prepare material", "gather material", "input checklist"
+      ];
+      const reviewSignals = [
+        "核对", "检查", "复盘", "批改", "错题", "纠错", "定位错误",
+        "check the", "review", "verify", "correct", "isolate errors", "error log"
+      ];
+      if (setupSignals.some((signal) => text.includes(signal))) return "setup";
+      if (text.startsWith("执行：") || text.startsWith("执行:") || text.startsWith("execute:")) return "execute";
+      if (reviewSignals.some((signal) => text.includes(signal))) return "review";
+      if (aliases[raw]) return aliases[raw];
+      return "execute";
+    }
+
+    function rebalanceGuideMinutes(steps, totalMinutes) {
+      if (!Array.isArray(steps) || !steps.length) return steps;
+      const allocated = allocateMinuteBlocks(totalMinutes, steps.map((step) => step.minutes));
+      steps.splice(allocated.length);
+      steps.forEach((step, index) => {
+        step.minutes = allocated[index];
+        step.role = normalizeStepRole(step.role, step.action);
+      });
+
+      const setupIndices = steps.map((step, index) => step.role === "setup" ? index : -1).filter((index) => index >= 0);
+      setupIndices.slice(1).forEach((index) => { steps[index].role = "execute"; });
+      const primarySetup = setupIndices.slice(0, 1);
+      const reviewIndices = steps.map((step, index) => step.role === "review" ? index : -1).filter((index) => index >= 0);
+      const executeIndices = steps.map((step, index) => step.role === "execute" ? index : -1).filter((index) => index >= 0);
+      if (!executeIndices.length) return steps;
+
+      const budgets = sessionStepBudgets(totalMinutes);
+      const addToExecute = (minutes) => {
+        if (minutes <= 0) return;
+        const additions = allocateMinuteBlocks(minutes, executeIndices.map((index) => steps[index].minutes));
+        additions.forEach((addition, additionIndex) => {
+          steps[executeIndices[additionIndex]].minutes += addition;
+        });
+      };
+
+      if (primarySetup.length) {
+        const setupIndex = primarySetup[0];
+        const excess = Math.max(0, steps[setupIndex].minutes - budgets.setup);
+        if (excess) {
+          steps[setupIndex].minutes -= excess;
+          addToExecute(excess);
+        }
+      }
+
+      if (reviewIndices.length) {
+        let reviewTotal = reviewIndices.reduce((total, index) => total + steps[index].minutes, 0);
+        const reviewCap = Math.max(budgets.reviewMaximum, reviewIndices.length * 5);
+        if (reviewTotal > reviewCap) {
+          const reduced = allocateMinuteBlocks(reviewCap, reviewIndices.map((index) => steps[index].minutes));
+          const excess = reviewTotal - reduced.reduce((total, minutes) => total + minutes, 0);
+          reduced.forEach((minutes, reducedIndex) => { steps[reviewIndices[reducedIndex]].minutes = minutes; });
+          addToExecute(excess);
+        }
+
+        reviewTotal = reviewIndices.reduce((total, index) => total + steps[index].minutes, 0);
+        let needed = Math.max(0, budgets.reviewMinimum - reviewTotal);
+        while (needed >= 5) {
+          const donors = executeIndices.filter((index) => steps[index].minutes > 5);
+          if (!donors.length) break;
+          const donor = donors.reduce((best, index) => steps[index].minutes > steps[best].minutes ? index : best, donors[0]);
+          const recipient = reviewIndices.reduce((best, index) => steps[index].minutes < steps[best].minutes ? index : best, reviewIndices[0]);
+          steps[donor].minutes -= 5;
+          steps[recipient].minutes += 5;
+          needed -= 5;
+        }
+      }
+      return steps;
+    }
+
+    function normalizeSourceRefs(source) {
+      const rawSourceRefs = Array.isArray(source?.sourceRefs)
+        ? source.sourceRefs
+        : (Array.isArray(source?.source_refs) ? source.source_refs : []);
+      return rawSourceRefs.map((ref) => {
+        const item = ref && typeof ref === "object" ? ref : { label: String(ref || "") };
+        const rawHref = String(item.href || "").trim();
+        const safeHref = rawHref.startsWith("/") || /^https?:\/\//i.test(rawHref) ? rawHref : "";
+        return {
+          label: String(item.label || item.name || "").trim(),
+          href: safeHref,
+          pages: String(item.pages || "").trim(),
+          kind: String(item.kind || "").trim()
+        };
+      }).filter((ref) => ref.label);
+    }
+
+    function collectPlanLanguageText(source) {
+      const values = [];
+      const add = (value) => {
+        const text = String(value || "").trim();
+        if (text) values.push(text);
+      };
+      add(source?.headline);
+      add(source?.summary);
+      ["must", "drop", "hits"].forEach((key) => {
+        (Array.isArray(source?.[key]) ? source[key] : []).forEach(add);
+      });
+      const collectSession = (session) => {
+        if (!session || typeof session !== "object") return;
+        add(session.title);
+        add(session.successCriteria ?? session.success_criteria);
+      };
+      (Array.isArray(source?.phases) ? source.phases : []).forEach((phase) => {
+        if (!phase || typeof phase !== "object") return;
+        add(phase.title);
+        add(phase.goal ?? phase.summary);
+        (Array.isArray(phase.sessions) ? phase.sessions : []).forEach(collectSession);
+      });
+      const legacyTasks = Array.isArray(source?.tasks)
+        ? source.tasks
+        : (Array.isArray(source?.schedule) ? source.schedule : []);
+      legacyTasks.forEach(collectSession);
+      return values.join("\n");
+    }
+
+    function inferPlanContentLanguage(source) {
+      return analyzeTextLanguage(collectPlanLanguageText(source)).language;
+    }
+
+    function isLegacyFallbackGuide(steps, language) {
+      if (!Array.isArray(steps) || steps.length !== 3) return false;
+      const actions = steps.map((step) => String(step.action || "").trim());
+      if (language === "en") {
+        return /^Locate (?:(?:the|the exact) )?target and required material$/i.test(actions[0])
+          && /^Execute:/i.test(actions[1])
+          && /^Check the output and isolate errors$/i.test(actions[2]);
+      }
+      return actions[0] === "定位本次目标与所需材料"
+        && actions[1].startsWith("执行：")
+        && actions[2] === "核对产出并定位错误";
+    }
+
+    function fallbackGuideSteps(title, durationMinutes, successCriteria, sourceRefs, contentLanguage) {
+      const source = sourceRefs[0]?.label || (contentLanguage === "en" ? "Supplied exam scope" : "用户提供的考试范围");
+      const budgets = sessionStepBudgets(durationMinutes);
+      const minutes = [budgets.setup, durationMinutes - budgets.setup - budgets.reviewTarget, budgets.reviewTarget];
+      const templates = contentLanguage === "en" ? [
+        { role: "setup", action: "Locate the target and required material", output: "Write a short input checklist" },
+        { role: "execute", action: `Execute: ${title}`, output: successCriteria || "Produce a complete first attempt" },
+        { role: "review", action: "Check the output and isolate errors", output: "Record the next correction or review trigger" }
+      ] : [
+        { role: "setup", action: "定位本次目标与所需材料", output: "写出一份输入检查清单" },
+        { role: "execute", action: `执行：${title}`, output: successCriteria || "留下完整的首次作答或训练结果" },
+        { role: "review", action: "核对产出并定位错误", output: "记录下一次复做或复习入口" }
+      ];
+      return templates.slice(0, minutes.length).map((step, index) => ({
+        id: `step-${index + 1}`,
+        role: step.role,
+        minutes: minutes[index],
+        action: step.action,
+        output: step.output,
+        source,
+        completed: false
+      }));
+    }
+
+    function normalizeTask(task, index, phase = {}, contentLanguage = "zh") {
+      const source = task && typeof task === "object" ? task : { title: String(task || "") };
+      const rawDuration = Number(source.durationMinutes ?? source.duration_minutes ?? 0);
+      const sourceRefs = normalizeSourceRefs(source);
+      const title = String(source.title || "").trim();
+      const successCriteria = String(source.successCriteria ?? source.success_criteria ?? "").trim();
+      const phaseId = String(phase.id || source.phaseId || source.phase_id || "phase-01");
+      const id = typeof source.id === "string" && source.id ? source.id : `${phaseId}-session-${index + 1}`;
+      const rawSteps = Array.isArray(source.steps) ? source.steps : (Array.isArray(source.guide) ? source.guide : []);
+      let parsedSteps = rawSteps.map((step, stepIndex) => {
+        const item = step && typeof step === "object" ? step : { action: String(step || "") };
+        return {
+          id: typeof item.id === "string" && item.id ? item.id : `${id}-step-${stepIndex + 1}`,
+          role: normalizeStepRole(item.role, item.action || item.title),
+          minutes: Math.max(5, Math.round((Number(item.minutes ?? item.duration_minutes) || 0) / 5) * 5),
+          action: String(item.action || item.title || "").trim(),
+          output: String(item.output || item.success_criteria || "").trim(),
+          source: String(item.source || sourceRefs[0]?.label || (contentLanguage === "en" ? "Supplied exam scope" : "用户提供的考试范围")).trim(),
+          completed: Boolean(item.completed)
+        };
+      }).filter((step) => step.action);
+      const legacyGuideLanguage = isLegacyFallbackGuide(parsedSteps, "en")
+        ? "en"
+        : (isLegacyFallbackGuide(parsedSteps, "zh") ? "zh" : "");
+      if (legacyGuideLanguage) {
+        parsedSteps.forEach((step, stepIndex) => {
+          step.role = ["setup", "execute", "review"][stepIndex] || "execute";
+        });
+      }
+      const legacyCompletion = parsedSteps.map((step) => step.completed);
+      const replaceLegacyGuide = legacyGuideLanguage && legacyGuideLanguage !== contentLanguage;
+      if (replaceLegacyGuide) parsedSteps = [];
+      const parsedTotal = parsedSteps.reduce((total, step) => total + step.minutes, 0);
+      const baseDuration = Number.isFinite(rawDuration) && rawDuration > 0 ? rawDuration : (parsedTotal || 60);
+      const durationMinutes = Math.max(15, Math.round(baseDuration / 5) * 5);
+      const steps = parsedSteps.length
+        ? parsedSteps.slice(0, Math.max(1, Math.floor(durationMinutes / 5)))
+        : fallbackGuideSteps(title, durationMinutes, successCriteria, sourceRefs, contentLanguage);
+      if (replaceLegacyGuide) {
+        steps.forEach((step, stepIndex) => { step.completed = Boolean(legacyCompletion[stepIndex]); });
+      }
+      rebalanceGuideMinutes(steps, durationMinutes);
+      steps.forEach((step) => {
+        if (!step.output) step.output = successCriteria || (contentLanguage === "en" ? "A checkable result" : "一份可检查的产出");
+      });
+      const explicitlyCompleted = Boolean(source.completed);
+      if (explicitlyCompleted) steps.forEach((step) => { step.completed = true; });
+      const dayIndex = Number(source.dayIndex ?? source.day_index ?? 0);
+      return {
+        id,
+        phaseId,
+        phaseTitle: String(phase.title || source.phaseTitle || source.phase_title || "").trim(),
+        phaseGoal: String(phase.goal || source.phaseGoal || source.phase_goal || "").trim(),
+        title,
+        dayIndex: Number.isInteger(dayIndex) && dayIndex > 0 ? dayIndex : 0,
+        durationMinutes,
+        completed: explicitlyCompleted || (steps.length > 0 && steps.every((step) => step.completed)),
+        scheduledDate: isValidDateValue(source.scheduledDate ?? source.scheduled_date)
+          ? String(source.scheduledDate ?? source.scheduled_date)
+          : "",
+        successCriteria,
+        sourceRefs,
+        steps
+      };
+    }
+
+    function normalizePhase(phase, phaseIndex, contentLanguage) {
+      const source = phase && typeof phase === "object" ? phase : { title: String(phase || "") };
+      const id = typeof source.id === "string" && source.id ? source.id : `phase-${phaseIndex + 1}`;
+      const rawTitle = String(source.title || "").trim();
+      const rawGoal = String(source.goal || source.summary || "").trim();
+      const titleIsOppositeLegacyFallback = (contentLanguage === "zh" && rawTitle === "Execution plan")
+        || (contentLanguage === "en" && rawTitle === "执行计划");
+      const goalIsOppositeLegacyFallback = (contentLanguage === "zh" && rawGoal === "Complete each schedulable study block in order.")
+        || (contentLanguage === "en" && rawGoal === "按顺序完成每个可独立排期的学习块。");
+      const normalized = {
+        id,
+        title: titleIsOppositeLegacyFallback
+          ? (contentLanguage === "en" ? "Execution plan" : "执行计划")
+          : (rawTitle || (contentLanguage === "en" ? `Phase ${phaseIndex + 1}` : `阶段 ${phaseIndex + 1}`)),
+        goal: goalIsOppositeLegacyFallback
+          ? (contentLanguage === "en" ? "Complete each schedulable study block in order." : "按顺序完成每个可独立排期的学习块。")
+          : rawGoal,
+        sessions: []
+      };
+      const rawSessions = Array.isArray(source.sessions) ? source.sessions : [];
+      normalized.sessions = rawSessions.map((session, sessionIndex) => normalizeTask(session, sessionIndex, normalized, contentLanguage))
+        .filter((session) => session.title);
+      return normalized;
     }
 
     function normalizePlan(plan) {
       const source = plan && typeof plan === "object" ? plan : {};
-      const rawTasks = Array.isArray(source.tasks)
-        ? source.tasks
-        : (Array.isArray(source.schedule) ? source.schedule : []);
+      const storedContentLanguage = normalizeLanguageCode(source.contentLanguage ?? source.content_language);
+      const planLanguageAnalysis = analyzeTextLanguage(collectPlanLanguageText(source));
+      const inferredContentLanguage = planLanguageAnalysis.language;
+      const storedLanguageSource = String(source.languageSource ?? source.language_source ?? "");
+      const repairStoredLanguage = storedContentLanguage
+        && inferredContentLanguage
+        && storedContentLanguage !== inferredContentLanguage
+        && storedLanguageSource !== "manual"
+        && planLanguageAnalysis.confidence >= 0.72;
+      const contentLanguage = repairStoredLanguage
+        ? inferredContentLanguage
+        : (storedContentLanguage || inferredContentLanguage || "zh");
+      const languageSource = repairStoredLanguage
+        ? "inferred-repair"
+        : (storedLanguageSource || (storedContentLanguage ? "stored" : "inferred"));
+      const rawConfidence = Number(source.languageConfidence ?? source.language_confidence);
+      const languageConfidence = repairStoredLanguage
+        ? planLanguageAnalysis.confidence
+        : Number.isFinite(rawConfidence)
+        ? Math.min(1, Math.max(0, rawConfidence))
+        : planLanguageAnalysis.confidence;
+      const rawPhases = Array.isArray(source.phases) ? source.phases : [];
+      let phases = rawPhases.map((phase, phaseIndex) => normalizePhase(phase, phaseIndex, contentLanguage)).filter((phase) => phase.sessions.length);
+      if (!phases.length) {
+        const rawTasks = Array.isArray(source.tasks)
+          ? source.tasks
+          : (Array.isArray(source.schedule) ? source.schedule : []);
+        if (rawTasks.length) {
+          const legacyPhase = {
+            id: "phase-legacy",
+            title: contentLanguage === "en" ? "Execution plan" : "执行计划",
+            goal: contentLanguage === "en" ? "Complete each schedulable study block in order." : "按顺序完成每个可独立排期的学习块。"
+          };
+          phases = [{ ...legacyPhase, sessions: rawTasks.map((task, index) => normalizeTask(task, index, legacyPhase, contentLanguage)).filter((task) => task.title) }];
+        }
+      }
+      const tasks = phases.flatMap((phase) => phase.sessions);
+      const seenSessionIds = new Set();
+      const seenStepIds = new Set();
+      tasks.forEach((task, taskIndex) => {
+        if (seenSessionIds.has(task.id)) task.id = `${task.phaseId}-session-${taskIndex + 1}`;
+        seenSessionIds.add(task.id);
+        task.steps.forEach((step, stepIndex) => {
+          if (seenStepIds.has(step.id)) step.id = `${task.id}-step-${stepIndex + 1}`;
+          seenStepIds.add(step.id);
+        });
+      });
+      const rawSchemaVersion = Number(source.schemaVersion ?? source.schema_version ?? (rawPhases.length ? 2 : 1));
       return {
+        schemaVersion: Number.isFinite(rawSchemaVersion) ? Math.max(4, rawSchemaVersion) : 4,
+        contentLanguage,
+        languageSource,
+        languageConfidence,
         headline: String(source.headline || ""),
         summary: String(source.summary || ""),
         must: Array.isArray(source.must) ? source.must.map(String) : [],
         drop: Array.isArray(source.drop) ? source.drop.map(String) : [],
-        tasks: rawTasks.map(normalizeTask).filter((task) => task.title),
+        phases,
+        tasks,
         hits: Array.isArray(source.hits) ? source.hits.map(String) : []
       };
     }
@@ -2122,6 +2998,7 @@
         : SUBJECT_COLORS[index % SUBJECT_COLORS.length];
       return {
         id: typeof record.id === "string" && record.id ? record.id : createLocalId("subject"),
+        workspaceId: typeof record.workspaceId === "string" ? record.workspaceId : "",
         name,
         color: storedColor,
         examDate: String(record.examDate || record.inputs?.date || ""),
@@ -2130,10 +3007,13 @@
           date: String(record.inputs?.date || record.examDate || ""),
           hours: String(record.inputs?.hours ?? "8"),
           goal: String(record.inputs?.goal ?? "80"),
-          keywords: String(record.inputs?.keywords || "")
+          keywords: String(record.inputs?.keywords || ""),
+          contentLanguagePreference: ["auto", "zh", "en"].includes(record.inputs?.contentLanguagePreference)
+            ? record.inputs.contentLanguagePreference
+            : "auto"
         },
         plan: normalizePlan(record.plan),
-        scheduleVersion: Number(record.scheduleVersion) >= 3 ? 3 : (Number(record.scheduleVersion) >= 2 ? 2 : 1),
+        scheduleVersion: Number(record.scheduleVersion) >= 4 ? 4 : (Number(record.scheduleVersion) >= 3 ? 3 : (Number(record.scheduleVersion) >= 2 ? 2 : 1)),
         createdAt: String(record.createdAt || new Date().toISOString()),
         updatedAt: String(record.updatedAt || record.createdAt || new Date().toISOString())
       };
@@ -2195,46 +3075,80 @@
       return dates.length ? dates : [todayValue];
     }
 
+    function getOtherSubjectScheduleLoads(subjectId, dates) {
+      const loads = new Map(dates.map((date) => [date, 0]));
+      const taskCounts = new Map(dates.map((date) => [date, 0]));
+      subjects.forEach((otherSubject) => {
+        if (otherSubject.id === subjectId) return;
+        const otherTasks = Array.isArray(otherSubject.plan?.tasks) ? otherSubject.plan.tasks : [];
+        otherTasks.forEach((task) => {
+          if (task.completed || !loads.has(task.scheduledDate)) return;
+          loads.set(task.scheduledDate, loads.get(task.scheduledDate) + (Number(task.durationMinutes) || 0));
+          taskCounts.set(task.scheduledDate, taskCounts.get(task.scheduledDate) + 1);
+        });
+      });
+      return { loads, taskCounts };
+    }
+
     function ensureSubjectTaskSchedule(subject) {
       const tasks = Array.isArray(subject.plan?.tasks) ? subject.plan.tasks : [];
       if (!tasks.length) return false;
       const dates = getSubjectScheduleDates(subject);
-      const dailyLimit = Math.max(60, Math.round((Number(subject.inputs?.hours) || 8) * 60));
-      const needsBalancedMigration = subject.scheduleVersion < 3 && dates.length > 1 && tasks.length > 1;
-      if (needsBalancedMigration) {
+      const configuredCapacity = Number(calendarSettings.dailyCapacityHours);
+      const dailyLimit = Math.max(60, Math.round((Number.isFinite(configuredCapacity) ? configuredCapacity : (Number(subject.inputs?.hours) || 8)) * 60));
+      const needsSessionMigration = subject.scheduleVersion < 4;
+      if (needsSessionMigration) {
         tasks.forEach((task) => {
           task.scheduledDate = "";
         });
       }
 
-      const loads = new Map(dates.map((date) => [date, 0]));
-      const taskCounts = new Map(dates.map((date) => [date, 0]));
+      const { loads, taskCounts } = getOtherSubjectScheduleLoads(subject.id, dates);
       tasks.forEach((task) => {
-        if (isValidDateValue(task.scheduledDate) && loads.has(task.scheduledDate)) {
+        if (!task.completed && isValidDateValue(task.scheduledDate) && loads.has(task.scheduledDate)) {
           loads.set(task.scheduledDate, loads.get(task.scheduledDate) + task.durationMinutes);
           taskCounts.set(task.scheduledDate, taskCounts.get(task.scheduledDate) + 1);
         }
       });
 
-      let changed = needsBalancedMigration;
-      tasks.forEach((task) => {
-        if (isValidDateValue(task.scheduledDate)) return;
+      let changed = needsSessionMigration;
+      let previousDateIndex = 0;
+      tasks.forEach((task, taskIndex) => {
+        if (isValidDateValue(task.scheduledDate) && dates.includes(task.scheduledDate)) {
+          previousDateIndex = Math.max(previousDateIndex, dates.indexOf(task.scheduledDate));
+          return;
+        }
         const duration = Number(task.durationMinutes) || 60;
-        const datesWithinLimit = dates.filter((date) => loads.get(date) + duration <= dailyLimit);
-        const candidates = datesWithinLimit.length ? datesWithinLimit : dates;
+        const explicitDayIndex = Number(task.dayIndex);
+        const preferredDateIndex = Number.isInteger(explicitDayIndex) && explicitDayIndex > 0
+          ? Math.min(dates.length - 1, explicitDayIndex - 1)
+          : (tasks.length === 1 ? 0 : Math.round(taskIndex * (dates.length - 1) / (tasks.length - 1)));
+        const orderedDates = dates.filter((_, dateIndex) => dateIndex >= previousDateIndex);
+        const baseCandidates = orderedDates.length ? orderedDates : dates;
+        const datesWithinLimit = baseCandidates.filter((date) => loads.get(date) + duration <= dailyLimit);
+        const candidates = datesWithinLimit.length ? datesWithinLimit : baseCandidates;
         const target = candidates.reduce((best, date) => {
-          const loadDifference = loads.get(date) - loads.get(best);
-          if (loadDifference < 0) return date;
-          if (loadDifference === 0 && taskCounts.get(date) < taskCounts.get(best)) return date;
+          const dateIndex = dates.indexOf(date);
+          const bestIndex = dates.indexOf(best);
+          const distance = Math.abs(dateIndex - preferredDateIndex);
+          const bestDistance = Math.abs(bestIndex - preferredDateIndex);
+          if (distance < bestDistance) return date;
+          if (distance > bestDistance) return best;
+          if (loads.get(date) < loads.get(best)) return date;
+          if (loads.get(date) > loads.get(best)) return best;
+          if (taskCounts.get(date) < taskCounts.get(best)) return date;
           return best;
         }, candidates[0]);
         task.scheduledDate = target;
-        loads.set(target, loads.get(target) + duration);
-        taskCounts.set(target, taskCounts.get(target) + 1);
+        previousDateIndex = Math.max(previousDateIndex, dates.indexOf(target));
+        if (!task.completed) {
+          loads.set(target, loads.get(target) + duration);
+          taskCounts.set(target, taskCounts.get(target) + 1);
+        }
         changed = true;
       });
-      if (subject.scheduleVersion < 3) {
-        subject.scheduleVersion = 3;
+      if (subject.scheduleVersion < 4) {
+        subject.scheduleVersion = 4;
         changed = true;
       }
       return changed;
@@ -2259,7 +3173,8 @@
         date: dateInput.value,
         hours: hoursInput.value,
         goal: goalInput.value,
-        keywords: keywordsInput.value.trim()
+        keywords: keywordsInput.value.trim(),
+        contentLanguagePreference: contentLanguageSelect.value
       };
     }
 
@@ -2365,6 +3280,8 @@
 
     function clearPlanState() {
       lastPlan = null;
+      openSessionIds = new Set();
+      todoDisclosureInitialized = false;
       hasGeneratedPlan = false;
       document.getElementById("headline").textContent = t("emptyHeadline");
       document.getElementById("summary").textContent = t("emptySummary");
@@ -2390,11 +3307,13 @@
       hoursInput.value = "8";
       goalInput.value = "80";
       keywordsInput.value = "";
+      contentLanguageSelect.value = "auto";
       touchedFields.clear();
       validationSummary.textContent = "";
       clearPlanState();
       renderSubjectList();
       updateMetrics();
+      renderContentLanguageControl();
       saveDraft();
       setSidebarOpen(false);
       courseInput.focus();
@@ -2410,11 +3329,13 @@
       hoursInput.value = subject.inputs.hours;
       goalInput.value = subject.inputs.goal;
       keywordsInput.value = subject.inputs.keywords;
+      contentLanguageSelect.value = subject.inputs.contentLanguagePreference || "auto";
       touchedFields.clear();
       validationSummary.textContent = "";
       applyPlan(subject.plan, { scroll: false });
       renderSubjectList();
       updateMetrics();
+      renderContentLanguageControl();
       saveDraft();
       try {
         localStorage.setItem("finals-os-active-subject-v1", activeSubjectId);
@@ -2455,7 +3376,7 @@
           examDate: inputs.date,
           inputs,
           plan: lastPlan,
-          scheduleVersion: 3,
+          scheduleVersion: 4,
           createdAt: timestamp,
           updatedAt: timestamp
         };
@@ -2675,18 +3596,61 @@
       }
     }
 
-    function canScheduleTaskOnDate(subject, dateValue) {
+    function getScheduleDateConstraint(subject, dateValue) {
       const todayValue = toLocalDateValue(new Date());
-      if (!isValidDateValue(dateValue) || dateValue < todayValue) return false;
+      if (!isValidDateValue(dateValue)) {
+        return { key: "calendarDropOutside", replacements: {} };
+      }
+      if (dateValue < todayValue) {
+        return { key: "calendarMovePast", replacements: {} };
+      }
       const examValue = isValidDateValue(subject.examDate) ? subject.examDate : subject.inputs?.date;
-      if (!isValidDateValue(examValue)) return true;
-      if (examValue === todayValue) return dateValue === todayValue;
-      return dateValue < examValue;
+      if (!isValidDateValue(examValue)) return null;
+      if (examValue === todayValue && dateValue === todayValue) return null;
+      if (dateValue >= examValue) {
+        return {
+          key: "calendarMoveExamBoundary",
+          replacements: {
+            date: formatCalendarDate(examValue, { year: "numeric", month: "long", day: "numeric" })
+          }
+        };
+      }
+      return null;
+    }
+
+    function canScheduleTaskOnDate(subject, dateValue) {
+      return !getScheduleDateConstraint(subject, dateValue);
+    }
+
+    function setCalendarDragFeedback(message = "", tone = "info", autoHide = false) {
+      window.clearTimeout(calendarDragFeedbackTimer);
+      calendarDragFeedbackTimer = null;
+      calendarDragStatus.classList.remove("is-visible");
+      if (!message) {
+        calendarDragStatus.hidden = true;
+        calendarDragStatus.textContent = "";
+        return;
+      }
+      calendarDragStatus.dataset.tone = tone;
+      calendarDragStatus.setAttribute("role", tone === "invalid" ? "alert" : "status");
+      calendarDragStatus.setAttribute("aria-live", tone === "invalid" ? "assertive" : "polite");
+      calendarDragStatus.textContent = message;
+      calendarDragStatus.hidden = false;
+      void calendarDragStatus.offsetWidth;
+      calendarDragStatus.classList.add("is-visible");
+      if (autoHide) {
+        calendarDragFeedbackTimer = window.setTimeout(() => {
+          calendarDragStatus.hidden = true;
+          calendarDragStatus.textContent = "";
+          calendarDragStatus.classList.remove("is-visible");
+        }, tone === "invalid" ? 5600 : 4000);
+      }
     }
 
     function clearCalendarDropTarget() {
       document.querySelectorAll(".calendar-day.is-drop-target, .calendar-day.is-drop-invalid").forEach((day) => {
         day.classList.remove("is-drop-target", "is-drop-invalid");
+        day.removeAttribute("data-drop-message");
       });
     }
 
@@ -2701,8 +3665,25 @@
       clearCalendarDropTarget();
       const day = document.elementFromPoint(clientX, clientY)?.closest(".calendar-day");
       state.targetDate = day?.dataset.date || "";
-      state.targetValid = Boolean(day && canScheduleTaskOnDate(state.subject, state.targetDate));
-      if (day) day.classList.add(state.targetValid ? "is-drop-target" : "is-drop-invalid");
+      const constraint = day ? getScheduleDateConstraint(state.subject, state.targetDate) : {
+        key: "calendarDropOutside",
+        replacements: {}
+      };
+      state.targetValid = Boolean(day && !constraint);
+      state.targetMessage = constraint
+        ? t(constraint.key, constraint.replacements)
+        : t("calendarDropReady", {
+          date: formatCalendarDate(state.targetDate, { month: "long", day: "numeric" })
+        });
+      state.targetTone = state.targetValid ? "ready" : "invalid";
+      if (day) {
+        day.classList.add(state.targetValid ? "is-drop-target" : "is-drop-invalid");
+        day.dataset.dropMessage = state.targetMessage;
+      }
+      if (state.ghostNote) {
+        state.ghostNote.textContent = state.targetMessage;
+        state.ghost.dataset.tone = state.targetTone;
+      }
     }
 
     function activateCalendarDrag(state) {
@@ -2714,13 +3695,18 @@
       const ghost = document.createElement("div");
       ghost.className = "calendar-drag-ghost";
       ghost.style.setProperty("--subject-color", state.subject.color);
-      ghost.textContent = state.task.title;
+      const ghostTitle = document.createElement("span");
+      ghostTitle.textContent = state.task.title;
+      const ghostNote = document.createElement("span");
+      ghostNote.className = "calendar-drag-ghost-note";
+      ghost.append(ghostTitle, ghostNote);
       document.body.appendChild(ghost);
       state.ghost = ghost;
+      state.ghostNote = ghostNote;
       updateCalendarDragTarget(state, state.lastX, state.lastY);
     }
 
-    function cancelCalendarDrag() {
+    function cancelCalendarDrag(options = {}) {
       const state = calendarDragState;
       if (!state) return;
       window.clearTimeout(state.timer);
@@ -2732,13 +3718,17 @@
       if (state.button.hasPointerCapture?.(state.pointerId)) {
         state.button.releasePointerCapture(state.pointerId);
       }
+      if (!options.keepFeedback) setCalendarDragFeedback();
     }
 
     function rescheduleCalendarTask(subjectId, taskId, dateValue) {
       const subject = subjects.find((item) => item.id === subjectId);
       const task = subject?.plan?.tasks?.find((item) => item.id === taskId);
-      if (!subject || !task || !canScheduleTaskOnDate(subject, dateValue)) {
-        setExportStatus(t("calendarMoveInvalid"));
+      const constraint = subject ? getScheduleDateConstraint(subject, dateValue) : null;
+      if (!subject || !task || constraint) {
+        const message = constraint ? t(constraint.key, constraint.replacements) : t("calendarMoveInvalid");
+        setExportStatus(message);
+        setCalendarDragFeedback(message, "invalid", true);
         return;
       }
       task.scheduledDate = dateValue;
@@ -2750,24 +3740,28 @@
       saveSubjectStore();
       renderTodoList();
       renderCalendar();
-      setExportStatus(t("calendarMoved", {
+      const message = t("calendarMoved", {
         title: task.title,
         date: formatCalendarDate(dateValue, { year: "numeric", month: "long", day: "numeric" })
-      }));
+      });
+      setExportStatus(message);
+      setCalendarDragFeedback(message, "success", true);
     }
 
     function finishCalendarDrag(state) {
       if (!state || calendarDragState !== state) return;
       const shouldMove = state.active && state.targetValid && state.targetDate;
-      const invalidTarget = state.active && state.targetDate && !state.targetValid;
+      const rejectedDrop = state.active && !shouldMove;
       const targetDate = state.targetDate;
       const subjectId = state.subject.id;
       const taskId = state.task.id;
-      cancelCalendarDrag();
+      const targetMessage = state.targetMessage || t("calendarDropOutside");
+      cancelCalendarDrag({ keepFeedback: true });
       if (shouldMove) {
         rescheduleCalendarTask(subjectId, taskId, targetDate);
-      } else if (invalidTarget) {
-        setExportStatus(t("calendarMoveInvalid"));
+      } else if (rejectedDrop) {
+        setExportStatus(targetMessage);
+        setCalendarDragFeedback(targetMessage, "invalid", true);
       }
     }
 
@@ -2787,8 +3781,11 @@
           lastY: event.clientY,
           targetDate: task.scheduledDate,
           targetValid: true,
+          targetMessage: "",
+          targetTone: "ready",
           active: false,
           ghost: null,
+          ghostNote: null,
           timer: null
         };
         calendarDragState = state;
@@ -2831,8 +3828,11 @@
           lastY: event.clientY,
           targetDate: task.scheduledDate,
           targetValid: true,
+          targetMessage: "",
+          targetTone: "ready",
           active: false,
           ghost: null,
+          ghostNote: null,
           timer: null
         };
       });
@@ -2850,6 +3850,10 @@
       loadCalendarSettings();
       calendarWeekStart = getWeekStartValue();
       let changed = false;
+      subjects.filter((subject) => subject.scheduleVersion < 4).forEach((subject) => {
+        const tasks = Array.isArray(subject.plan?.tasks) ? subject.plan.tasks : [];
+        tasks.forEach((task) => { task.scheduledDate = ""; });
+      });
       subjects.forEach((subject) => {
         if (ensureSubjectTaskSchedule(subject)) changed = true;
       });
@@ -2884,7 +3888,8 @@
           date: dateInput.value,
           hours: hoursInput.value,
           goal: goalInput.value,
-          keywords: keywordsInput.value
+          keywords: keywordsInput.value,
+          contentLanguagePreference: contentLanguageSelect.value
         }));
       } catch {
         // Local storage is optional; the current form state still remains intact.
@@ -2904,10 +3909,14 @@
         if (typeof draft.hours === "string") hoursInput.value = draft.hours;
         if (typeof draft.goal === "string") goalInput.value = draft.goal;
         if (typeof draft.keywords === "string") keywordsInput.value = draft.keywords;
+        if (["auto", "zh", "en"].includes(draft.contentLanguagePreference)) {
+          contentLanguageSelect.value = draft.contentLanguagePreference;
+        }
       }
       if (!dateInput.value || dateInput.value < toLocalDateValue(now)) {
         dateInput.value = toLocalDateValue(defaultDate);
       }
+      renderContentLanguageControl();
     }
 
     function getFieldError(input) {
@@ -2959,29 +3968,6 @@
       }
     }
 
-    function translateKnownInputs(language) {
-      const course = document.getElementById("course");
-      const keywords = document.getElementById("keywords");
-      const coursePairs = [
-        { zh: "大学物理", en: "University Physics" },
-        { zh: "工程力学", en: "Engineering Mechanics" }
-      ];
-      const keywordPairs = [
-        {
-          zh: "动量守恒, 刚体转动, 热力学第一定律, 简答题, 计算题",
-          en: "conservation of momentum, rigid-body rotation, first law of thermodynamics, short-answer questions, calculation problems"
-        },
-        {
-          zh: "受力分析, 力矩平衡, 杆件内力, 材料力学基础, 计算题, 简答题",
-          en: "free-body diagrams, moment equilibrium, internal forces, mechanics of materials basics, calculation problems, short-answer questions"
-        }
-      ];
-      const coursePair = coursePairs.find((pair) => course.value === pair.zh || course.value === pair.en);
-      const keywordPair = keywordPairs.find((pair) => keywords.value === pair.zh || keywords.value === pair.en);
-      if (coursePair) course.value = coursePair[language];
-      if (keywordPair) keywords.value = keywordPair[language];
-    }
-
     function renderHealthStatus() {
       if (!lastHealth) return;
       setStatus(t("backendConnected"));
@@ -3007,14 +3993,17 @@
       copyWxBtn.removeAttribute("aria-busy");
       setCopyTip("");
       keywordsInput.placeholder = t("keywordsPlaceholder");
-      translateKnownInputs(currentLanguage);
+      renderContentLanguageControl();
       if (analysisTimer) analysisDetail.textContent = translations[currentLanguage].analysisSteps[0];
       if (!hasGeneratedPlan) {
         document.getElementById("headline").textContent = t("emptyHeadline");
         document.getElementById("summary").textContent = t("emptySummary");
       }
       sidebarBackdrop.setAttribute("aria-label", t("closeSubjectMenu"));
+      workspaceSelect.setAttribute("aria-label", t("workspaceSelectAria"));
       setSidebarOpen(body.classList.contains("sidebar-open"));
+      renderWorkspaceOptions();
+      renderWorkspaceStatus();
       renderSubjectList();
       renderTodoList();
       renderCalendar();
@@ -3103,11 +4092,11 @@
       return (Array.isArray(items) ? items : []).map((item) => `- ${item}`).join("\n");
     }
 
-    function formatDuration(minutes) {
+    function formatDuration(minutes, language = currentLanguage) {
       const total = Math.max(0, Math.round(Number(minutes) || 0));
       const hours = Math.floor(total / 60);
       const rest = total % 60;
-      if (currentLanguage === "en") {
+      if (language === "en") {
         if (!hours) return `${rest} min`;
         return rest ? `${hours} hr ${rest} min` : `${hours} hr`;
       }
@@ -3115,19 +4104,39 @@
       return rest ? `${hours} 小时 ${rest} 分钟` : `${hours} 小时`;
     }
 
-    function markdownTasks(tasks) {
-      return (Array.isArray(tasks) ? tasks : []).map((task) => {
-        const mark = task.completed ? "x" : " ";
-        return `- [${mark}] ${task.title}（${formatDuration(task.durationMinutes)}）`;
-      }).join("\n");
+    function markdownPhases(phases, contentLanguage) {
+      return (Array.isArray(phases) ? phases : []).map((phase) => {
+        const lines = [`### ${phase.title}`];
+        if (phase.goal) lines.push("", phase.goal);
+        phase.sessions.forEach((task) => {
+          const mark = task.completed ? "x" : " ";
+          const date = isValidDateValue(task.scheduledDate) ? task.scheduledDate : translate(contentLanguage, "calendarUnscheduled");
+          lines.push("", `- [${mark}] ${task.title} (${date} · ${formatDuration(task.durationMinutes, contentLanguage)})`);
+          if (task.successCriteria) {
+            lines.push(`  - ${translate(contentLanguage, "todoSuccessCriteria")}${contentLanguage === "en" ? ": " : "："}${task.successCriteria}`);
+          }
+          task.steps.forEach((step) => {
+            const stepMark = step.completed ? "x" : " ";
+            lines.push(`  - [${stepMark}] ${step.minutes} min · ${step.action}`);
+            lines.push(`    - ${translate(contentLanguage, "todoStepOutput", { output: step.output })}`);
+            lines.push(`    - ${translate(contentLanguage, "todoStepSource", { source: step.source })}`);
+          });
+          (Array.isArray(task.sourceRefs) ? task.sourceRefs : []).forEach((ref) => {
+            const source = ref.href ? `[${ref.label}](${ref.href})` : ref.label;
+            lines.push(`  - ${translate(contentLanguage, "todoSource")}${contentLanguage === "en" ? ": " : "："}${source}`);
+          });
+        });
+        return lines.join("\n");
+      }).join("\n\n");
     }
 
     function formatPlanMarkdown(plan) {
-      const course = document.getElementById("course").value.trim() || t("courseFallback");
+      const contentLanguage = normalizeLanguageCode(plan?.contentLanguage ?? plan?.content_language) || inferPlanContentLanguage(plan) || "zh";
+      const course = document.getElementById("course").value.trim() || translate(contentLanguage, "courseFallback");
       const examDate = document.getElementById("date").value || "—";
       const hours = document.getElementById("hours").value || "—";
       const goal = document.getElementById("goal").value || "—";
-      const labels = currentLanguage === "en" ? {
+      const labels = contentLanguage === "en" ? {
         title: "Exam Study Plan",
         course: "Course",
         date: "Exam date",
@@ -3135,7 +4144,7 @@
         goal: "Target score",
         must: "High-yield modules",
         drop: "Skip list",
-        tasks: "Todo",
+        tasks: "Phases and Sessions",
         hits: "Priority topics"
       } : {
         title: "期末复习计划",
@@ -3145,13 +4154,13 @@
         goal: "目标分",
         must: "必拿分模块",
         drop: "可放弃清单",
-        tasks: "Todo",
+        tasks: "阶段与 Session",
         hits: "优先考点"
       };
       return [
         `# ${labels.title}｜${course}`,
         "",
-        `> ${plan.headline || t("generatedFallback")}`,
+        `> ${plan.headline || translate(contentLanguage, "generatedFallback")}`,
         "",
         plan.summary || "",
         "",
@@ -3167,7 +4176,7 @@
         markdownList(plan.drop),
         "",
         `## ${labels.tasks}`,
-        markdownTasks(plan.tasks),
+        markdownPhases(plan.phases, contentLanguage),
         "",
         `## ${labels.hits}`,
         markdownList(plan.hits),
@@ -3279,6 +4288,161 @@
       return window.location.origin;
     }
 
+    function renderWorkspaceOptions() {
+      const selectedId = workspaceSelect.value;
+      workspaceSelect.replaceChildren();
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = t("workspacePlaceholder");
+      workspaceSelect.appendChild(placeholder);
+      availableWorkspaces.forEach((workspace) => {
+        const option = document.createElement("option");
+        option.value = workspace.id;
+        option.textContent = `${workspace.name} · ${t("workspaceMaterialCount", { count: workspace.material_count || 0 })}`;
+        workspaceSelect.appendChild(option);
+      });
+      workspaceSelect.value = availableWorkspaces.some((workspace) => workspace.id === selectedId)
+        ? selectedId
+        : (availableWorkspaces[0]?.id || "");
+      const hasWorkspace = availableWorkspaces.length > 0;
+      workspaceSelect.disabled = !hasWorkspace;
+      importWorkspaceBtn.disabled = !hasWorkspace;
+    }
+
+    function renderWorkspaceStatus() {
+      workspaceStatus.textContent = t(workspaceStatusState.key, workspaceStatusState.replacements);
+    }
+
+    function setWorkspaceStatus(key, replacements = {}) {
+      workspaceStatusState = { key, replacements };
+      renderWorkspaceStatus();
+      return workspaceStatus.textContent;
+    }
+
+    async function loadLocalWorkspaces() {
+      setWorkspaceStatus("workspaceLoading");
+      workspaceSelect.disabled = true;
+      importWorkspaceBtn.disabled = true;
+      try {
+        const response = await fetch(`${getApiBase()}/api/workspaces`, {
+          method: "GET",
+          credentials: "include"
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        availableWorkspaces = Array.isArray(data?.workspaces) ? data.workspaces : [];
+        renderWorkspaceOptions();
+        setWorkspaceStatus(availableWorkspaces.length ? "workspaceLocalOnly" : "workspaceEmpty");
+      } catch {
+        availableWorkspaces = [];
+        renderWorkspaceOptions();
+        setWorkspaceStatus("workspaceLoadFailed");
+      }
+    }
+
+    function mergeImportedTaskState(plan, previousPlan) {
+      const normalized = normalizePlan(plan);
+      const previousTasks = normalizePlan(previousPlan).tasks;
+      const previousById = new Map(previousTasks.map((task) => [task.id, task]));
+      const previousByTitle = new Map(previousTasks.map((task) => [task.title, task]));
+      normalized.tasks.forEach((task) => {
+        const previous = previousById.get(task.id) || previousByTitle.get(task.title);
+        if (!previous) return;
+        task.scheduledDate = previous.scheduledDate;
+        const previousStepsById = new Map((previous.steps || []).map((step) => [step.id, step]));
+        const previousStepsByAction = new Map((previous.steps || []).map((step) => [step.action, step]));
+        task.steps.forEach((step) => {
+          const previousStep = previousStepsById.get(step.id) || previousStepsByAction.get(step.action);
+          if (previousStep) step.completed = previousStep.completed;
+        });
+        task.completed = previous.completed || (task.steps.length > 0 && task.steps.every((step) => step.completed));
+        if (task.completed) task.steps.forEach((step) => { step.completed = true; });
+      });
+      return normalized;
+    }
+
+    async function importSelectedWorkspace() {
+      const workspaceId = workspaceSelect.value;
+      if (!workspaceId) return;
+      importWorkspaceBtn.disabled = true;
+      workspaceSelect.disabled = true;
+      setWorkspaceStatus("workspaceImporting");
+      try {
+        const response = await fetch(`${getApiBase()}/api/workspaces/${encodeURIComponent(workspaceId)}`, {
+          method: "GET",
+          credentials: "include"
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        const workspace = data?.workspace;
+        if (!workspace?.plan || !workspace?.name) throw new Error("Invalid workspace payload");
+
+        courseInput.value = workspace.name;
+        dateInput.value = workspace.exam_date;
+        hoursInput.value = String(workspace.hours_per_day);
+        goalInput.value = String(workspace.target_score);
+        keywordsInput.value = workspace.keywords || "";
+        contentLanguageSelect.value = "auto";
+        touchedFields.clear();
+        validationSummary.textContent = "";
+        formInputs.forEach((input) => validateField(input, false));
+        updateMetrics();
+        renderContentLanguageControl();
+        saveDraft();
+
+        let subject = subjects.find((item) => item.workspaceId === workspace.id);
+        const timestamp = new Date().toISOString();
+        const importedPlan = mergeImportedTaskState(workspace.plan, subject?.plan);
+        applyPlan(importedPlan, { scroll: false });
+        const inputs = collectCurrentInputs();
+        if (!subject) {
+          subject = {
+            id: createLocalId("subject"),
+            workspaceId: workspace.id,
+            name: workspace.name,
+            color: SUBJECT_COLORS[subjects.length % SUBJECT_COLORS.length],
+            examDate: workspace.exam_date,
+            inputs,
+            plan: lastPlan,
+            scheduleVersion: 4,
+            createdAt: timestamp,
+            updatedAt: timestamp
+          };
+          subjects.unshift(subject);
+        } else {
+          subject.name = workspace.name;
+          subject.examDate = workspace.exam_date;
+          subject.inputs = inputs;
+          subject.plan = lastPlan;
+          subject.updatedAt = timestamp;
+        }
+        ensureSubjectTaskSchedule(subject);
+        activeSubjectId = subject.id;
+        lastPlan = subject.plan;
+        calendarWeekStart = getWeekStartValue();
+        saveSubjectStore();
+        try {
+          localStorage.setItem("finals-os-active-subject-v1", activeSubjectId);
+        } catch {
+          // The imported course still works during this session.
+        }
+        renderSubjectList();
+        renderTodoList();
+        renderCalendar();
+        setSidebarOpen(false);
+        const materialCount = Array.isArray(workspace.materials) ? workspace.materials.length : 0;
+        const sessionCount = Array.isArray(lastPlan?.tasks) ? lastPlan.tasks.length : 0;
+        const message = setWorkspaceStatus("workspaceImported", { name: workspace.name, materialCount, sessionCount });
+        setStatus(message);
+        window.setTimeout(() => resultSection.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+      } catch {
+        setWorkspaceStatus("workspaceImportFailed");
+        setStatus(t("workspaceImportFailed"));
+      } finally {
+        renderWorkspaceOptions();
+      }
+    }
+
     async function getHealth() {
       const resp = await fetch(`${getApiBase()}/api/health`, { method: "GET" });
       if (!resp.ok) throw new Error(t("healthCheckFailed", { status: resp.status }));
@@ -3301,9 +4465,117 @@
       todoProgress.textContent = `${completed} / ${tasks.length}`;
     }
 
+    function getSessionProgress(task) {
+      const steps = Array.isArray(task?.steps) ? task.steps : [];
+      const completed = steps.filter((step) => step.completed).length;
+      return { completed, total: steps.length, done: steps.length ? completed === steps.length : Boolean(task?.completed) };
+    }
+
+    function setSessionCompletion(task, completed) {
+      task.completed = Boolean(completed);
+      (task.steps || []).forEach((step) => { step.completed = Boolean(completed); });
+    }
+
+    function appendSessionSources(container, task) {
+      if (!Array.isArray(task.sourceRefs) || !task.sourceRefs.length) return;
+      const sources = document.createElement("span");
+      sources.className = "todo-sources";
+      task.sourceRefs.forEach((ref) => {
+        const source = ref.href ? document.createElement("a") : document.createElement("span");
+        source.className = "todo-source";
+        source.textContent = `${t("todoSource")} · ${ref.label}`;
+        if (ref.href) {
+          source.href = ref.href;
+          source.target = "_blank";
+          source.rel = "noopener";
+        }
+        sources.appendChild(source);
+      });
+      container.appendChild(sources);
+    }
+
+    function createSessionGuide(task) {
+      const guide = document.createElement("div");
+      guide.className = "todo-guide";
+      const progress = getSessionProgress(task);
+
+      const head = document.createElement("div");
+      head.className = "todo-guide-head";
+      const headCopy = document.createElement("div");
+      const title = document.createElement("p");
+      title.className = "todo-guide-title";
+      title.textContent = t("todoGuideTitle");
+      const note = document.createElement("p");
+      note.className = "todo-guide-note";
+      note.textContent = t("todoGuideNote");
+      headCopy.append(title, note);
+      const count = document.createElement("span");
+      count.className = "todo-guide-progress";
+      count.textContent = `${progress.completed} / ${progress.total}`;
+      head.append(headCopy, count);
+      guide.appendChild(head);
+
+      const nextAction = document.createElement("p");
+      nextAction.className = "todo-next-action";
+      const nextStep = task.steps.find((step) => !step.completed);
+      nextAction.textContent = nextStep
+        ? t("todoNextAction", { minutes: nextStep.minutes, action: nextStep.action, output: nextStep.output })
+        : t("todoSessionDone");
+      guide.appendChild(nextAction);
+
+      const list = document.createElement("div");
+      list.className = "todo-guide-list";
+      let offset = 0;
+      task.steps.forEach((step, stepIndex) => {
+        const row = document.createElement("label");
+        row.className = `todo-guide-step${step.completed ? " is-complete" : ""}`;
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = step.completed;
+        checkbox.setAttribute("aria-label", t("todoItemAria", {
+          title: step.action,
+          state: t(step.completed ? "todoCompleteState" : "todoIncompleteState")
+        }));
+        const time = document.createElement("span");
+        time.className = "todo-guide-time";
+        const end = offset + step.minutes;
+        time.textContent = `${offset}—${end} min`;
+        offset = end;
+        const copy = document.createElement("span");
+        copy.className = "todo-guide-copy";
+        const action = document.createElement("strong");
+        action.textContent = step.action;
+        const output = document.createElement("span");
+        output.textContent = t("todoStepOutput", { output: step.output });
+        const source = document.createElement("small");
+        source.textContent = t("todoStepSource", { source: step.source });
+        copy.append(action, output, source);
+        checkbox.addEventListener("change", () => {
+          step.completed = checkbox.checked;
+          task.completed = task.steps.length > 0 && task.steps.every((item) => item.completed);
+          persistActivePlan();
+          renderTodoList();
+          renderCalendar();
+        });
+        row.append(checkbox, time, copy);
+        list.appendChild(row);
+      });
+      guide.appendChild(list);
+
+      if (task.successCriteria) {
+        const success = document.createElement("p");
+        success.className = "todo-success";
+        success.textContent = `${t("todoSuccessCriteria")}${currentLanguage === "en" ? ": " : "："}${task.successCriteria}`;
+        guide.appendChild(success);
+      }
+      appendSessionSources(guide, task);
+      return guide;
+    }
+
     function renderTodoList() {
       todoList.replaceChildren();
       const tasks = Array.isArray(lastPlan?.tasks) ? lastPlan.tasks : [];
+      const phases = Array.isArray(lastPlan?.phases) ? lastPlan.phases : [];
       updateTodoProgress();
       if (!tasks.length) {
         const empty = document.createElement("p");
@@ -3313,51 +4585,101 @@
         todoList.appendChild(empty);
         return;
       }
+      if (!todoDisclosureInitialized) {
+        openSessionIds.add((tasks.find((task) => !task.completed) || tasks[0]).id);
+        todoDisclosureInitialized = true;
+      }
 
-      tasks.forEach((task, index) => {
-        const row = document.createElement("label");
-        row.className = `todo-row${task.completed ? " is-complete" : ""}`;
+      phases.forEach((phase) => {
+        const phaseElement = document.createElement("section");
+        phaseElement.className = "todo-phase";
+        const completedSessions = phase.sessions.filter((session) => session.completed).length;
+        const phaseHead = document.createElement("div");
+        phaseHead.className = "todo-phase-head";
+        const phaseCopy = document.createElement("div");
+        phaseCopy.className = "todo-phase-copy";
+        const phaseTitle = document.createElement("h4");
+        phaseTitle.className = "todo-phase-title";
+        phaseTitle.textContent = phase.title;
+        phaseCopy.appendChild(phaseTitle);
+        if (phase.goal) {
+          const goal = document.createElement("p");
+          goal.className = "todo-phase-goal";
+          goal.textContent = phase.goal;
+          phaseCopy.appendChild(goal);
+        }
+        const phaseProgress = document.createElement("span");
+        phaseProgress.className = "todo-phase-progress";
+        phaseProgress.textContent = t("todoPhaseProgress", { completed: completedSessions, total: phase.sessions.length });
+        phaseHead.append(phaseCopy, phaseProgress);
+        phaseElement.appendChild(phaseHead);
 
-        const checkbox = document.createElement("input");
-        checkbox.className = "todo-checkbox";
-        checkbox.type = "checkbox";
-        checkbox.checked = task.completed;
-        checkbox.setAttribute("aria-label", t("todoItemAria", {
-          title: task.title,
-          state: t(task.completed ? "todoCompleteState" : "todoIncompleteState")
-        }));
+        const sessionList = document.createElement("div");
+        sessionList.className = "todo-session-list";
+        phase.sessions.forEach((task) => {
+          const progress = getSessionProgress(task);
+          const globalIndex = Math.max(0, tasks.indexOf(task));
+          const isOpen = openSessionIds.has(task.id);
+          const session = document.createElement("article");
+          session.className = `todo-session${task.completed ? " is-complete" : ""}${isOpen ? " is-open" : ""}`;
 
-        const copy = document.createElement("span");
-        copy.className = "todo-copy";
-        const title = document.createElement("span");
-        title.className = "todo-title";
-        title.textContent = task.title;
-        const taskIndex = document.createElement("span");
-        taskIndex.className = "todo-index";
-        const taskDate = isValidDateValue(task.scheduledDate)
-          ? formatCalendarDate(task.scheduledDate, { month: "short", day: "numeric" })
-          : t("calendarUnscheduled");
-        taskIndex.textContent = `TASK ${String(index + 1).padStart(2, "0")} · ${taskDate}`;
-        copy.append(title, taskIndex);
-
-        const duration = document.createElement("span");
-        duration.className = "todo-duration";
-        duration.textContent = formatDuration(task.durationMinutes);
-
-        checkbox.addEventListener("change", () => {
-          task.completed = checkbox.checked;
-          row.classList.toggle("is-complete", task.completed);
+          const summary = document.createElement("div");
+          summary.className = "todo-session-summary";
+          const checkbox = document.createElement("input");
+          checkbox.className = "todo-checkbox";
+          checkbox.type = "checkbox";
+          checkbox.checked = task.completed;
           checkbox.setAttribute("aria-label", t("todoItemAria", {
             title: task.title,
             state: t(task.completed ? "todoCompleteState" : "todoIncompleteState")
           }));
-          persistActivePlan();
-          updateTodoProgress();
-          renderCalendar();
-        });
+          checkbox.addEventListener("change", () => {
+            setSessionCompletion(task, checkbox.checked);
+            persistActivePlan();
+            renderTodoList();
+            renderCalendar();
+          });
 
-        row.append(checkbox, copy, duration);
-        todoList.appendChild(row);
+          const toggle = document.createElement("button");
+          toggle.type = "button";
+          toggle.className = "todo-session-toggle";
+          toggle.setAttribute("aria-expanded", String(isOpen));
+          const copy = document.createElement("span");
+          copy.className = "todo-copy";
+          const title = document.createElement("span");
+          title.className = "todo-title";
+          title.textContent = task.title;
+          const meta = document.createElement("span");
+          meta.className = "todo-index";
+          const taskDate = isValidDateValue(task.scheduledDate)
+            ? formatCalendarDate(task.scheduledDate, { month: "short", day: "numeric" })
+            : t("calendarUnscheduled");
+          meta.textContent = t("todoSessionMeta", {
+            index: String(globalIndex + 1).padStart(2, "0"),
+            date: taskDate,
+            completed: progress.completed,
+            total: progress.total
+          });
+          copy.append(title, meta);
+          const duration = document.createElement("span");
+          duration.className = "todo-duration";
+          duration.textContent = formatDuration(task.durationMinutes);
+          const chevron = document.createElement("span");
+          chevron.className = "todo-chevron";
+          chevron.setAttribute("aria-hidden", "true");
+          toggle.append(copy, duration, chevron);
+          toggle.addEventListener("click", () => {
+            if (openSessionIds.has(task.id)) openSessionIds.delete(task.id);
+            else openSessionIds.add(task.id);
+            todoDisclosureInitialized = true;
+            renderTodoList();
+          });
+          summary.append(checkbox, toggle);
+          session.append(summary, createSessionGuide(task));
+          sessionList.appendChild(session);
+        });
+        phaseElement.appendChild(sessionList);
+        todoList.appendChild(phaseElement);
       });
     }
 
@@ -3373,6 +4695,8 @@
       listToUl("drop", normalized.drop);
       listToUl("hits", normalized.hits);
       lastPlan = normalized;
+      openSessionIds = new Set();
+      todoDisclosureInitialized = false;
       renderTodoList();
       hasGeneratedPlan = true;
       copyPlanBtn.disabled = false;
@@ -3399,7 +4723,8 @@
       const hours = Number(hoursInput.value);
       const goal = Number(goalInput.value);
       const keywords = keywordsInput.value.trim();
-      const inputLanguage = detectInputLanguage(`${course}\n${keywords}`);
+      const inputAnalysis = analyzeInputLanguage(course, keywords);
+      const contentLanguage = renderContentLanguageControl();
       const d = daysLeft(date);
       const response = await fetch(`${getApiBase()}/api/plan`, {
         method: "POST",
@@ -3414,8 +4739,11 @@
           hours_per_day: hours,
           goal_score: goal,
           keywords,
-          language: currentLanguage,
-          input_language: inputLanguage
+          ui_language: currentLanguage,
+          content_language: contentLanguage.language,
+          content_language_source: contentLanguage.source,
+          input_language: inputAnalysis.language,
+          input_language_confidence: inputAnalysis.confidence
         })
       });
 
@@ -3524,6 +4852,7 @@
         keywords: "受力分析, 力矩平衡, 杆件内力, 材料力学基础, 计算题, 简答题"
       };
       courseInput.value = demo.course;
+      contentLanguageSelect.value = "auto";
       hoursInput.value = 7;
       goalInput.value = 85;
       keywordsInput.value = demo.keywords;
@@ -3534,6 +4863,7 @@
       validationSummary.textContent = "";
       formInputs.forEach((input) => validateField(input, false));
       updateMetrics();
+      renderContentLanguageControl();
       saveDraft();
     }
 
@@ -3543,7 +4873,6 @@
     });
     languageToggle.addEventListener("click", () => {
       applyLanguage(currentLanguage === "zh" ? "en" : "zh");
-      if (hasGeneratedPlan) setStatus(t("regenerateForLanguage"));
     });
     subjectMenuToggle.addEventListener("click", () => {
       setSidebarOpen(!body.classList.contains("sidebar-open"));
@@ -3553,6 +4882,7 @@
       subjectMenuToggle.focus();
     });
     newSubjectBtn.addEventListener("click", startNewSubject);
+    importWorkspaceBtn.addEventListener("click", importSelectedWorkspace);
     openCalendarBtn.addEventListener("click", () => {
       setSidebarOpen(false);
       calendarSection.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -3629,6 +4959,7 @@
         if (touchedFields.has(input.id)) validateField(input, true);
         validationSummary.textContent = "";
         updateMetrics();
+        renderContentLanguageControl();
         saveDraft();
       });
       input.addEventListener("blur", () => {
@@ -3636,12 +4967,22 @@
         validateField(input, true);
       });
     });
+    contentLanguageSelect.addEventListener("change", () => {
+      renderContentLanguageControl();
+      saveDraft();
+      const subject = subjects.find((item) => item.id === activeSubjectId);
+      if (subject?.inputs) {
+        subject.inputs.contentLanguagePreference = contentLanguageSelect.value;
+        saveSubjectStore();
+      }
+    });
     dateInput.min = toLocalDateValue(now);
     loadDraft();
     initLanguage();
     initTheme();
     initSubjectLibrary();
     initCalendar();
+    loadLocalWorkspaces();
     validateForm(false);
     updateMetrics();
     refreshHealth();
