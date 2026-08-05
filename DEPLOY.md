@@ -13,7 +13,8 @@ Why:
 
 ## What changed in this repo
 
-- `server.py` now reads `HOST` and defaults to `0.0.0.0`.
+- `server.py` reads `HOST`; local runs default to `127.0.0.1`, while deployed services must set `HOST=0.0.0.0` explicitly.
+- Static files are served from an allowlist, so `.env`, `.git`, source files, and directory listings are not public.
 - `.env` is ignored by git.
 - The frontend now calls the current origin instead of hard-coded localhost.
 

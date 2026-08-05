@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "fluid-mechanics",
+  "name": "流体力学",
+  "language": "zh",
+  "days_left": 10,
+  "hours_per_day": 4,
+  "target_score": 85,
+  "keywords": "静水力学，压力体，连续方程，伯努利方程，动量方程，测压管水头线，总水头线，沿程损失，局部损失，管流，明渠流，临界水深，水跃，堰流，达西定律"
+}
