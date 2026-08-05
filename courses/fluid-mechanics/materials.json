@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "course_id": "fluid-mechanics",
+  "selection_rule": "只接入能改变复习顺序或能直接用于训练的材料；教材、缓存、脚本和重复产物不进入最小闭环。",
+  "materials": [
+    {
+      "id": "final-review",
+      "name": "总复习.pdf",
+      "kind": "teacher_review",
+      "role": "考试范围、题型结构与全课程高频考点",
+      "pages": 36,
+      "bytes": 5541022,
+      "sha256": "6b79e0161cc9fd1feedaaccf80e6dcfa5834d77f9da6b709085414331825f095",
+      "href": "/courses/fluid-mechanics/reference/总复习.pdf"
+    },
+    {
+      "id": "chapter-2-calculation",
+      "name": "第2章计算题.pdf",
+      "kind": "practice_set",
+      "role": "静水力学与压力体计算训练",
+      "pages": 4,
+      "bytes": 334050,
+      "sha256": "fcd5a88e7e9a77b424c306624e92f3d1455043e945331fb9d5d25f8c83bb84a7",
+      "href": "/courses/fluid-mechanics/reference/第2章计算题.pdf"
+    },
+    {
+      "id": "chapter-4-calculation",
+      "name": "第4章计算题.pdf",
+      "kind": "practice_set",
+      "role": "连续、能量与动量方程计算训练",
+      "pages": 2,
+      "bytes": 188478,
+      "sha256": "20e6a77148f7cea591deb861f607d56b2035a1ffa2bec4dfac0c02e01511ce2b",
+      "href": "/courses/fluid-mechanics/reference/第4章计算题.pdf"
+    },
+    {
+      "id": "chapter-8-calculation",
+      "name": "第8章计算题.pdf",
+      "kind": "practice_set",
+      "role": "明渠流、临界水深与水跃计算训练",
+      "pages": 4,
+      "bytes": 367606,
+      "sha256": "faab1c137ca1c031b1ae04fd940b2cef952639723555cef69f5efa2827afc361",
+      "href": "/courses/fluid-mechanics/reference/第8章计算题.pdf"
+    },
+    {
+      "id": "midterm-clean-scan",
+      "name": "期中试卷_去笔迹扫描.pdf",
+      "kind": "past_exam",
+      "role": "验证概念题、作图题与计算题的真实问法和给分过程",
+      "pages": 8,
+      "bytes": 1430410,
+      "sha256": "42aa6d456710a50a985f01322d6322c57461c05e18d09479401b6c8cbbad0b8f",
+      "href": "/courses/fluid-mechanics/reference/期中试卷_去笔迹扫描.pdf"
+    }
+  ],
+  "legacy_artifacts": [
+    {
+      "id": "legacy-mock",
+      "name": "流体力学期末模拟试卷.pdf",
+      "kind": "generated_mock",
+      "role": "完整限时模拟",
+      "pages": 4,
+      "bytes": 64381,
+      "sha256": "8602dc957eb99624c2935c54d26e2be87a17014b76a38e1260123c4833a88ec1",
+      "href": "/courses/fluid-mechanics/progress/legacy/流体力学期末模拟试卷.pdf"
+    },
+    {
+      "id": "legacy-mock-key",
+      "name": "流体力学期末模拟试卷-答案与评分要点.md",
+      "kind": "generated_answer_key",
+      "role": "模拟卷批改与失分归因",
+      "bytes": 2736,
+      "sha256": "b26470be952bdf93150751a4a40ea7a10af87814d02a74ff40adeec7d9f9b694",
+      "href": "/courses/fluid-mechanics/progress/legacy/流体力学期末模拟试卷-答案与评分要点.md"
+    }
+  ]
+}

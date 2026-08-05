@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "course_id": "fluid-mechanics",
+  "headline": "流体力学 85 分生存闭环",
+  "summary": "先锁定静水力学、三大方程、损失计算和明渠流四个计算模板，再用两类作图与一套完整模拟把知识压成可执行动作。总任务量 23 小时，可在 10 天内完成。",
+  "must": [
+    "静水压强、平面与曲面总压力、压力体",
+    "连续方程、伯努利方程、动量方程的选式与列式",
+    "沿程损失、局部损失、短管与长管计算",
+    "明渠均匀流、临界水深、弗劳德数与水跃",
+    "压力体图、测压管水头线和总水头线"
+  ],
+  "drop": [
+    "暂缓两本大部头教材的线性通读",
+    "暂缓冷门长推导和证明型边角题",
+    "第 5、9、10 章只保留总复习中的概念与基本公式"
+  ],
+  "hits": [
+    "考试题型：选择 20 + 判断 20 + 填空 10 + 作图 10 + 计算 40",
+    "静水压强基本方程与压强表示",
+    "平面、曲面总压力与压力体",
+    "连续方程、伯努利方程、动量方程",
+    "测压管水头线与总水头线",
+    "雷诺数、层流与紊流",
+    "沿程损失、局部损失与管流",
+    "明渠均匀流、临界流与弗劳德数",
+    "水跃与水面曲线",
+    "堰流与达西渗流定律"
+  ],
+  "tasks": [
+    {
+      "id": "fluid-hydrostatics",
+      "title": "静水力学：压强、总压力与压力体计算闭环",
+      "duration_minutes": 240,
+      "success_criteria": "不看答案完成第 2 章计算题；每题写出受力对象、压强分布、作用点和单位，错误题能说清错在图、公式还是代数。",
+      "source_refs": [
+        {
+          "label": "总复习 p8–10",
+          "href": "/courses/fluid-mechanics/reference/总复习.pdf#page=8",
+          "pages": "8-10",
+          "kind": "范围"
+        },
+        {
+          "label": "第2章计算题 p1–4",
+          "href": "/courses/fluid-mechanics/reference/第2章计算题.pdf#page=1",
+          "pages": "1-4",
+          "kind": "训练"
+        }
+      ]
+    },
+    {
+      "id": "fluid-core-equations",
+      "title": "三大方程：连续、伯努利、动量与水头线",
+      "duration_minutes": 240,
+      "success_criteria": "面对任意题先写控制体和基准面，再独立完成第 4 章计算题；能画出总水头线与测压管水头线并解释突降原因。",
+      "source_refs": [
+        {
+          "label": "总复习 p11–13",
+          "href": "/courses/fluid-mechanics/reference/总复习.pdf#page=11",
+          "pages": "11-13",
+          "kind": "范围"
+        },
+        {
+          "label": "第4章计算题 p1–2",
+          "href": "/courses/fluid-mechanics/reference/第4章计算题.pdf#page=1",
+          "pages": "1-2",
+          "kind": "训练"
+        }
+      ]
+    },
+    {
+      "id": "fluid-head-loss",
+      "title": "水头损失与管流：把题目压成四步模板",
+      "duration_minutes": 240,
+      "success_criteria": "能区分沿程与局部损失，正确选择雷诺数、阻力系数和流量关系；连续做 3 道管流题，列式过程无遗漏。",
+      "source_refs": [
+        {
+          "label": "总复习 p16–24",
+          "href": "/courses/fluid-mechanics/reference/总复习.pdf#page=16",
+          "pages": "16-24",
+          "kind": "范围"
+        }
+      ]
+    },
+    {
+      "id": "fluid-open-channel",
+      "title": "明渠流：临界水深、弗劳德数、水跃与水面线",
+      "duration_minutes": 300,
+      "success_criteria": "独立完成第 8 章计算题；每题先判缓流/急流，再求正常水深或临界水深，能检查结果量级和物理方向。",
+      "source_refs": [
+        {
+          "label": "总复习 p25–30",
+          "href": "/courses/fluid-mechanics/reference/总复习.pdf#page=25",
+          "pages": "25-30",
+          "kind": "范围"
+        },
+        {
+          "label": "第8章计算题 p1–4",
+          "href": "/courses/fluid-mechanics/reference/第8章计算题.pdf#page=1",
+          "pages": "1-4",
+          "kind": "训练"
+        }
+      ]
+    },
+    {
+      "id": "fluid-concepts-drawing",
+      "title": "概念与作图：50 分客观题 + 10 分作图止损",
+      "duration_minutes": 180,
+      "success_criteria": "按 10 个高频考点做一页闭卷回忆；压力体图和两类水头线各画 2 次；用期中卷验证真实问法，错项当天回填。",
+      "source_refs": [
+        {
+          "label": "总复习 p3、p8–34",
+          "href": "/courses/fluid-mechanics/reference/总复习.pdf#page=3",
+          "pages": "3, 8-34",
+          "kind": "范围"
+        },
+        {
+          "label": "期中试卷 p1–8",
+          "href": "/courses/fluid-mechanics/reference/期中试卷_去笔迹扫描.pdf#page=1",
+          "pages": "1-8",
+          "kind": "真题"
+        }
+      ]
+    },
+    {
+      "id": "fluid-mock-exam",
+      "title": "完整模拟：限时作答、按评分点批改、只补高频漏洞",
+      "duration_minutes": 180,
+      "success_criteria": "一次性限时完成模拟卷；按评分要点统计概念、作图、计算三类失分；只把重复失分加入下一轮 Todo。",
+      "source_refs": [
+        {
+          "label": "期末模拟试卷",
+          "href": "/courses/fluid-mechanics/progress/legacy/流体力学期末模拟试卷.pdf",
+          "kind": "模拟"
+        },
+        {
+          "label": "答案与评分要点",
+          "href": "/courses/fluid-mechanics/progress/legacy/流体力学期末模拟试卷-答案与评分要点.md",
+          "kind": "批改"
+        }
+      ]
+    }
+  ]
+}

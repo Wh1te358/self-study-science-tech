@@ -15,15 +15,60 @@ from urllib.parse import unquote, urlsplit
 BASE_DIR = Path(__file__).resolve().parent
 COURSES_DIR = BASE_DIR / "courses"
 APP_NAME = "study-sprint-api"
-APP_VERSION = "2026-07-31-step-budget-v4"
+APP_VERSION = "2026-08-05-feasibility-contract-v1"
 WORKSPACE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
+STRATEGY_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,99}$")
+MIN_PLAN_DAYS = 3
+PUBLIC_ROOT_FILES = {
+    "contactme.jpg",
+    "execution-feedback-demo.html",
+    "mvp-study-sprint.html",
+    "phase-session-guide-demo.html",
+    "plan-repair-demo.html",
+}
+PUBLIC_COURSE_DIRECTORIES = {"progress", "reference"}
+PUBLIC_COURSE_SUFFIXES = {
+    ".csv",
+    ".doc",
+    ".docx",
+    ".gif",
+    ".jpeg",
+    ".jpg",
+    ".m4a",
+    ".markdown",
+    ".md",
+    ".mp3",
+    ".mp4",
+    ".pdf",
+    ".png",
+    ".ppt",
+    ".pptx",
+    ".svg",
+    ".txt",
+    ".wav",
+    ".webm",
+    ".webp",
+    ".xls",
+    ".xlsx",
+    ".zip",
+}
 MAX_PHASES = 12
 MAX_SESSIONS = 42
 MAX_STEPS_PER_SESSION = 8
+MAX_REPAIR_OPERATIONS = 10
+REPAIR_FIELDS = {"phase", "title", "date", "minutes", "criteria"}
+REPAIR_FIELD_LABELS = {
+    "phase": "归属阶段",
+    "title": "Session 名称",
+    "date": "安排日期",
+    "minutes": "时长",
+    "criteria": "完成标准",
+}
 SYSTEM_PROMPT = (
     "You are an exam-cram planning assistant. Return only one JSON object with no explanation. "
     "Use three levels: phases group goals, sessions are schedulable Todos, and steps are minute-level instructions. "
     "Every step has a fixed role enum: setup, execute, or review. Setup is capped at ten minutes; execution gets the majority. "
+    "Generate no more Sessions than the available days. Every Session must fit within one day's study capacity. "
     "Session and phase counts must follow the available days and workload; never force a fixed count. "
     "Follow the runtime content-language instruction exactly; it is independent of the website interface language. "
     "If it is absent, match the language used in the course name and exam scope. Keep every sentence short and action-oriented."
@@ -69,10 +114,11 @@ def load_course_workspace(workspace_id: str) -> dict:
     course = load_json_file(course_path)
     plan = load_json_file(plan_path)
     material_manifest = load_json_file(materials_path)
+    strategy = load_workspace_strategy(workspace_id, required=False)
     if str(course.get("id", "")).strip() != workspace_id:
         raise ValueError("course.json id must match its workspace directory")
 
-    days_left = max(1, min(365, int(course.get("days_left", 10))))
+    days_left = max(MIN_PLAN_DAYS, min(365, int(course.get("days_left", 10))))
     hours_per_day = max(1, min(20, float(course.get("hours_per_day", 4))))
     target_score = max(60, min(100, int(course.get("target_score", 80))))
     materials = material_manifest.get("materials", [])
@@ -92,6 +138,7 @@ def load_course_workspace(workspace_id: str) -> dict:
         "exam_date": (date.today() + timedelta(days=days_left)).isoformat(),
         "keywords": str(course.get("keywords", "")).strip(),
         "plan": plan,
+        "strategy": strategy,
         "materials": materials,
         "legacy_artifacts": legacy_artifacts,
         "artifacts": [
@@ -315,6 +362,197 @@ def normalize_source_refs(value):
             }
         )
     return refs[:8]
+
+
+def normalize_id_list(value, *, limit=32):
+    items = []
+    for raw in value if isinstance(value, list) else []:
+        item = normalize_sentence(raw)
+        if item and item not in items:
+            items.append(item)
+        if len(items) >= limit:
+            break
+    return items
+
+
+def normalize_strategy(strategy: dict, workspace_id="") -> dict:
+    if not isinstance(strategy, dict):
+        raise ValueError("strategy.json must contain one JSON object")
+    if int(strategy.get("schema_version", 0) or 0) != 1:
+        raise ValueError("strategy.json schema_version must equal 1")
+
+    raw_course = strategy.get("course", {})
+    if not isinstance(raw_course, dict):
+        raise ValueError("strategy.course must be an object")
+    course_id = normalize_sentence(raw_course.get("id", ""))
+    if not WORKSPACE_ID_RE.fullmatch(course_id):
+        raise ValueError("strategy.course.id must use lowercase kebab-case")
+    if workspace_id and course_id != workspace_id:
+        raise ValueError("strategy.course.id must match its workspace directory")
+    language = normalize_language(raw_course.get("language", "")) or "zh"
+    subject_type = normalize_sentence(raw_course.get("subject_type", "mixed"))
+    if subject_type not in {"math_logic", "memorization", "mixed"}:
+        raise ValueError("strategy.course.subject_type is invalid")
+    days_left = max(MIN_PLAN_DAYS, min(365, int(raw_course.get("days_left", MIN_PLAN_DAYS) or MIN_PLAN_DAYS)))
+    hours_per_day = max(1, min(20, float(raw_course.get("hours_per_day", 1) or 1)))
+    daily_capacity = int(round(hours_per_day * 60))
+
+    priorities = []
+    priority_ids = set()
+    for index, raw in enumerate(strategy.get("priorities", [])):
+        if not isinstance(raw, dict):
+            continue
+        priority_id = normalize_sentence(raw.get("id", ""))
+        if not STRATEGY_ID_RE.fullmatch(priority_id) or priority_id in priority_ids:
+            raise ValueError(f"strategy.priorities[{index}].id must be unique kebab-case")
+        priority_ids.add(priority_id)
+        level = normalize_sentence(raw.get("level", "supporting"))
+        if level not in {"must_win", "high_frequency", "supporting", "abandonable"}:
+            raise ValueError(f"strategy.priorities[{index}].level is invalid")
+        priorities.append(
+            {
+                "id": priority_id,
+                "rank": max(1, int(raw.get("rank", index + 1) or index + 1)),
+                "title": normalize_sentence(raw.get("title", "")) or priority_id,
+                "level": level,
+                "reason": normalize_sentence(raw.get("reason", "")),
+                "knowledge_node_ids": normalize_id_list(raw.get("knowledge_node_ids", [])),
+            }
+        )
+
+    raw_graph = strategy.get("knowledge_graph", {})
+    raw_graph = raw_graph if isinstance(raw_graph, dict) else {}
+    nodes = []
+    node_ids = set()
+    for index, raw in enumerate(raw_graph.get("nodes", [])):
+        if not isinstance(raw, dict):
+            continue
+        node_id = normalize_sentence(raw.get("id", ""))
+        if not STRATEGY_ID_RE.fullmatch(node_id) or node_id in node_ids:
+            raise ValueError(f"strategy.knowledge_graph.nodes[{index}].id must be unique kebab-case")
+        node_ids.add(node_id)
+        nodes.append(
+            {
+                "id": node_id,
+                "label": normalize_sentence(raw.get("label", "")) or node_id,
+                "type": normalize_sentence(raw.get("type", "concept")),
+                "mastery": normalize_sentence(raw.get("mastery", "high_frequency")),
+                "trigger_words": normalize_id_list(raw.get("trigger_words", [])),
+                "source_refs": normalize_source_refs(raw.get("source_refs", [])),
+            }
+        )
+
+    for priority in priorities:
+        unknown = [node_id for node_id in priority["knowledge_node_ids"] if node_id not in node_ids]
+        if unknown:
+            raise ValueError(f"priority {priority['id']} references unknown nodes: {', '.join(unknown)}")
+
+    edges = []
+    for index, raw in enumerate(raw_graph.get("edges", [])):
+        if not isinstance(raw, dict):
+            continue
+        from_id = normalize_sentence(raw.get("from", ""))
+        to_id = normalize_sentence(raw.get("to", ""))
+        if from_id not in node_ids or to_id not in node_ids:
+            raise ValueError(f"strategy.knowledge_graph.edges[{index}] references an unknown node")
+        edges.append(
+            {
+                "from": from_id,
+                "to": to_id,
+                "relation": normalize_sentence(raw.get("relation", "formula_chain")),
+                "trigger_words": normalize_id_list(raw.get("trigger_words", [])),
+                "break_risk": normalize_sentence(raw.get("break_risk", "")),
+                "score_loss": normalize_sentence(raw.get("score_loss", "")),
+            }
+        )
+
+    sessions = []
+    session_ids = set()
+    raw_sessions = strategy.get("action_list", [])
+    if not isinstance(raw_sessions, list) or not raw_sessions:
+        raise ValueError("strategy.action_list must contain at least one Session")
+    for index, raw in enumerate(raw_sessions[:MAX_SESSIONS]):
+        if not isinstance(raw, dict):
+            raise ValueError(f"strategy.action_list[{index}] must be an object")
+        if "steps" in raw or "guide" in raw:
+            raise ValueError(f"strategy.action_list[{index}] must not contain Guide steps")
+        session_id = normalize_sentence(raw.get("id", ""))
+        if not STRATEGY_ID_RE.fullmatch(session_id) or session_id in session_ids:
+            raise ValueError(f"strategy.action_list[{index}].id must be unique kebab-case")
+        session_ids.add(session_id)
+        duration = normalize_minutes(raw.get("duration_minutes", 0), 0, 15, 1200)
+        if not duration or duration > daily_capacity:
+            raise ValueError(f"strategy.action_list[{index}] must fit one day's capacity")
+        priority_id = normalize_sentence(raw.get("priority_id", ""))
+        if priority_id not in priority_ids:
+            raise ValueError(f"strategy.action_list[{index}] references an unknown priority")
+        knowledge_node_ids = normalize_id_list(raw.get("knowledge_node_ids", []))
+        unknown = [node_id for node_id in knowledge_node_ids if node_id not in node_ids]
+        if unknown:
+            raise ValueError(f"Session {session_id} references unknown nodes: {', '.join(unknown)}")
+        try:
+            day_index = int(raw.get("recommended_day_index", 0) or 0)
+        except (TypeError, ValueError):
+            day_index = 0
+        if not 1 <= day_index <= days_left:
+            day_index = 0
+        sessions.append(
+            {
+                "id": session_id,
+                "phase": normalize_sentence(raw.get("phase", "")) or ("Execution" if language == "en" else "执行阶段"),
+                "title": normalize_sentence(raw.get("title", "")) or session_id,
+                "recommended_day_index": day_index,
+                "duration_minutes": duration,
+                "objective": normalize_sentence(raw.get("objective", "")),
+                "success_criteria": normalize_sentence(raw.get("success_criteria", "")),
+                "priority_id": priority_id,
+                "knowledge_node_ids": knowledge_node_ids,
+                "depends_on": normalize_id_list(raw.get("depends_on", [])),
+                "source_refs": normalize_source_refs(raw.get("source_refs", [])),
+            }
+        )
+
+    for session in sessions:
+        unknown = [session_id for session_id in session["depends_on"] if session_id not in session_ids]
+        if unknown:
+            raise ValueError(f"Session {session['id']} depends on unknown Sessions: {', '.join(unknown)}")
+    if len(sessions) > days_left:
+        raise ValueError("strategy.action_list must contain no more than one Session per available day")
+    if sum(session["duration_minutes"] for session in sessions) > days_left * daily_capacity:
+        raise ValueError("strategy.action_list exceeds the course capacity")
+
+    raw_outline = strategy.get("source_outline", {})
+    raw_outline = raw_outline if isinstance(raw_outline, dict) else {}
+    return {
+        "schema_version": 1,
+        "course": {
+            "id": course_id,
+            "name": normalize_sentence(raw_course.get("name", "")) or course_id,
+            "language": language,
+            "subject_type": subject_type,
+            "target_score": max(60, min(100, int(raw_course.get("target_score", 80) or 80))),
+            "days_left": days_left,
+            "hours_per_day": hours_per_day,
+        },
+        "source_outline": {
+            "label": normalize_sentence(raw_outline.get("label", "")),
+            "path": str(raw_outline.get("path", "")).strip(),
+        },
+        "priorities": sorted(priorities, key=lambda item: item["rank"]),
+        "knowledge_graph": {"nodes": nodes, "edges": edges},
+        "action_list": sessions,
+        "abandon": [normalize_sentence(item) for item in strategy.get("abandon", []) if normalize_sentence(item)][:20],
+        "material_gaps": [normalize_sentence(item) for item in strategy.get("material_gaps", []) if normalize_sentence(item)][:20],
+    }
+
+
+def load_workspace_strategy(workspace_id: str, *, required=True) -> dict:
+    strategy_path = get_workspace_dir(workspace_id) / "strategy.json"
+    if not strategy_path.is_file():
+        if required:
+            raise FileNotFoundError(f"strategy.json not found for {workspace_id}")
+        return {}
+    return normalize_strategy(load_json_file(strategy_path), workspace_id)
 
 
 def allocate_step_minutes(raw_values, total_minutes):
@@ -557,7 +795,7 @@ def normalize_phases(plan, payload, language, keywords, course):
     raw_phases = plan.get("phases", []) if isinstance(plan, dict) else []
     phases = []
     session_count = 0
-    session_limit = min(MAX_SESSIONS, max(1, int(payload.get("days_left", 1)) * 2))
+    session_limit = min(MAX_SESSIONS, max(1, int(payload.get("days_left", MIN_PLAN_DAYS))))
     for raw_phase in raw_phases if isinstance(raw_phases, list) else []:
         if session_count >= session_limit or len(phases) >= MAX_PHASES:
             break
@@ -730,6 +968,14 @@ def sanitize_plan(plan: dict, payload: dict) -> dict:
             result["headline"] = f"{course}：{ '理解计算型' if mode == 'calc' else '背诵记忆型' }冲刺"
     if not str(result.get("summary", "")).strip():
         result["summary"] = "Bank certain marks first, then chase upside. Zero low-return work." if language == "en" else "先拿确定分，再处理增益分，严禁无效投入。"
+    days_left = int(payload["days_left"])
+    daily_capacity = int(round(float(payload["hours_per_day"]) * 60))
+    if len(result["tasks"]) > days_left:
+        raise RuntimeError("sanitized plan contains more than one Session per available day")
+    if any(session["duration_minutes"] > daily_capacity for session in result["tasks"]):
+        raise RuntimeError("sanitized plan contains a Session that exceeds daily capacity")
+    if sum(session["duration_minutes"] for session in result["tasks"]) > days_left * daily_capacity:
+        raise RuntimeError("sanitized plan exceeds total available capacity")
     return result
 
 
@@ -771,8 +1017,8 @@ def validate_plan_payload(payload: dict) -> dict:
         days_left = int(payload.get("days_left"))
     except (TypeError, ValueError):
         raise PayloadValidationError("days_left must be an integer") from None
-    if not 1 <= days_left <= 365:
-        raise PayloadValidationError("days_left must be between 1 and 365")
+    if not MIN_PLAN_DAYS <= days_left <= 365:
+        raise PayloadValidationError(f"days_left must be between {MIN_PLAN_DAYS} and 365")
 
     try:
         hours_per_day = float(payload.get("hours_per_day"))
@@ -829,6 +1075,619 @@ def validate_plan_payload(payload: dict) -> dict:
     return clean
 
 
+def validate_guide_payload(payload: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise PayloadValidationError("Request body must be a JSON object")
+    workspace_id = str(payload.get("workspace_id", "")).strip()
+    if not WORKSPACE_ID_RE.fullmatch(workspace_id):
+        raise PayloadValidationError("workspace_id is invalid")
+    session_id = str(payload.get("session_id", "")).strip()
+    if not STRATEGY_ID_RE.fullmatch(session_id):
+        raise PayloadValidationError("session_id is invalid")
+    language = normalize_language(payload.get("content_language", ""))
+    if payload.get("content_language") and not language:
+        raise PayloadValidationError("content_language must be zh or en")
+    return {"workspace_id": workspace_id, "session_id": session_id, "content_language": language}
+
+
+def validate_guide_revision_payload(payload: dict) -> dict:
+    clean = validate_guide_payload(payload)
+    result = str(payload.get("result", "")).strip().lower()
+    if result not in {"partial", "stuck"}:
+        raise PayloadValidationError("result must be partial or stuck")
+    feedback = str(payload.get("feedback", "")).strip()
+    if not 2 <= len(feedback) <= 1200:
+        raise PayloadValidationError("feedback must contain 2-1200 characters")
+    raw_steps = payload.get("current_steps", [])
+    if not isinstance(raw_steps, list) or not 3 <= len(raw_steps) <= 7:
+        raise PayloadValidationError("current_steps must contain 3-7 steps")
+    current_steps = []
+    for index, raw_step in enumerate(raw_steps):
+        if not isinstance(raw_step, dict):
+            raise PayloadValidationError(f"current_steps[{index}] must be an object")
+        action = normalize_sentence(raw_step.get("action", ""))
+        output = normalize_sentence(raw_step.get("output", ""))
+        source = normalize_sentence(raw_step.get("source", ""))
+        if not action or not output:
+            raise PayloadValidationError(f"current_steps[{index}] needs action and output")
+        try:
+            minutes = int(raw_step.get("minutes", 0))
+        except (TypeError, ValueError):
+            raise PayloadValidationError(f"current_steps[{index}].minutes must be an integer") from None
+        if minutes < 5 or minutes > 480:
+            raise PayloadValidationError(f"current_steps[{index}].minutes is invalid")
+        current_steps.append(
+            {
+                "role": normalize_step_role(raw_step.get("role"), action),
+                "minutes": minutes,
+                "action": action[:240],
+                "output": output[:240],
+                "source": source[:160],
+                "completed": bool(raw_step.get("completed")),
+            }
+        )
+    clean.update({"result": result, "feedback": feedback, "current_steps": current_steps})
+    return clean
+
+
+def sanitize_guide(raw: dict, session: dict, language: str) -> dict:
+    raw_steps = raw.get("steps", []) if isinstance(raw, dict) else []
+    if not isinstance(raw_steps, list) or not 3 <= len(raw_steps) <= 7:
+        raise ValueError("Guide must contain 3-7 steps")
+    allowed_sources = [ref["label"] for ref in session.get("source_refs", []) if ref.get("label")]
+    has_answer_source = any(
+        any(signal in ref.get("label", "").casefold() for signal in ("答案", "评分", "answer", "solution", "key"))
+        for ref in session.get("source_refs", [])
+    )
+    default_source = allowed_sources[0] if allowed_sources else ("supplied strategy" if language == "en" else "生存大纲行动清单")
+    steps = []
+    for index, raw_step in enumerate(raw_steps):
+        if not isinstance(raw_step, dict):
+            raise ValueError(f"Guide step {index + 1} must be an object")
+        action = normalize_sentence(raw_step.get("action", ""))
+        output = normalize_sentence(raw_step.get("output", ""))
+        if not action or not output:
+            raise ValueError(f"Guide step {index + 1} needs action and output")
+        if not has_answer_source and re.search(r"答案|评分标准|answer\s*key|solutions?", f"{action} {output}", re.IGNORECASE):
+            raise ValueError("Guide assumed an answer key that strategy.json did not supply")
+        if re.search(r"从[^。]{0,80}(?:中)?(?:选取|选择|抽取|找出)\s*(?:\d+|[一二三四五六七八九十两]+)\s*道", action):
+            raise ValueError("Guide invented a question count inside a supplied source")
+        source = normalize_sentence(raw_step.get("source", ""))
+        if allowed_sources and not any(label in source or source in label for label in allowed_sources):
+            source = default_source
+        steps.append(
+            {
+                "role": normalize_step_role(raw_step.get("role"), action),
+                "minutes": normalize_minutes(raw_step.get("minutes", 0), 5, 5, session["duration_minutes"]),
+                "action": action,
+                "output": output,
+                "source": source or default_source,
+            }
+        )
+
+    steps[0]["role"] = "setup"
+    steps[-1]["role"] = "review"
+    for step in steps[1:-1]:
+        step["role"] = "execute"
+    rebalance_step_minutes(steps, session["duration_minutes"])
+    if sum(step["minutes"] for step in steps) != session["duration_minutes"]:
+        raise ValueError("Guide minutes do not match the locked Session duration")
+    return {
+        "session_id": session["id"],
+        "duration_minutes": session["duration_minutes"],
+        "content_language": language,
+        "steps": steps,
+    }
+
+
+def sanitize_guide_revision(raw: dict, payload: dict, session: dict, language: str) -> dict:
+    clean_raw = dict(raw) if isinstance(raw, dict) else {}
+    clean_steps = []
+    has_answer_source = any(
+        any(signal in ref.get("label", "").casefold() for signal in ("答案", "评分", "answer", "solution", "key"))
+        for ref in session.get("source_refs", [])
+    )
+    for raw_step in clean_raw.get("steps", []) if isinstance(clean_raw.get("steps"), list) else []:
+        if not isinstance(raw_step, dict):
+            clean_steps.append(raw_step)
+            continue
+        clean_step = dict(raw_step)
+        for field in ("action", "output"):
+            value = str(clean_step.get(field, ""))
+            value = re.sub(
+                r"((?:选取|选择|抽取|找出)\s*)(?:\d+|[一二三四五六七八九十两]+)(\s*道)",
+                r"\1相关\2",
+                value,
+            )
+            value = re.sub(
+                r"\b(select|choose|pick|find)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+(questions?|problems?|exercises?)\b",
+                r"\1 relevant \2",
+                value,
+                flags=re.IGNORECASE,
+            )
+            if not has_answer_source:
+                value = re.sub(r"(?:标准|参考)?答案|评分标准", "当前步骤的完成证据", value)
+                value = re.sub(
+                    r"\b(?:answer\s*key|solutions?|scoring\s+(?:key|rubric))\b",
+                    "observable output criteria",
+                    value,
+                    flags=re.IGNORECASE,
+                )
+            clean_step[field] = value
+        clean_steps.append(clean_step)
+    clean_raw["steps"] = clean_steps
+    guide = sanitize_guide(clean_raw, session, language)
+    diagnosis = normalize_sentence(raw.get("diagnosis", "") if isinstance(raw, dict) else "")
+    if not diagnosis:
+        diagnosis = "The Guide was adjusted from the execution evidence." if language == "en" else "已根据执行证据调整本次 Guide。"
+    raw_changes = raw.get("changes", []) if isinstance(raw, dict) else []
+    if not isinstance(raw_changes, list):
+        raw_changes = []
+    changes = []
+    for item in raw_changes:
+        change = normalize_sentence(item)
+        if change and change not in changes:
+            changes.append(change[:200])
+        if len(changes) >= 5:
+            break
+    before = [
+        (step["role"], step["minutes"], step["action"], step["output"], step["source"])
+        for step in payload["current_steps"]
+    ]
+    after = [
+        (step["role"], step["minutes"], step["action"], step["output"], step["source"])
+        for step in guide["steps"]
+    ]
+    if before == after:
+        raise ValueError("Revised Guide did not change")
+    if not changes:
+        changes.append("Adjusted the current Guide steps." if language == "en" else "调整了当前 Guide 的执行步骤。")
+    return {"diagnosis": diagnosis[:240], "changes": changes, "guide": guide}
+
+
+def validate_repair_payload(payload: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise PayloadValidationError("Request body must be a JSON object")
+
+    instruction = str(payload.get("instruction", "")).strip()
+    if not 2 <= len(instruction) <= 600:
+        raise PayloadValidationError("instruction must contain 2-600 characters")
+
+    raw_sessions = payload.get("sessions", [])
+    if not isinstance(raw_sessions, list) or not 1 <= len(raw_sessions) <= MAX_SESSIONS:
+        raise PayloadValidationError(f"sessions must contain 1-{MAX_SESSIONS} items")
+
+    sessions = []
+    seen_ids = set()
+    for index, raw_session in enumerate(raw_sessions):
+        if not isinstance(raw_session, dict):
+            raise PayloadValidationError(f"sessions[{index}] must be an object")
+        session_id = str(raw_session.get("id", "")).strip()
+        phase = str(raw_session.get("phase", "")).strip()
+        title = str(raw_session.get("title", "")).strip()
+        session_date = str(raw_session.get("date", "")).strip()
+        criteria = str(raw_session.get("criteria", "")).strip()
+        if not session_id or len(session_id) > 100 or session_id in seen_ids:
+            raise PayloadValidationError(f"sessions[{index}].id must be unique and no longer than 100 characters")
+        if not 1 <= len(phase) <= 80:
+            raise PayloadValidationError(f"sessions[{index}].phase must contain 1-80 characters")
+        if not 1 <= len(title) <= 120:
+            raise PayloadValidationError(f"sessions[{index}].title must contain 1-120 characters")
+        try:
+            date.fromisoformat(session_date)
+        except ValueError:
+            raise PayloadValidationError(f"sessions[{index}].date must use YYYY-MM-DD") from None
+        try:
+            minutes = int(raw_session.get("minutes"))
+        except (TypeError, ValueError):
+            raise PayloadValidationError(f"sessions[{index}].minutes must be an integer") from None
+        if not 15 <= minutes <= 480:
+            raise PayloadValidationError(f"sessions[{index}].minutes must be between 15 and 480")
+        if len(criteria) > 240:
+            raise PayloadValidationError(f"sessions[{index}].criteria must be no longer than 240 characters")
+        seen_ids.add(session_id)
+        sessions.append(
+            {
+                "id": session_id,
+                "phase": phase,
+                "title": title,
+                "date": session_date,
+                "minutes": minutes,
+                "criteria": criteria,
+            }
+        )
+
+    raw_dates = payload.get("available_dates", [])
+    if not isinstance(raw_dates, list) or not 1 <= len(raw_dates) <= 60:
+        raise PayloadValidationError("available_dates must contain 1-60 dates")
+    available_dates = []
+    for raw_date in raw_dates:
+        value = str(raw_date or "").strip()
+        try:
+            date.fromisoformat(value)
+        except ValueError:
+            raise PayloadValidationError("available_dates must use YYYY-MM-DD") from None
+        if value not in available_dates:
+            available_dates.append(value)
+    available_dates.sort()
+    if any(session["date"] not in available_dates for session in sessions):
+        raise PayloadValidationError("every session date must appear in available_dates")
+
+    try:
+        capacity_minutes = int(payload.get("capacity_minutes", 240))
+    except (TypeError, ValueError):
+        raise PayloadValidationError("capacity_minutes must be an integer") from None
+    if not 15 <= capacity_minutes <= 1200:
+        raise PayloadValidationError("capacity_minutes must be between 15 and 1200")
+
+    language = normalize_language(payload.get("language", "")) or "zh"
+    return {
+        "instruction": instruction,
+        "sessions": sessions,
+        "available_dates": available_dates,
+        "capacity_minutes": capacity_minutes,
+        "language": language,
+    }
+
+
+def extract_quoted_phrases(text: str) -> list[str]:
+    matches = re.findall(r"“([^”]{1,120})”|‘([^’]{1,120})’|\"([^\"]{1,120})\"|'([^']{1,120})'", text)
+    phrases = []
+    for groups in matches:
+        value = next((item.strip() for item in groups if item and item.strip()), "")
+        if value and value not in phrases:
+            phrases.append(value)
+    return phrases
+
+
+def extract_explicit_add_titles(text: str) -> list[str]:
+    instruction = str(text or "").strip()
+    titles = []
+    patterns = [
+        r"(?:新增|增加|添加|加上|加入|加)(?:一个|一项|1个)?(?:名为|叫做|叫)?\s*[“\"'‘]?(.+?)[”\"'’]?(?=，|,|。|；|;|并(?:安排|放|设)|安排(?:在|到)|放(?:在|到)|$)",
+        r"(?:add|create)(?:\s+(?:a|an|one))?(?:\s+session)?(?:\s+(?:called|named))?\s+[\"']?(.+?)[\"']?(?=,|\.|;|\s+and\s+(?:schedule|put|set)|$)",
+    ]
+    for pattern in patterns:
+        for match in re.finditer(pattern, instruction, re.IGNORECASE):
+            candidate = match.group(1).strip().strip("“”‘’\"'")
+            candidate = re.sub(r"\s+(?:Session|session|任务|学习任务)$", "", candidate).strip().strip("“”‘’\"'")
+            compact = re.sub(r"\s+", "", candidate)
+            looks_like_duration = bool(
+                re.fullmatch(r"(?:再|额外)?[+＋]?\d+(?:\.\d+)?(?:分钟|小时|h|hr|hrs|hours?)", compact, re.IGNORECASE)
+            )
+            if not candidate or len(candidate) > 120 or looks_like_duration:
+                continue
+            if candidate not in titles:
+                titles.append(candidate)
+    return titles
+
+
+def infer_locked_repair_session_ids(payload: dict):
+    instruction = str(payload.get("instruction", "")).strip()
+    locked_scope = bool(
+        re.search(r"(?:其他|其余).{0,12}(?:Session|任务)?.{0,8}(?:不动|不变|不改|保持原样)", instruction, re.IGNORECASE)
+        or re.search(r"不要(?:修改|调整|移动).{0,10}(?:其他|其余)", instruction, re.IGNORECASE)
+        or re.search(r"(?:leave|keep) (?:all |every )?other sessions? (?:unchanged|untouched)", instruction, re.IGNORECASE)
+        or re.search(r"(?:do not|don't) (?:change|modify|move) (?:any )?other sessions?", instruction, re.IGNORECASE)
+    )
+    if not locked_scope:
+        return None
+
+    sessions = payload.get("sessions", [])
+    allowed_ids = set()
+    explicit_dates = set(re.findall(r"\b\d{4}-\d{2}-\d{2}\b", instruction))
+    chinese_weekdays = {"一": 0, "二": 1, "三": 2, "四": 3, "五": 4, "六": 5, "日": 6, "天": 6}
+    weekday_indexes = {chinese_weekdays[value] for value in re.findall(r"周([一二三四五六日天])", instruction)}
+    english_weekdays = {
+        "monday": 0,
+        "tuesday": 1,
+        "wednesday": 2,
+        "thursday": 3,
+        "friday": 4,
+        "saturday": 5,
+        "sunday": 6,
+    }
+    instruction_lower = instruction.casefold()
+    weekday_indexes.update(index for name, index in english_weekdays.items() if name in instruction_lower)
+
+    compact_instruction = re.sub(r"\s+", "", instruction).casefold()
+    for session in sessions:
+        session_id = session.get("id")
+        session_date = str(session.get("date", ""))
+        if session_date in explicit_dates:
+            allowed_ids.add(session_id)
+            continue
+        try:
+            if weekday_indexes and date.fromisoformat(session_date).weekday() in weekday_indexes:
+                allowed_ids.add(session_id)
+                continue
+        except ValueError:
+            pass
+        compact_title = re.sub(r"\s+", "", str(session.get("title", ""))).casefold()
+        if compact_title and compact_title in compact_instruction:
+            allowed_ids.add(session_id)
+            continue
+        if len(compact_title) >= 4 and any(compact_title[index:index + 4] in compact_instruction for index in range(len(compact_title) - 3)):
+            allowed_ids.add(session_id)
+
+    is_add_instruction = bool(re.search(r"(?:新增|增加|添加|加一个|add|create)", instruction, re.IGNORECASE))
+    return allowed_ids if allowed_ids or is_add_instruction else None
+
+
+def normalize_repair_minutes(value, default=60) -> int:
+    try:
+        minutes = int(round(float(value) / 5) * 5)
+    except (TypeError, ValueError):
+        minutes = default
+    return max(15, min(480, minutes))
+
+
+def normalize_repair_fields(value) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    result = []
+    for field in value:
+        clean = str(field or "").strip()
+        if clean in REPAIR_FIELDS and clean not in result:
+            result.append(clean)
+    return result
+
+
+def repair_value_is_explicit(field: str, value, instruction: str) -> bool:
+    text = str(instruction or "")
+    if field == "minutes":
+        minutes = normalize_repair_minutes(value, 0)
+        compact = re.sub(r"\s+", "", text)
+        if f"{minutes}分钟" in compact:
+            return True
+        if minutes % 60 == 0 and f"{minutes // 60}小时" in compact:
+            return True
+        return False
+    clean = str(value or "").strip()
+    return bool(clean and clean in text)
+
+
+def match_repair_phase(value: str, phases: list[str]) -> str:
+    clean = str(value or "").strip()
+    if not clean:
+        raise ValueError("新增或修改 Session 时必须指定现有阶段")
+    normalized = re.sub(r"\s+", "", clean).casefold()
+    for phase in phases:
+        if re.sub(r"\s+", "", phase).casefold() == normalized:
+            return phase
+    raise ValueError(f"模型引用了不存在的阶段：{clean}")
+
+
+def find_repair_date(sessions: list[dict], minutes: int, available_dates: list[str], capacity_minutes: int, exclude_id="") -> str:
+    loads = {value: 0 for value in available_dates}
+    for session in sessions:
+        if session.get("id") == exclude_id:
+            continue
+        session_date = session.get("date")
+        if session_date in loads:
+            loads[session_date] += int(session.get("minutes", 0) or 0)
+    candidates = sorted(available_dates, key=lambda value: (loads[value] + minutes > capacity_minutes, loads[value], value))
+    return candidates[0]
+
+
+def repair_field_note(explicit_fields: list[str], suggested_fields: list[str]) -> str:
+    parts = []
+    if explicit_fields:
+        parts.append("用户明确：" + "、".join(REPAIR_FIELD_LABELS[field] for field in explicit_fields))
+    if suggested_fields:
+        parts.append("AI 建议：" + "、".join(REPAIR_FIELD_LABELS[field] for field in suggested_fields))
+    return "；".join(parts)
+
+
+def sanitize_repair_response(raw: dict, payload: dict) -> dict:
+    if not isinstance(raw, dict):
+        raise ValueError("模型必须返回一个 JSON 对象")
+    raw_operations = raw.get("operations", [])
+    if not isinstance(raw_operations, list) or not 1 <= len(raw_operations) <= MAX_REPAIR_OPERATIONS:
+        raise ValueError(f"模型必须返回 1-{MAX_REPAIR_OPERATIONS} 个修改操作")
+
+    instruction = payload["instruction"]
+    sessions = [dict(item) for item in payload["sessions"]]
+    phases = list(dict.fromkeys(item["phase"] for item in sessions))
+    available_dates = payload["available_dates"]
+    capacity_minutes = payload["capacity_minutes"]
+    locked_session_ids = infer_locked_repair_session_ids(payload)
+    diffs = []
+    operations = []
+
+    for raw_operation in raw_operations:
+        if not isinstance(raw_operation, dict):
+            raise ValueError("每个修改操作都必须是 JSON 对象")
+        operation_type = str(raw_operation.get("op", "")).strip()
+        if operation_type not in {"add_session", "update_session", "move_session", "delete_session"}:
+            raise ValueError(f"不允许的修改操作：{operation_type or 'empty'}")
+
+        explicit_fields = []
+        suggested_fields = []
+
+        if operation_type == "add_session":
+            phase = match_repair_phase(raw_operation.get("phase", ""), phases)
+            title = str(raw_operation.get("title", "")).strip()
+            if not 1 <= len(title) <= 120:
+                raise ValueError("新增 Session 必须包含 1-120 字符的标题")
+            minutes = normalize_repair_minutes(raw_operation.get("minutes"), 60)
+            requested_date = str(raw_operation.get("date", "")).strip()
+            date_is_explicit = repair_value_is_explicit("date", requested_date, instruction)
+            if requested_date not in available_dates:
+                requested_date = find_repair_date(sessions, minutes, available_dates, capacity_minutes)
+                date_is_explicit = False
+            elif not date_is_explicit:
+                current_load = sum(item["minutes"] for item in sessions if item["date"] == requested_date)
+                if current_load + minutes > capacity_minutes:
+                    requested_date = find_repair_date(sessions, minutes, available_dates, capacity_minutes)
+            criteria = str(raw_operation.get("criteria", "")).strip()
+            if not criteria:
+                criteria = f"完成“{title}”并留下可检查的结果"
+
+            effective_values = {
+                "phase": phase,
+                "title": title,
+                "date": requested_date,
+                "minutes": minutes,
+                "criteria": criteria,
+            }
+            effective_fields = list(effective_values)
+            explicit_fields = [
+                field for field, value in effective_values.items() if repair_value_is_explicit(field, value, instruction)
+            ]
+            suggested_fields = [field for field in effective_fields if field not in explicit_fields]
+            new_session = {
+                "id": f"session-ai-{uuid.uuid4().hex[:10]}",
+                "phase": phase,
+                "title": title,
+                "date": requested_date,
+                "minutes": minutes,
+                "criteria": criteria[:240],
+            }
+            sessions.append(new_session)
+            clean_operation = {
+                "op": operation_type,
+                "session": dict(new_session),
+                "explicit_fields": explicit_fields,
+                "suggested_fields": suggested_fields,
+            }
+            operations.append(clean_operation)
+            diffs.append(
+                {
+                    "tone": "add",
+                    "kind": "新增",
+                    "text": f"“{title}” · {minutes} 分钟 · {requested_date}",
+                    "note": repair_field_note(explicit_fields, suggested_fields),
+                }
+            )
+            continue
+
+        session_id = str(raw_operation.get("session_id", "")).strip()
+        target = next((item for item in sessions if item["id"] == session_id), None)
+        if not target:
+            raise ValueError(f"模型引用了不存在的 Session：{session_id or 'empty'}")
+        if locked_session_ids is not None and session_id not in locked_session_ids:
+            continue
+
+        if operation_type == "delete_session":
+            sessions = [item for item in sessions if item["id"] != session_id]
+            operations.append({"op": operation_type, "session_id": session_id, "explicit_fields": [], "suggested_fields": []})
+            diffs.append(
+                {
+                    "tone": "remove",
+                    "kind": "删除",
+                    "text": f"“{target['title']}” · 释放 {target['minutes']} 分钟",
+                    "note": "仅删除这一项；其他 Session 保持原样",
+                }
+            )
+            continue
+
+        changes = {}
+        old_values = {}
+        candidate_fields = ["date"] if operation_type == "move_session" else ["phase", "title", "date", "minutes", "criteria"]
+        for field in candidate_fields:
+            if field not in raw_operation or raw_operation.get(field) in (None, ""):
+                continue
+            value = raw_operation.get(field)
+            if field == "phase":
+                value = match_repair_phase(value, phases)
+            elif field == "date":
+                value = str(value).strip()
+                if value not in available_dates:
+                    value = find_repair_date(sessions, target["minutes"], available_dates, capacity_minutes, target["id"])
+            elif field == "minutes":
+                value = normalize_repair_minutes(value, target["minutes"])
+            else:
+                value = str(value).strip()
+                max_length = 120 if field == "title" else 240
+                if not value or len(value) > max_length:
+                    raise ValueError(f"{field} 的建议值无效")
+            if value != target[field]:
+                old_values[field] = target[field]
+                changes[field] = value
+
+        if not changes:
+            raise ValueError(f"{operation_type} 没有产生实际变化")
+        explicit_fields = [
+            field for field, value in changes.items() if repair_value_is_explicit(field, value, instruction)
+        ]
+        for field, value in changes.items():
+            target[field] = value
+        suggested_fields = [field for field in changes if field not in explicit_fields]
+        operations.append(
+            {
+                "op": operation_type,
+                "session_id": session_id,
+                "changes": changes,
+                "explicit_fields": explicit_fields,
+                "suggested_fields": suggested_fields,
+            }
+        )
+        change_text = "；".join(f"{REPAIR_FIELD_LABELS[field]}：{old_values[field]} → {value}" for field, value in changes.items())
+        diffs.append(
+            {
+                "tone": "move" if set(changes) == {"date"} else "update",
+                "kind": "移动" if set(changes) == {"date"} else "修改",
+                "text": f"“{target['title']}” · {change_text}",
+                "note": repair_field_note(explicit_fields, suggested_fields),
+            }
+        )
+
+    if not operations:
+        raise ValueError("模型没有对用户明确指定的 Session 产生修改")
+
+    quoted_phrases = extract_quoted_phrases(instruction)
+    serialized_operations = json.dumps(operations, ensure_ascii=False)
+    missing_phrases = [phrase for phrase in quoted_phrases if phrase not in serialized_operations]
+    if missing_phrases:
+        raise ValueError("模型没有原样保留用户明确命名的内容：" + "、".join(missing_phrases))
+    existing_names = {item["title"] for item in payload["sessions"]} | set(phases)
+    newly_named_phrases = [phrase for phrase in quoted_phrases if phrase not in existing_names]
+    explicit_add_titles = extract_explicit_add_titles(instruction)
+    added_titles = {
+        operation["session"]["title"]
+        for operation in operations
+        if operation.get("op") == "add_session" and isinstance(operation.get("session"), dict)
+    }
+    if newly_named_phrases and re.search(r"(?:新增|增加|添加|加一个|add|create)", instruction, re.IGNORECASE):
+        missing_added_titles = [phrase for phrase in newly_named_phrases if phrase not in added_titles]
+        if missing_added_titles:
+            raise ValueError("模型改写了用户明确指定的新 Session 名称：" + "、".join(missing_added_titles))
+    missing_explicit_titles = [title for title in explicit_add_titles if title not in added_titles]
+    if missing_explicit_titles:
+        raise ValueError("模型改写或遗漏了用户明确指定的新 Session 名称：" + "、".join(missing_explicit_titles))
+
+    if locked_session_ids is not None:
+        touched_existing_ids = {
+            operation.get("session_id")
+            for operation in operations
+            if operation.get("session_id")
+        }
+        unexpected_ids = touched_existing_ids - locked_session_ids
+        if unexpected_ids:
+            unexpected_titles = [
+                session["title"]
+                for session in payload["sessions"]
+                if session["id"] in unexpected_ids
+            ]
+            raise ValueError("用户要求其他 Session 保持原样，禁止级联修改：" + "、".join(unexpected_titles))
+
+    assumptions = []
+    for item in raw.get("assumptions", []) if isinstance(raw.get("assumptions"), list) else []:
+        text = str(item or "").strip()
+        if text and text not in assumptions:
+            assumptions.append(text[:200])
+        if len(assumptions) >= 6:
+            break
+    return {
+        "sessions": sessions,
+        "operations": operations,
+        "diffs": diffs,
+        "assumptions": assumptions,
+        "source": "ai",
+    }
+
+
 def collect_plan_language_text(plan: dict) -> str:
     values = []
 
@@ -869,17 +1728,30 @@ def plan_matches_content_language(plan: dict, payload: dict, target_language: st
     return not detected or confidence < 0.64 or detected == target_language
 
 
-def request_chat_completion(api_key: str, api_base: str, model: str, messages: list, temperature: float) -> str:
+def request_chat_completion(
+    api_key: str,
+    api_base: str,
+    model: str,
+    messages: list,
+    temperature: float,
+    *,
+    max_tokens=None,
+    timeout_sec=None,
+    retry_count=None,
+    thinking_type=None,
+) -> str:
     target_url = f"{api_base}/chat/completions"
-    req_body = json.dumps(
-        {
-            "model": model,
-            "temperature": temperature,
-            "max_tokens": int(os.environ.get("AI_MAX_TOKENS", "8000")),
-            "response_format": {"type": "json_object"},
-            "messages": messages,
-        }
-    ).encode("utf-8")
+    request_max_tokens = int(max_tokens if max_tokens is not None else os.environ.get("AI_MAX_TOKENS", "8000"))
+    request_payload = {
+        "model": model,
+        "temperature": temperature,
+        "max_tokens": request_max_tokens,
+        "response_format": {"type": "json_object"},
+        "messages": messages,
+    }
+    if thinking_type in {"enabled", "disabled"}:
+        request_payload["thinking"] = {"type": thinking_type}
+    req_body = json.dumps(request_payload).encode("utf-8")
     request = urllib.request.Request(
         target_url,
         data=req_body,
@@ -889,33 +1761,140 @@ def request_chat_completion(api_key: str, api_base: str, model: str, messages: l
             "Authorization": f"Bearer {api_key}",
         },
     )
-    timeout_sec = int(os.environ.get("AI_TIMEOUT_SEC", "120"))
-    retry_count = int(os.environ.get("AI_RETRY_COUNT", "1"))
+    request_timeout_sec = int(timeout_sec if timeout_sec is not None else os.environ.get("AI_TIMEOUT_SEC", "120"))
+    request_retry_count = int(retry_count if retry_count is not None else os.environ.get("AI_RETRY_COUNT", "1"))
     body = ""
-    for attempt in range(retry_count + 1):
+    data = None
+    for attempt in range(request_retry_count + 1):
         try:
-            with urllib.request.urlopen(request, timeout=timeout_sec) as resp:
+            with urllib.request.urlopen(request, timeout=request_timeout_sec) as resp:
                 body = resp.read().decode("utf-8", errors="replace")
+            try:
+                data = json.loads(body)
+            except json.JSONDecodeError as exc:
+                if attempt < request_retry_count:
+                    time.sleep(1.2 * (attempt + 1))
+                    continue
+                raise RuntimeError(f"模型接口返回无效 JSON：{exc}") from exc
             break
         except urllib.error.HTTPError as e:
             err = e.read().decode("utf-8", errors="replace")
             retriable = e.code in {429, 500, 502, 503, 504}
-            if retriable and attempt < retry_count:
+            if retriable and attempt < request_retry_count:
                 time.sleep(1.2 * (attempt + 1))
                 continue
             raise RuntimeError(f"模型接口失败：{e.code} {err[:220]}")
         except Exception as e:
             msg = str(e)
             timed_out = "timed out" in msg.lower()
-            if timed_out and attempt < retry_count:
+            if timed_out and attempt < request_retry_count:
                 time.sleep(1.2 * (attempt + 1))
                 continue
             raise RuntimeError(f"模型接口不可用：{msg}")
-    data = json.loads(body)
-    content = ((data.get("choices") or [{}])[0].get("message") or {}).get("content")
+    if not isinstance(data, dict):
+        raise RuntimeError("模型接口没有返回 JSON 对象")
+    choice = (data.get("choices") or [{}])[0]
+    message = choice.get("message") or {}
+    content = message.get("content")
     if not content:
-        raise RuntimeError("模型返回为空")
+        finish_reason = choice.get("finish_reason") or "unknown"
+        reasoning_chars = len(message.get("reasoning_content") or "")
+        completion_tokens = (data.get("usage") or {}).get("completion_tokens")
+        details = [f"finish_reason={finish_reason}"]
+        if completion_tokens is not None:
+            details.append(f"completion_tokens={completion_tokens}")
+        if reasoning_chars:
+            details.append(f"reasoning_chars={reasoning_chars}")
+        raise RuntimeError(f"模型未返回最终 JSON（{', '.join(details)}）")
     return content
+
+
+def call_repair_model(payload: dict) -> dict:
+    repair_api_key = os.environ.get("REPAIR_AI_API_KEY", "").strip()
+    if repair_api_key:
+        api_key = repair_api_key
+        api_base = os.environ.get("REPAIR_AI_API_BASE", "https://api.deepseek.com").strip().rstrip("/")
+        model = os.environ.get("REPAIR_AI_MODEL", "deepseek-v4-flash").strip()
+        repair_thinking_type = "disabled" if model.casefold().startswith("deepseek-") else None
+    else:
+        api_key = os.environ.get("AI_API_KEY", "").strip()
+        api_base = os.environ.get("AI_API_BASE", "https://api.siliconflow.cn/v1").strip().rstrip("/")
+        model = os.environ.get("AI_API_MODEL", "Qwen/Qwen2.5-7B-Instruct").strip()
+        repair_thinking_type = None
+    if not api_key or api_key.startswith("<<"):
+        raise RuntimeError("请在 .env 中填写 REPAIR_AI_API_KEY 或 AI_API_KEY")
+    repair_timeout_sec = max(5, min(120, int(os.environ.get("REPAIR_AI_TIMEOUT_SEC", "30"))))
+    repair_retry_count = max(0, min(2, int(os.environ.get("REPAIR_AI_RETRY_COUNT", "1"))))
+    repair_max_tokens = max(128, min(4000, int(os.environ.get("REPAIR_AI_MAX_TOKENS", "800"))))
+    plan_context = {
+        "capacity_minutes_per_day": payload["capacity_minutes"],
+        "available_dates": payload["available_dates"],
+        "phases": list(dict.fromkeys(item["phase"] for item in payload["sessions"])),
+        "sessions": payload["sessions"],
+    }
+    locked_session_ids = infer_locked_repair_session_ids(payload)
+    if locked_session_ids is not None:
+        plan_context["locked_target_session_ids"] = sorted(locked_session_ids)
+    schema_example = {
+        "operations": [
+            {
+                "op": "add_session",
+                "session_id": None,
+                "phase": "existing phase title",
+                "title": "exact session title",
+                "date": "YYYY-MM-DD",
+                "minutes": 60,
+                "criteria": "checkable completion evidence",
+                "explicit_fields": ["phase", "title"],
+                "suggested_fields": ["date", "minutes", "criteria"],
+            }
+        ],
+        "assumptions": ["short assumption"],
+    }
+    system_prompt = (
+        "你是计划修改编译器，不是计划重写器。只返回一个 JSON 对象，不要 Markdown 或解释。"
+        "把用户指令编译为最小修改集合。允许的 op 只有 add_session、update_session、move_session、delete_session。"
+        "新增时必须使用现有 phase 标题；更新、移动、删除时必须使用当前计划中的精确 session_id。"
+        "用户明确写出的名称、引号中的短语、日期、时长必须原样保留，不得概括、改写或替换。"
+        "用户没有提供但操作必需的字段可以提出合理建议，并列入 suggested_fields；用户明确提供的字段列入 explicit_fields。"
+        "字段名只允许 phase、title、date、minutes、criteria。分钟用整数，日期只能来自 available_dates。"
+        "除完成用户要求所必需的对象外，禁止修改其他 Session；不要返回完整计划。"
+        "若用户要求其他 Session 不动，只能操作由日期、星期或标题明确命中的 Session；禁止为维持顺序或消除超载而级联移动后续 Session，容量冲突留给用户在预览中决定。"
+        "如果当前计划提供 locked_target_session_ids，服务端已经解析好允许触碰的现有 Session；必须继续完成用户要求，所有针对现有 Session 的 operation 只能使用这些 ID，不得因为其他日期已有任务而返回空 operations。"
+        f"返回结构必须匹配这个示例：{json.dumps(schema_example, ensure_ascii=False)}"
+    )
+    user_prompt = (
+        f"当前计划：{json.dumps(plan_context, ensure_ascii=False)}\n"
+        f"用户修改指令：{payload['instruction']}"
+    )
+    last_error = ""
+    for attempt in range(repair_retry_count + 1):
+        correction = ""
+        if attempt:
+            correction = (
+                f"\n上一份 JSON 被服务端拒绝：{last_error}。"
+                "请重新编译，严格保留用户原词，只返回合法且最小的 operations。"
+            )
+        content = request_chat_completion(
+            api_key,
+            api_base,
+            model,
+            [
+                {"role": "system", "content": system_prompt + correction},
+                {"role": "user", "content": user_prompt},
+            ],
+            0.1 if attempt == 0 else 0.0,
+            max_tokens=repair_max_tokens,
+            timeout_sec=repair_timeout_sec,
+            retry_count=0,
+            thinking_type=repair_thinking_type,
+        )
+        try:
+            raw = parse_json_from_text(content)
+            return sanitize_repair_response(raw, payload)
+        except (ValueError, json.JSONDecodeError) as exc:
+            last_error = str(exc)
+    raise RuntimeError(f"模型未能生成安全的局部修改（共尝试 {repair_retry_count + 1} 次）：{last_error}")
 
 
 def call_model(payload: dict) -> dict:
@@ -983,9 +1962,221 @@ def call_model(payload: dict) -> dict:
     raise RuntimeError("模型连续两次未遵循内容语言要求，请检查输入语言或重试")
 
 
+def call_guide_model(payload: dict) -> dict:
+    strategy = load_workspace_strategy(payload["workspace_id"])
+    session = next((item for item in strategy["action_list"] if item["id"] == payload["session_id"]), None)
+    if not session:
+        raise PayloadValidationError("Session not found in strategy.json")
+    language = payload.get("content_language") or strategy["course"]["language"]
+    priorities_by_id = {item["id"]: item for item in strategy["priorities"]}
+    nodes_by_id = {item["id"]: item for item in strategy["knowledge_graph"]["nodes"]}
+    sessions_by_id = {item["id"]: item for item in strategy["action_list"]}
+    context = {
+        "course": strategy["course"],
+        "priority": priorities_by_id.get(session["priority_id"], {}),
+        "knowledge_nodes": [nodes_by_id[node_id] for node_id in session["knowledge_node_ids"] if node_id in nodes_by_id],
+        "dependencies": [
+            {"id": session_id, "title": sessions_by_id[session_id]["title"]}
+            for session_id in session["depends_on"]
+            if session_id in sessions_by_id
+        ],
+        "session": session,
+    }
+    schema_example = {
+        "session_id": session["id"],
+        "steps": [
+            {"role": "setup", "minutes": 10, "action": "string", "output": "string", "source": "exact supplied source label"},
+            {"role": "execute", "minutes": 190, "action": "string", "output": "string", "source": "exact supplied source label"},
+            {"role": "review", "minutes": 40, "action": "string", "output": "string", "source": "exact supplied source label"},
+        ],
+    }
+    language_rule = (
+        "Write every generated string in English."
+        if language == "en"
+        else "除固定 role 枚举外，所有生成字符串使用简体中文。"
+    )
+    system_prompt = (
+        "You are a Session Guide compiler, not a strategy planner. Return one JSON object only. "
+        "The supplied Session title, objective, duration, priority, dependencies, success criteria, knowledge nodes, and sources are locked. "
+        "Do not add, delete, rename, reschedule, or change the duration of the Session. "
+        "Generate 3-7 concrete steps whose minutes sum exactly to the locked duration. "
+        "The first step must be the only setup step and is capped at 10 minutes. The last step must be the only review step. Every middle step must be execute, and execute steps hold most of the time. "
+        "Every step must state an observable output and use an exact source label from the supplied Session. "
+        "For calculation-heavy work, prefer closed-book reconstruction, first attempt, scoring-point reverse engineering, condition mutation, and error classification when relevant. "
+        "Never invent page numbers, exercise counts, question types inside a file, files, facts, or answer keys. Refer to available relevant questions unless strategy.json explicitly names them. If no answer or scoring source is supplied, do not tell the user to compare against one. "
+        f"{language_rule} Match this shape: {json.dumps(schema_example, ensure_ascii=False)}"
+    )
+    api_key = os.environ.get("AI_API_KEY", "").strip()
+    if not api_key or api_key.startswith("<<"):
+        raise RuntimeError("请在 .env 中填写真实 AI_API_KEY")
+    api_base = os.environ.get("AI_API_BASE", "https://api.siliconflow.cn/v1").strip().rstrip("/")
+    model = os.environ.get("AI_API_MODEL", "Qwen/Qwen2.5-7B-Instruct").strip()
+    retry_count = max(0, min(2, int(os.environ.get("GUIDE_AI_RETRY_COUNT", "1"))))
+    last_error = ""
+    for attempt in range(retry_count + 1):
+        correction = ""
+        if attempt:
+            correction = f" Previous output was rejected: {last_error}. Regenerate the full JSON without changing the locked Session."
+        content = request_chat_completion(
+            api_key,
+            api_base,
+            model,
+            [
+                {"role": "system", "content": system_prompt + correction},
+                {"role": "user", "content": json.dumps(context, ensure_ascii=False)},
+            ],
+            0.25 if attempt == 0 else 0.1,
+            max_tokens=max(512, min(3000, int(os.environ.get("GUIDE_AI_MAX_TOKENS", "1600")))),
+            timeout_sec=max(10, min(180, int(os.environ.get("GUIDE_AI_TIMEOUT_SEC", "90")))),
+            retry_count=1,
+        )
+        try:
+            return sanitize_guide(parse_json_from_text(content), session, language)
+        except (ValueError, json.JSONDecodeError) as exc:
+            last_error = str(exc)
+    raise RuntimeError(f"模型未能生成合法 Guide（共尝试 {retry_count + 1} 次）：{last_error}")
+
+
+def call_guide_revision_model(payload: dict) -> dict:
+    strategy = load_workspace_strategy(payload["workspace_id"])
+    session = next((item for item in strategy["action_list"] if item["id"] == payload["session_id"]), None)
+    if not session:
+        raise PayloadValidationError("Session not found in strategy.json")
+    language = payload.get("content_language") or strategy["course"]["language"]
+    priorities_by_id = {item["id"]: item for item in strategy["priorities"]}
+    nodes_by_id = {item["id"]: item for item in strategy["knowledge_graph"]["nodes"]}
+    context = {
+        "course": strategy["course"],
+        "locked_session": session,
+        "priority": priorities_by_id.get(session["priority_id"], {}),
+        "knowledge_nodes": [nodes_by_id[node_id] for node_id in session["knowledge_node_ids"] if node_id in nodes_by_id],
+        "execution_result": payload["result"],
+        "execution_feedback": payload["feedback"],
+        "current_guide": payload["current_steps"],
+    }
+    schema_example = {
+        "diagnosis": "one concrete cause inferred from the execution evidence",
+        "changes": ["short, user-visible change summary"],
+        "steps": [
+            {"role": "setup", "minutes": 10, "action": "string", "output": "string", "source": "exact supplied source label"},
+            {"role": "execute", "minutes": 190, "action": "string", "output": "string", "source": "exact supplied source label"},
+            {"role": "review", "minutes": 40, "action": "string", "output": "string", "source": "exact supplied source label"},
+        ],
+    }
+    language_rule = (
+        "Write diagnosis, changes, and every generated Guide string in English."
+        if language == "en"
+        else "除固定 role 枚举外，diagnosis、changes 与 Guide 中的所有生成字符串使用简体中文。"
+    )
+    system_prompt = (
+        "You revise one Session Guide from execution evidence. You are not a strategy planner. Return one JSON object only. "
+        "Only the current Guide may change. The Session title, objective, duration, date, phase, priority, dependencies, success criteria, knowledge nodes, and sources are locked. "
+        "Do not create, delete, rename, reschedule, or change the duration of any Session. "
+        "Diagnose one concrete execution bottleneck from the user's evidence, then make the smallest useful Guide revision. "
+        "Keep completed steps as historical evidence and preserve them verbatim whenever they remain valid; focus changes on unfinished work. "
+        "Generate 3-7 concrete steps whose minutes sum exactly to the locked duration. The first step must be the only setup step and is capped at 10 minutes. "
+        "The last step must be the only review step. Every middle step must be execute, and execute steps hold most of the time. "
+        "Every step must state an observable output and use an exact source label from the locked Session. "
+        "Never invent page numbers, exercise counts, facts, files, question types, answer keys, or scoring rules. "
+        "Return 1-5 short change summaries. Do not mention changes outside this Guide. "
+        f"{language_rule} Match this shape: {json.dumps(schema_example, ensure_ascii=False)}"
+    )
+    revision_api_key = os.environ.get("REPAIR_AI_API_KEY", "").strip()
+    if revision_api_key:
+        api_key = revision_api_key
+        api_base = os.environ.get("REPAIR_AI_API_BASE", "https://api.deepseek.com").strip().rstrip("/")
+        model = os.environ.get("REPAIR_AI_MODEL", "deepseek-v4-flash").strip()
+        revision_thinking_type = "disabled" if model.casefold().startswith("deepseek-") else None
+        revision_timeout_sec = max(10, min(120, int(os.environ.get("REPAIR_AI_TIMEOUT_SEC", "30"))))
+    else:
+        api_key = os.environ.get("AI_API_KEY", "").strip()
+        api_base = os.environ.get("AI_API_BASE", "https://api.siliconflow.cn/v1").strip().rstrip("/")
+        model = os.environ.get("AI_API_MODEL", "Qwen/Qwen2.5-7B-Instruct").strip()
+        revision_thinking_type = None
+        revision_timeout_sec = max(10, min(180, int(os.environ.get("GUIDE_AI_TIMEOUT_SEC", "90"))))
+    if not api_key or api_key.startswith("<<"):
+        raise RuntimeError("请在 .env 中填写 REPAIR_AI_API_KEY 或 AI_API_KEY")
+    retry_count = max(0, min(2, int(os.environ.get("GUIDE_AI_RETRY_COUNT", "1"))))
+    last_error = ""
+    for attempt in range(retry_count + 1):
+        correction = ""
+        if attempt:
+            correction = (
+                f" Previous output was rejected: {last_error}. "
+                "Regenerate a changed but minimal Guide while keeping the Session locked."
+            )
+        try:
+            content = request_chat_completion(
+                api_key,
+                api_base,
+                model,
+                [
+                    {"role": "system", "content": system_prompt + correction},
+                    {"role": "user", "content": json.dumps(context, ensure_ascii=False)},
+                ],
+                0.2 if attempt == 0 else 0.05,
+                max_tokens=max(512, min(3000, int(os.environ.get("GUIDE_AI_MAX_TOKENS", "1600")))),
+                timeout_sec=revision_timeout_sec,
+                retry_count=0,
+                thinking_type=revision_thinking_type,
+            )
+            return sanitize_guide_revision(parse_json_from_text(content), payload, session, language)
+        except (ValueError, json.JSONDecodeError, RuntimeError) as exc:
+            last_error = str(exc)
+    raise RuntimeError(f"模型未能生成合法 Guide 修改提案（共尝试 {retry_count + 1} 次）：{last_error}")
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(BASE_DIR), **kwargs)
+
+    def guess_type(self, path):
+        content_type = super().guess_type(path)
+        if str(path).lower().endswith((".md", ".markdown")):
+            return "text/markdown; charset=utf-8"
+        return content_type
+
+    def end_headers(self):
+        request_path = unquote(urlsplit(self.path).path)
+        if request_path.endswith(".html"):
+            self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+            self.send_header("Pragma", "no-cache")
+            self.send_header("Expires", "0")
+        super().end_headers()
+
+    def _resolve_public_static_path(self) -> Path | None:
+        request_path = unquote(urlsplit(self.path).path)
+        if "\x00" in request_path or "\\" in request_path:
+            return None
+        parts = request_path.lstrip("/").split("/")
+        if not parts or any(not part or part in {".", ".."} or part.startswith(".") for part in parts):
+            return None
+
+        if len(parts) == 1 and parts[0] in PUBLIC_ROOT_FILES:
+            target = (BASE_DIR / parts[0]).resolve()
+            return target if target.is_file() else None
+
+        if len(parts) < 4 or parts[0] != "courses":
+            return None
+        workspace_id, public_directory = parts[1], parts[2]
+        if not WORKSPACE_ID_RE.fullmatch(workspace_id) or public_directory not in PUBLIC_COURSE_DIRECTORIES:
+            return None
+        if Path(parts[-1]).suffix.casefold() not in PUBLIC_COURSE_SUFFIXES:
+            return None
+
+        public_root = (COURSES_DIR / workspace_id / public_directory).resolve()
+        target = public_root.joinpath(*parts[3:]).resolve()
+        try:
+            target.relative_to(public_root)
+        except ValueError:
+            return None
+        return target if target.is_file() else None
+
+    def send_head(self):
+        if self._resolve_public_static_path() is None:
+            self.send_error(404, "Not Found")
+            return None
+        return super().send_head()
 
     def _send_json(self, code: int, data: dict):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
@@ -1047,6 +2238,18 @@ class Handler(SimpleHTTPRequestHandler):
             workspaces = list_course_workspaces()
             self._send_json(200, {"ok": True, "workspaces": workspaces})
             return
+        strategy_match = re.fullmatch(r"/api/workspaces/([^/]+)/strategy", request_path)
+        if strategy_match:
+            try:
+                strategy = load_workspace_strategy(strategy_match.group(1))
+                self._send_json(200, {"ok": True, "strategy": strategy})
+            except PayloadValidationError as exc:
+                self._send_json(400, {"ok": False, "error": str(exc)})
+            except FileNotFoundError:
+                self._send_json(404, {"ok": False, "error": "Strategy not found"})
+            except (ValueError, json.JSONDecodeError) as exc:
+                self._send_json(500, {"ok": False, "error": f"Invalid strategy: {exc}"})
+            return
         if request_path.startswith("/api/workspaces/"):
             workspace_id = request_path.removeprefix("/api/workspaces/").strip("/")
             try:
@@ -1062,7 +2265,8 @@ class Handler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self):
-        if self.path == "/api/auth":
+        request_path = unquote(urlsplit(self.path).path)
+        if request_path == "/api/auth":
             try:
                 length = int(self.headers.get("Content-Length", "0"))
                 raw = self.rfile.read(length).decode("utf-8", errors="replace")
@@ -1084,7 +2288,7 @@ class Handler(SimpleHTTPRequestHandler):
             except Exception as e:
                 self._send_json(500, {"ok": False, "error": str(e)})
                 return
-        if self.path == "/api/logout":
+        if request_path == "/api/logout":
             self._clear_session()
             body = json.dumps({"ok": True}, ensure_ascii=False).encode("utf-8")
             self.send_response(200)
@@ -1094,7 +2298,7 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
             return
-        if self.path != "/api/plan":
+        if request_path not in {"/api/plan", "/api/plan/repair", "/api/guide", "/api/guide/revise"}:
             self._send_json(404, {"ok": False, "error": "Not Found"})
             return
         try:
@@ -1119,9 +2323,22 @@ class Handler(SimpleHTTPRequestHandler):
                 return
             raw = self.rfile.read(length).decode("utf-8", errors="replace")
             payload = json.loads(raw or "{}")
-            payload = validate_plan_payload(payload)
-            plan = call_model(payload)
-            self._send_json(200, {"ok": True, "plan": plan})
+            if request_path == "/api/plan/repair":
+                payload = validate_repair_payload(payload)
+                repair = call_repair_model(payload)
+                self._send_json(200, {"ok": True, "repair": repair})
+            elif request_path == "/api/guide/revise":
+                payload = validate_guide_revision_payload(payload)
+                revision = call_guide_revision_model(payload)
+                self._send_json(200, {"ok": True, "revision": revision})
+            elif request_path == "/api/guide":
+                payload = validate_guide_payload(payload)
+                guide = call_guide_model(payload)
+                self._send_json(200, {"ok": True, "guide": guide})
+            else:
+                payload = validate_plan_payload(payload)
+                plan = call_model(payload)
+                self._send_json(200, {"ok": True, "plan": plan})
         except (json.JSONDecodeError, PayloadValidationError) as e:
             self._send_json(400, {"ok": False, "error": str(e)})
         except Exception as e:
@@ -1130,7 +2347,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 def main():
     load_env_file()
-    host = os.environ.get("HOST", "0.0.0.0").strip() or "0.0.0.0"
+    host = os.environ.get("HOST", "127.0.0.1").strip() or "127.0.0.1"
     port = int(os.environ.get("PORT", "8010"))
     server = ThreadingHTTPServer((host, port), Handler)
     print(f"Serving at http://{host}:{port}")
