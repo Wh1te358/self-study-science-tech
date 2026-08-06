@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>考前突击计划 MVP</title>
+  <link rel="icon" href="data:,">
   <style>
     :root {
       --bg: #ffffff;
@@ -929,12 +930,6 @@
       max-width: none;
       margin-inline: 0;
     }
-    .launch-shell[data-scope-mode="strategy"] > #configurationStage {
-      width: 100%;
-      max-width: 900px;
-      justify-self: center;
-    }
-
     .hero {
       position: relative;
       min-height: 176px;
@@ -2293,6 +2288,13 @@
       padding-left: 24px;
       border-left: 1px solid var(--line);
     }
+    .contact-channel {
+      display: flex;
+      min-width: 0;
+      flex: 1;
+      flex-direction: column;
+    }
+    .contact-channel[hidden] { display: none; }
     .feedback-route-title {
       margin: 0;
       font-size: 16px;
@@ -2343,12 +2345,13 @@
       color: var(--accent);
       font-size: 14px;
     }
-    #copyWx { gap: 8px; }
+    #copyWx,
+    #xProfileLink { gap: 8px; }
     #copyWx.is-success {
       border-color: color-mix(in srgb, var(--signal) 62%, var(--line));
       background: color-mix(in srgb, var(--signal) 10%, var(--input-bg));
     }
-    .wx-id {
+    .contact-id {
       color: var(--accent);
       font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
       font-size: 12px;
@@ -2905,32 +2908,65 @@
         </article>
 
         <article class="feedback-route">
-          <div>
-            <h3 class="feedback-route-title" id="wechatRouteTitle">微信联系</h3>
-            <p class="feedback-route-description" id="wechatRouteDescription">适合无法生成、数据丢失等紧急问题。</p>
+          <div id="wechatContact" class="contact-channel">
+            <div>
+              <h3 class="feedback-route-title" id="wechatRouteTitle">微信联系</h3>
+              <p class="feedback-route-description" id="wechatRouteDescription">适合无法生成、数据丢失等紧急问题。</p>
+            </div>
+            <div class="feedback-route-actions">
+              <button id="copyWx" class="feedback-action" type="button">
+                <span id="copyWxLabel">复制微信号</span>
+                <span id="wxId" class="contact-id">Wind12006</span>
+              </button>
+              <details id="qrDisclosure" class="qr-disclosure">
+                <summary id="qrToggle">查看二维码</summary>
+                <div class="qr-panel">
+                  <img
+                    id="qrImage"
+                    class="qr-image"
+                    src="./contactme.jpg"
+                    width="1078"
+                    height="1472"
+                    loading="lazy"
+                    alt="微信二维码"
+                  />
+                  <p id="qrNote" class="qr-note">扫码添加微信，并备注“产品反馈”。</p>
+                </div>
+              </details>
+            </div>
+            <p id="copyTip" class="copy-tip" role="status" aria-live="polite" aria-atomic="true"></p>
           </div>
-          <div class="feedback-route-actions">
-            <button id="copyWx" class="feedback-action" type="button">
-              <span id="copyWxLabel">复制微信号</span>
-              <span id="wxId" class="wx-id">Wind12006</span>
-            </button>
-            <details id="qrDisclosure" class="qr-disclosure">
-              <summary id="qrToggle">查看二维码</summary>
-              <div class="qr-panel">
-                <img
-                  id="qrImage"
-                  class="qr-image"
-                  src="./contactme.jpg"
-                  width="1078"
-                  height="1472"
-                  loading="lazy"
-                  alt="微信二维码"
-                />
-                <p id="qrNote" class="qr-note">扫码添加微信，并备注“产品反馈”。</p>
-              </div>
-            </details>
+
+          <div id="xContact" class="contact-channel" hidden>
+            <div>
+              <h3 class="feedback-route-title" id="xRouteTitle">Contact on X</h3>
+              <p class="feedback-route-description" id="xRouteDescription">Best for international users and quick follow-up.</p>
+            </div>
+            <div class="feedback-route-actions">
+              <a
+                id="xProfileLink"
+                class="feedback-action"
+                href="https://x.com/Ryou_OnMyWay"
+                target="_blank"
+                rel="noopener noreferrer"
+              ><span id="xProfileAction">Open X profile</span><span id="xHandle" class="contact-id">@Ryou_OnMyWay</span><span class="external-mark" aria-hidden="true">↗</span></a>
+              <details id="xQrDisclosure" class="qr-disclosure">
+                <summary id="xQrToggle">Show X QR code</summary>
+                <div class="qr-panel">
+                  <img
+                    id="xQrImage"
+                    class="qr-image"
+                    src="./x-contact-qr.png"
+                    width="450"
+                    height="450"
+                    loading="lazy"
+                    alt="QR code for @Ryou_OnMyWay on X"
+                  />
+                  <p id="xQrNote" class="qr-note">Scan to open @Ryou_OnMyWay on X.</p>
+                </div>
+              </details>
+            </div>
           </div>
-          <p id="copyTip" class="copy-tip" role="status" aria-live="polite" aria-atomic="true"></p>
         </article>
       </div>
     </section>
@@ -2980,6 +3016,13 @@
     const copyWxBtn = document.getElementById("copyWx");
     const copyWxLabel = document.getElementById("copyWxLabel");
     const copyTip = document.getElementById("copyTip");
+    const wechatContact = document.getElementById("wechatContact");
+    const xContact = document.getElementById("xContact");
+    const qrDisclosure = document.getElementById("qrDisclosure");
+    const xQrDisclosure = document.getElementById("xQrDisclosure");
+    const qrImage = document.getElementById("qrImage");
+    const xQrImage = document.getElementById("xQrImage");
+    const xProfileLink = document.getElementById("xProfileLink");
     const feedbackFormLink = document.getElementById("feedbackFormLink");
     const copyPlanBtn = document.getElementById("copyPlan");
     const downloadPlanBtn = document.getElementById("downloadPlan");
@@ -3379,6 +3422,13 @@
         qrNote: "扫码添加微信，并备注“产品反馈”。",
         copySuccess: "微信号 {value} 已复制，可直接去微信粘贴。",
         copyFailure: "复制失败，请手动复制微信号：{value}",
+        xRouteTitle: "X 联系",
+        xRouteDescription: "面向国际用户，适合快速跟进问题。",
+        xProfileAction: "打开 X 主页",
+        xProfileAria: "在新标签页打开 @Ryou_OnMyWay 的 X 主页",
+        xQrToggle: "查看 X 二维码",
+        xQrAlt: "@Ryou_OnMyWay 的 X 主页二维码",
+        xQrNote: "扫码打开 @Ryou_OnMyWay 的 X 主页。",
         healthCheckFailed: "健康检查失败：{status}",
         generatedFallback: "已生成计划",
         parseError: "计划格式有误，请重新生成。",
@@ -3695,6 +3745,13 @@
         qrNote: "Scan to add me on WeChat and include “Product feedback.”",
         copySuccess: "WeChat ID {value} copied. Paste it into WeChat.",
         copyFailure: "Copy failed. Manually copy this WeChat ID: {value}",
+        xRouteTitle: "Contact on X",
+        xRouteDescription: "Best for international users and quick follow-up.",
+        xProfileAction: "Open X profile",
+        xProfileAria: "Open @Ryou_OnMyWay on X in a new tab",
+        xQrToggle: "Show X QR code",
+        xQrAlt: "QR code for @Ryou_OnMyWay on X",
+        xQrNote: "Scan to open @Ryou_OnMyWay on X.",
         healthCheckFailed: "Health check failed: {status}",
         generatedFallback: "Plan generated",
         parseError: "The plan format was invalid. Generate it again.",
@@ -3789,7 +3846,12 @@
       wechatRouteDescription: "wechatRouteDescription",
       copyWxLabel: "copyWechat",
       qrToggle: "qrToggle",
-      qrNote: "qrNote"
+      qrNote: "qrNote",
+      xRouteTitle: "xRouteTitle",
+      xRouteDescription: "xRouteDescription",
+      xProfileAction: "xProfileAction",
+      xQrToggle: "xQrToggle",
+      xQrNote: "xQrNote"
     };
 
     function translate(language, key, replacements = {}) {
@@ -5661,9 +5723,15 @@
       languageToggle.textContent = currentLanguage === "zh" ? "English" : "中文";
       languageToggle.setAttribute("aria-label", t("languageToggleAria"));
       feedbackFormLink.setAttribute("aria-label", t("feedbackFormAria"));
+      xProfileLink.setAttribute("aria-label", t("xProfileAria"));
       sectionNav.setAttribute("aria-label", t("sectionNavAria"));
-      const qrImage = document.getElementById("qrImage");
       qrImage.alt = t("qrAlt");
+      xQrImage.alt = t("xQrAlt");
+      const showXContact = currentLanguage === "en";
+      wechatContact.hidden = showXContact;
+      xContact.hidden = !showXContact;
+      if (showXContact) qrDisclosure.open = false;
+      else xQrDisclosure.open = false;
       window.clearTimeout(copyButtonTimer);
       copyWxBtn.classList.remove("is-success");
       copyWxBtn.disabled = false;
