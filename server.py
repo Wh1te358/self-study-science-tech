@@ -337,6 +337,39 @@ def normalize_sentence(item: str) -> str:
     return re.sub(r"\s+", " ", str(item).strip())
 
 
+def normalize_strategy_abandon_v2(items: list) -> list:
+    normalized = []
+    seen_ids = set()
+    for index, raw in enumerate(items):
+        if isinstance(raw, str):
+            text = normalize_sentence(raw)
+            if text:
+                normalized.append(text)
+            continue
+        if not isinstance(raw, dict):
+            raise ValueError(f"strategy.abandon[{index}] must be a string or an object")
+
+        item_id = normalize_sentence(raw.get("id", ""))
+        title = normalize_sentence(raw.get("title", ""))
+        reason = normalize_sentence(raw.get("reason", ""))
+        reentry_condition = normalize_sentence(
+            raw.get("reentry_condition", raw.get("reentryCondition", ""))
+        )
+        if not title:
+            raise ValueError(f"strategy.abandon[{index}].title is required")
+        if item_id and (not STRATEGY_ID_RE.fullmatch(item_id) or item_id in seen_ids):
+            raise ValueError(f"strategy.abandon[{index}].id must be unique lowercase kebab-case")
+        if item_id:
+            seen_ids.add(item_id)
+        normalized.append({
+            "id": item_id,
+            "title": title,
+            "reason": reason,
+            "reentry_condition": reentry_condition,
+        })
+    return normalized[:20]
+
+
 def normalize_minutes(value, default=0, minimum=5, maximum=1200, quantum=5):
     try:
         minutes = int(float(value))
@@ -1009,6 +1042,7 @@ def normalize_strategy_v2(strategy: dict, workspace_id="") -> dict:
     abandon = strategy.get("abandon", [])
     if not isinstance(abandon, list):
         raise ValueError("strategy.abandon must be an array")
+    normalized_abandon = normalize_strategy_abandon_v2(abandon)
     return {
         "schema_version": 2,
         "course": {
@@ -1029,7 +1063,7 @@ def normalize_strategy_v2(strategy: dict, workspace_id="") -> dict:
         "priorities": sorted(priorities, key=lambda item: item["rank"]),
         "knowledge_graph": {"nodes": nodes, "edges": edges},
         "action_list": sessions,
-        "abandon": [normalize_sentence(item) for item in abandon if normalize_sentence(item)][:20],
+        "abandon": normalized_abandon,
         "material_gaps": gaps,
     }
 
