@@ -26,6 +26,7 @@ PUBLIC_ROOT_FILES = {
     "mvp-study-sprint.html",
     "phase-session-guide-demo.html",
     "plan-repair-demo.html",
+    "x-contact-qr.png",
 }
 PUBLIC_COURSE_DIRECTORIES = {"progress", "reference"}
 PUBLIC_COURSE_SUFFIXES = {
