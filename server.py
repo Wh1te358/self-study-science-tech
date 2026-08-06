@@ -6,16 +6,17 @@ import time
 import uuid
 import urllib.error
 import urllib.request
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
 BASE_DIR = Path(__file__).resolve().parent
 COURSES_DIR = BASE_DIR / "courses"
 APP_NAME = "study-sprint-api"
-APP_VERSION = "2026-08-05-feasibility-contract-v1"
+APP_VERSION = "2026-08-05-strategy-contract-v2"
 WORKSPACE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 STRATEGY_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,99}$")
 MIN_PLAN_DAYS = 3
@@ -375,7 +376,154 @@ def normalize_id_list(value, *, limit=32):
     return items
 
 
-def normalize_strategy(strategy: dict, workspace_id="") -> dict:
+def normalize_strategy_materials(value):
+    if not isinstance(value, list):
+        raise ValueError("strategy.source_materials must be an array")
+    allowed_kinds = {
+        "textbook",
+        "lecture",
+        "review_sheet",
+        "past_paper",
+        "homework",
+        "example",
+        "answer_key",
+        "teacher_hint",
+        "user_notes",
+        "other",
+    }
+    materials = []
+    material_ids = set()
+    for index, raw in enumerate(value if isinstance(value, list) else []):
+        if not isinstance(raw, dict):
+            raise ValueError(f"strategy.source_materials[{index}] must be an object")
+        material_id = normalize_sentence(raw.get("id", ""))
+        if not STRATEGY_ID_RE.fullmatch(material_id) or material_id in material_ids:
+            raise ValueError(f"strategy.source_materials[{index}].id must be unique kebab-case")
+        material_ids.add(material_id)
+        label = normalize_sentence(raw.get("label", ""))
+        if not label:
+            raise ValueError(f"strategy.source_materials[{index}].label is required")
+        kind = normalize_sentence(raw.get("kind", "other"))
+        if kind not in allowed_kinds:
+            raise ValueError(f"strategy.source_materials[{index}].kind is invalid")
+        provenance = normalize_sentence(raw.get("provenance", ""))
+        if provenance not in {"user_provided", "pre_existing"}:
+            raise ValueError(f"strategy.source_materials[{index}].provenance is invalid")
+        if normalize_sentence(raw.get("availability", "")) != "available":
+            raise ValueError(f"strategy.source_materials[{index}].availability must be available")
+        materials.append(
+            {
+                "id": material_id,
+                "label": label,
+                "kind": kind,
+                "provenance": provenance,
+                "availability": "available",
+                "path": str(raw.get("path", "")).strip(),
+                "href": str(raw.get("href", "")).strip(),
+            }
+        )
+    return materials
+
+
+def normalize_strategy_material_refs(value, material_ids, path):
+    if not isinstance(value, list):
+        raise ValueError(f"{path} must be an array")
+    refs = []
+    for index, raw in enumerate(value if isinstance(value, list) else []):
+        if not isinstance(raw, dict):
+            raise ValueError(f"{path}[{index}] must be an object")
+        material_id = normalize_sentence(raw.get("material_id", ""))
+        if material_id not in material_ids:
+            raise ValueError(f"{path}[{index}] references an unknown material")
+        refs.append(
+            {
+                "material_id": material_id,
+                "locator": normalize_sentence(raw.get("locator", "")),
+                "kind": normalize_sentence(raw.get("kind", "")),
+            }
+        )
+    return refs
+
+
+def normalize_v2_planning_context(strategy):
+    raw_context = strategy.get("planning_context", {})
+    if not isinstance(raw_context, dict):
+        raise ValueError("strategy.planning_context must be an object")
+    exam_date_text = normalize_sentence(raw_context.get("exam_date", ""))
+    try:
+        exam_date = date.fromisoformat(exam_date_text)
+    except ValueError:
+        raise ValueError("strategy.planning_context.exam_date must use YYYY-MM-DD") from None
+    created_at_text = normalize_sentence(raw_context.get("strategy_created_at", ""))
+    try:
+        created_at = datetime.fromisoformat(created_at_text.replace("Z", "+00:00"))
+    except ValueError:
+        raise ValueError("strategy.planning_context.strategy_created_at must be ISO 8601") from None
+    if created_at.tzinfo is None or created_at.utcoffset() is None:
+        raise ValueError("strategy.planning_context.strategy_created_at must include a UTC offset")
+    timezone_name = normalize_sentence(raw_context.get("timezone", ""))
+    try:
+        timezone_info = ZoneInfo(timezone_name)
+    except (ZoneInfoNotFoundError, ValueError):
+        raise ValueError("strategy.planning_context.timezone must be a valid IANA timezone") from None
+    exam_date_source = normalize_sentence(raw_context.get("exam_date_source", ""))
+    if exam_date_source not in {"user_confirmed", "derived_from_relative_days", "inferred"}:
+        raise ValueError("strategy.planning_context.exam_date_source is invalid")
+    raw_availability = raw_context.get("availability", {})
+    if not isinstance(raw_availability, dict):
+        raise ValueError("strategy.planning_context.availability must be an object")
+    if isinstance(raw_availability.get("hours_per_day"), bool):
+        raise ValueError("strategy.planning_context.availability.hours_per_day is invalid")
+    try:
+        hours_per_day = float(raw_availability.get("hours_per_day", 0))
+    except (TypeError, ValueError):
+        raise ValueError("strategy.planning_context.availability.hours_per_day is invalid") from None
+    if not 0 < hours_per_day <= 20:
+        raise ValueError("strategy.planning_context.availability.hours_per_day must be greater than 0 and no more than 20")
+    availability_source = normalize_sentence(raw_availability.get("source", ""))
+    if availability_source not in {"user_confirmed", "inferred"}:
+        raise ValueError("strategy.planning_context.availability.source is invalid")
+    generation_date = created_at.date()
+    generation_days = (exam_date - generation_date).days
+    if generation_days < 0:
+        raise ValueError("strategy.planning_context.exam_date precedes strategy_created_at")
+    return {
+        "exam_date": exam_date_text,
+        "strategy_created_at": created_at.isoformat(),
+        "timezone": timezone_name,
+        "exam_date_source": exam_date_source,
+        "availability": {
+            "hours_per_day": hours_per_day,
+            "source": availability_source,
+        },
+    }, generation_days, hours_per_day
+
+
+def resolve_strategy_session_sources(strategy, session):
+    if int(strategy.get("schema_version", 0) or 0) == 1:
+        return normalize_source_refs(session.get("source_refs", []))
+    materials_by_id = {
+        material.get("id"): material
+        for material in strategy.get("source_materials", [])
+        if isinstance(material, dict) and material.get("id")
+    }
+    refs = []
+    for material_id in session.get("input_material_ids", []):
+        material = materials_by_id.get(material_id)
+        if not material:
+            continue
+        refs.append(
+            {
+                "label": material.get("label", material_id),
+                "href": material.get("href", ""),
+                "pages": "",
+                "kind": material.get("kind", ""),
+            }
+        )
+    return normalize_source_refs(refs)
+
+
+def normalize_strategy_v1(strategy: dict, workspace_id="") -> dict:
     if not isinstance(strategy, dict):
         raise ValueError("strategy.json must contain one JSON object")
     if int(strategy.get("schema_version", 0) or 0) != 1:
@@ -544,6 +692,359 @@ def normalize_strategy(strategy: dict, workspace_id="") -> dict:
         "abandon": [normalize_sentence(item) for item in strategy.get("abandon", []) if normalize_sentence(item)][:20],
         "material_gaps": [normalize_sentence(item) for item in strategy.get("material_gaps", []) if normalize_sentence(item)][:20],
     }
+
+
+def normalize_strategy_v2(strategy: dict, workspace_id="") -> dict:
+    if not isinstance(strategy, dict):
+        raise ValueError("strategy.json must contain one JSON object")
+    if "days_left" in json.dumps(strategy, ensure_ascii=False):
+        def contains_days_left(value):
+            if isinstance(value, dict):
+                return "days_left" in value or any(contains_days_left(child) for child in value.values())
+            if isinstance(value, list):
+                return any(contains_days_left(child) for child in value)
+            return False
+        if contains_days_left(strategy):
+            raise ValueError("strategy.days_left is forbidden; use planning_context.exam_date")
+
+    raw_course = strategy.get("course", {})
+    if not isinstance(raw_course, dict):
+        raise ValueError("strategy.course must be an object")
+    if "hours_per_day" in raw_course:
+        raise ValueError("strategy.course.hours_per_day is forbidden; move it to planning_context.availability")
+    course_id = normalize_sentence(raw_course.get("id", ""))
+    if not WORKSPACE_ID_RE.fullmatch(course_id):
+        raise ValueError("strategy.course.id must use lowercase kebab-case")
+    if workspace_id and course_id != workspace_id:
+        raise ValueError("strategy.course.id must match its workspace directory")
+    course_name = normalize_sentence(raw_course.get("name", ""))
+    if not course_name:
+        raise ValueError("strategy.course.name is required")
+    language = normalize_language(raw_course.get("language", ""))
+    if not language:
+        raise ValueError("strategy.course.language must be zh or en")
+    subject_type = normalize_sentence(raw_course.get("subject_type", ""))
+    if subject_type not in {"math_logic", "memorization", "mixed"}:
+        raise ValueError("strategy.course.subject_type is invalid")
+    try:
+        target_score = float(raw_course.get("target_score"))
+    except (TypeError, ValueError):
+        raise ValueError("strategy.course.target_score must be 0-100") from None
+    if not 0 <= target_score <= 100:
+        raise ValueError("strategy.course.target_score must be 0-100")
+
+    planning_context, generation_days, generation_hours = normalize_v2_planning_context(strategy)
+    daily_capacity = int(round(generation_hours * 60))
+    materials = normalize_strategy_materials(strategy.get("source_materials", []))
+    material_ids = {material["id"] for material in materials}
+
+    raw_outline = strategy.get("source_outline", {})
+    if not isinstance(raw_outline, dict):
+        raise ValueError("strategy.source_outline must be an object")
+    outline_label = normalize_sentence(raw_outline.get("label", ""))
+    outline_path = str(raw_outline.get("path", "")).strip()
+    if not outline_label or not outline_path:
+        raise ValueError("strategy.source_outline.label and path are required")
+
+    priorities = []
+    priority_ids = set()
+    raw_priorities = strategy.get("priorities", [])
+    if not isinstance(raw_priorities, list):
+        raise ValueError("strategy.priorities must be an array")
+    for index, raw in enumerate(raw_priorities):
+        if not isinstance(raw, dict):
+            raise ValueError(f"strategy.priorities[{index}] must be an object")
+        priority_id = normalize_sentence(raw.get("id", ""))
+        if not STRATEGY_ID_RE.fullmatch(priority_id) or priority_id in priority_ids:
+            raise ValueError(f"strategy.priorities[{index}].id must be unique kebab-case")
+        priority_ids.add(priority_id)
+        try:
+            rank = int(raw.get("rank"))
+        except (TypeError, ValueError):
+            raise ValueError(f"strategy.priorities[{index}].rank is invalid") from None
+        level = normalize_sentence(raw.get("level", ""))
+        title = normalize_sentence(raw.get("title", ""))
+        reason = normalize_sentence(raw.get("reason", ""))
+        if rank < 1 or level not in {"must_win", "high_frequency", "supporting", "abandonable"}:
+            raise ValueError(f"strategy.priorities[{index}] has an invalid rank or level")
+        if not title or not reason:
+            raise ValueError(f"strategy.priorities[{index}].title and reason are required")
+        priorities.append({
+            "id": priority_id,
+            "rank": rank,
+            "title": title,
+            "level": level,
+            "reason": reason,
+            "knowledge_node_ids": normalize_id_list(raw.get("knowledge_node_ids", [])),
+        })
+
+    raw_graph = strategy.get("knowledge_graph", {})
+    if not isinstance(raw_graph, dict):
+        raise ValueError("strategy.knowledge_graph must be an object")
+    raw_nodes = raw_graph.get("nodes", [])
+    if not isinstance(raw_nodes, list):
+        raise ValueError("strategy.knowledge_graph.nodes must be an array")
+    nodes = []
+    node_ids = set()
+    node_types = {"concept", "formula", "theorem", "method", "boundary_condition", "scoring_routine"}
+    mastery_levels = {"must_know", "high_frequency", "abandonable"}
+    for index, raw in enumerate(raw_nodes):
+        if not isinstance(raw, dict):
+            raise ValueError(f"strategy.knowledge_graph.nodes[{index}] must be an object")
+        node_id = normalize_sentence(raw.get("id", ""))
+        if not STRATEGY_ID_RE.fullmatch(node_id) or node_id in node_ids:
+            raise ValueError(f"strategy.knowledge_graph.nodes[{index}].id must be unique kebab-case")
+        node_ids.add(node_id)
+        label = normalize_sentence(raw.get("label", ""))
+        node_type = normalize_sentence(raw.get("type", ""))
+        mastery = normalize_sentence(raw.get("mastery", ""))
+        if not label or node_type not in node_types or mastery not in mastery_levels:
+            raise ValueError(f"strategy.knowledge_graph.nodes[{index}] is invalid")
+        nodes.append({
+            "id": node_id,
+            "label": label,
+            "type": node_type,
+            "mastery": mastery,
+            "trigger_words": normalize_id_list(raw.get("trigger_words", [])),
+            "source_refs": normalize_strategy_material_refs(
+                raw.get("source_refs", []), material_ids, f"strategy.knowledge_graph.nodes[{index}].source_refs"
+            ),
+        })
+
+    for priority in priorities:
+        unknown = [node_id for node_id in priority["knowledge_node_ids"] if node_id not in node_ids]
+        if unknown:
+            raise ValueError(f"priority {priority['id']} references unknown nodes: {', '.join(unknown)}")
+
+    raw_edges = raw_graph.get("edges", [])
+    if not isinstance(raw_edges, list):
+        raise ValueError("strategy.knowledge_graph.edges must be an array")
+    edge_relations = {
+        "causality", "derivation", "substitution", "boundary_constraint", "formula_chain",
+        "unit_conversion", "graph_relation", "approximation_assumption",
+    }
+    edges = []
+    for index, raw in enumerate(raw_edges):
+        if not isinstance(raw, dict):
+            raise ValueError(f"strategy.knowledge_graph.edges[{index}] must be an object")
+        from_id = normalize_sentence(raw.get("from", ""))
+        to_id = normalize_sentence(raw.get("to", ""))
+        relation = normalize_sentence(raw.get("relation", ""))
+        if from_id not in node_ids or to_id not in node_ids or relation not in edge_relations:
+            raise ValueError(f"strategy.knowledge_graph.edges[{index}] is invalid")
+        edges.append({
+            "from": from_id,
+            "to": to_id,
+            "relation": relation,
+            "trigger_words": normalize_id_list(raw.get("trigger_words", [])),
+            "break_risk": normalize_sentence(raw.get("break_risk", "")),
+            "score_loss": normalize_sentence(raw.get("score_loss", "")),
+        })
+
+    raw_sessions = strategy.get("action_list", [])
+    if not isinstance(raw_sessions, list) or not raw_sessions:
+        raise ValueError("strategy.action_list must contain at least one Session")
+    if len(raw_sessions) > MAX_SESSIONS:
+        raise ValueError(f"strategy.action_list must contain at most {MAX_SESSIONS} Sessions")
+    session_ids = []
+    for index, raw in enumerate(raw_sessions):
+        if not isinstance(raw, dict):
+            raise ValueError(f"strategy.action_list[{index}] must be an object")
+        session_id = normalize_sentence(raw.get("id", ""))
+        if not STRATEGY_ID_RE.fullmatch(session_id) or session_id in session_ids:
+            raise ValueError(f"strategy.action_list[{index}].id must be unique kebab-case")
+        session_ids.append(session_id)
+    session_order = {session_id: index for index, session_id in enumerate(session_ids)}
+
+    output_types = {
+        "concept_compression", "paper_deconstruction", "error_sop", "formula_sheet",
+        "knowledge_map", "a4_sheet", "practice_evidence", "other",
+    }
+    sessions = []
+    artifact_producers = {}
+    session_minutes = 0
+    for index, raw in enumerate(raw_sessions):
+        session_id = session_ids[index]
+        for forbidden in ("steps", "guide", "source_refs"):
+            if forbidden in raw:
+                raise ValueError(f"strategy.action_list[{index}].{forbidden} is forbidden")
+        required_text = {
+            field: normalize_sentence(raw.get(field, ""))
+            for field in ("phase", "title", "objective", "success_criteria")
+        }
+        if any(not value for value in required_text.values()):
+            raise ValueError(f"strategy.action_list[{index}] is missing required text")
+        duration = raw.get("duration_minutes")
+        if isinstance(duration, bool) or not isinstance(duration, int) or not 15 <= duration <= 1200:
+            raise ValueError(f"strategy.action_list[{index}].duration_minutes must be 15-1200")
+        if duration > daily_capacity:
+            raise ValueError(f"strategy.action_list[{index}] exceeds assumed daily capacity")
+        session_minutes += duration
+        priority_id = normalize_sentence(raw.get("priority_id", ""))
+        if priority_id not in priority_ids:
+            raise ValueError(f"strategy.action_list[{index}] references an unknown priority")
+        knowledge_node_ids = normalize_id_list(raw.get("knowledge_node_ids", []))
+        unknown_nodes = [node_id for node_id in knowledge_node_ids if node_id not in node_ids]
+        if unknown_nodes:
+            raise ValueError(f"Session {session_id} references unknown nodes: {', '.join(unknown_nodes)}")
+        depends_on = normalize_id_list(raw.get("depends_on", []))
+        for dependency_id in depends_on:
+            if dependency_id not in session_order or session_order[dependency_id] >= index:
+                raise ValueError(f"Session {session_id} dependency must reference an earlier Session")
+        input_material_ids = normalize_id_list(raw.get("input_material_ids", []))
+        unknown_materials = [material_id for material_id in input_material_ids if material_id not in material_ids]
+        if unknown_materials:
+            raise ValueError(f"Session {session_id} references unknown materials: {', '.join(unknown_materials)}")
+        input_artifact_ids = normalize_id_list(raw.get("input_artifact_ids", []))
+        raw_outputs = raw.get("expected_outputs", [])
+        if not isinstance(raw_outputs, list):
+            raise ValueError(f"strategy.action_list[{index}].expected_outputs must be an array")
+        expected_outputs = []
+        for output_index, raw_output in enumerate(raw_outputs):
+            if not isinstance(raw_output, dict):
+                raise ValueError(f"strategy.action_list[{index}].expected_outputs[{output_index}] must be an object")
+            output_id = normalize_sentence(raw_output.get("id", ""))
+            if not STRATEGY_ID_RE.fullmatch(output_id) or output_id in artifact_producers:
+                raise ValueError(f"output {output_id or output_index} must have a globally unique kebab-case ID")
+            label = normalize_sentence(raw_output.get("label", ""))
+            output_type = normalize_sentence(raw_output.get("type", ""))
+            status = normalize_sentence(raw_output.get("status", ""))
+            if not label or output_type not in output_types or status not in {"planned", "available"}:
+                raise ValueError(f"output {output_id} is invalid")
+            path = str(raw_output.get("path", "")).strip()
+            href = str(raw_output.get("href", "")).strip()
+            if status == "available" and not (path or href):
+                raise ValueError(f"available output {output_id} needs path or href")
+            source_material_ids = normalize_id_list(raw_output.get("source_material_ids", []))
+            unknown_output_materials = [material_id for material_id in source_material_ids if material_id not in material_ids]
+            if unknown_output_materials:
+                raise ValueError(f"output {output_id} references unknown materials")
+            artifact_producers[output_id] = session_id
+            expected_outputs.append({
+                "id": output_id,
+                "label": label,
+                "type": output_type,
+                "status": status,
+                "source_material_ids": source_material_ids,
+                "path": path,
+                "href": href,
+            })
+        try:
+            day_index = int(raw.get("recommended_day_index", 0) or 0)
+        except (TypeError, ValueError):
+            raise ValueError(f"strategy.action_list[{index}].recommended_day_index is invalid") from None
+        sessions.append({
+            "id": session_id,
+            **required_text,
+            "recommended_day_index": day_index,
+            "duration_minutes": duration,
+            "priority_id": priority_id,
+            "knowledge_node_ids": knowledge_node_ids,
+            "depends_on": depends_on,
+            "input_material_ids": input_material_ids,
+            "input_artifact_ids": input_artifact_ids,
+            "expected_outputs": expected_outputs,
+        })
+
+    sessions_by_id = {session["id"]: session for session in sessions}
+    def depends_transitively(session_id, producer_id, visited=None):
+        if session_id == producer_id:
+            return True
+        visited = set() if visited is None else visited
+        if session_id in visited:
+            return False
+        visited.add(session_id)
+        return any(
+            dependency_id == producer_id or depends_transitively(dependency_id, producer_id, visited)
+            for dependency_id in sessions_by_id[session_id]["depends_on"]
+        )
+
+    for session in sessions:
+        for artifact_id in session["input_artifact_ids"]:
+            producer_id = artifact_producers.get(artifact_id)
+            if not producer_id:
+                raise ValueError(f"Session {session['id']} references unknown artifact {artifact_id}")
+            if producer_id == session["id"] or not depends_transitively(session["id"], producer_id):
+                raise ValueError(f"Session {session['id']} must depend on artifact producer {producer_id}")
+
+    covered_priorities = {session["priority_id"] for session in sessions}
+    uncovered = [item["id"] for item in priorities if item["level"] == "must_win" and item["id"] not in covered_priorities]
+    if uncovered:
+        raise ValueError(f"must-win priorities have no Session: {', '.join(uncovered)}")
+
+    raw_capacity = strategy.get("capacity_summary", {})
+    if not isinstance(raw_capacity, dict):
+        raise ValueError("strategy.capacity_summary must be an object")
+    available_minutes = int(generation_days * generation_hours * 60)
+    deficit_minutes = max(0, session_minutes - available_minutes)
+    if raw_capacity.get("available_minutes_at_generation") != available_minutes:
+        raise ValueError("strategy.capacity_summary.available_minutes_at_generation is inconsistent")
+    if raw_capacity.get("session_minutes") != session_minutes:
+        raise ValueError("strategy.capacity_summary.session_minutes is inconsistent")
+    if raw_capacity.get("deficit_minutes") != deficit_minutes:
+        raise ValueError("strategy.capacity_summary.deficit_minutes is inconsistent")
+
+    raw_gaps = strategy.get("material_gaps", [])
+    if not isinstance(raw_gaps, list):
+        raise ValueError("strategy.material_gaps must be an array")
+    gaps = []
+    gap_ids = set()
+    for index, raw in enumerate(raw_gaps):
+        if not isinstance(raw, dict):
+            raise ValueError(f"strategy.material_gaps[{index}] must be an object")
+        gap_id = normalize_sentence(raw.get("id", ""))
+        description = normalize_sentence(raw.get("description", ""))
+        impact = normalize_sentence(raw.get("impact", ""))
+        if not STRATEGY_ID_RE.fullmatch(gap_id) or gap_id in gap_ids or not description or not impact:
+            raise ValueError(f"strategy.material_gaps[{index}] is invalid")
+        gap_ids.add(gap_id)
+        gaps.append({
+            "id": gap_id,
+            "description": description,
+            "impact": impact,
+            "resolution": normalize_sentence(raw.get("resolution", "")),
+        })
+
+    abandon = strategy.get("abandon", [])
+    if not isinstance(abandon, list):
+        raise ValueError("strategy.abandon must be an array")
+    return {
+        "schema_version": 2,
+        "course": {
+            "id": course_id,
+            "name": course_name,
+            "language": language,
+            "subject_type": subject_type,
+            "target_score": int(target_score) if target_score.is_integer() else target_score,
+        },
+        "planning_context": planning_context,
+        "capacity_summary": {
+            "available_minutes_at_generation": available_minutes,
+            "session_minutes": session_minutes,
+            "deficit_minutes": deficit_minutes,
+        },
+        "source_outline": {"label": outline_label, "path": outline_path},
+        "source_materials": materials,
+        "priorities": sorted(priorities, key=lambda item: item["rank"]),
+        "knowledge_graph": {"nodes": nodes, "edges": edges},
+        "action_list": sessions,
+        "abandon": [normalize_sentence(item) for item in abandon if normalize_sentence(item)][:20],
+        "material_gaps": gaps,
+    }
+
+
+def normalize_strategy(strategy: dict, workspace_id="") -> dict:
+    if not isinstance(strategy, dict):
+        raise ValueError("strategy.json must contain one JSON object")
+    try:
+        schema_version = int(strategy.get("schema_version", 0) or 0)
+    except (TypeError, ValueError):
+        schema_version = 0
+    if schema_version == 1:
+        return normalize_strategy_v1(strategy, workspace_id)
+    if schema_version == 2:
+        return normalize_strategy_v2(strategy, workspace_id)
+    raise ValueError("strategy.json schema_version must equal 1 or 2")
 
 
 def load_workspace_strategy(workspace_id: str, *, required=True) -> dict:
@@ -1079,6 +1580,16 @@ def validate_guide_payload(payload: dict) -> dict:
     if not isinstance(payload, dict):
         raise PayloadValidationError("Request body must be a JSON object")
     workspace_id = str(payload.get("workspace_id", "")).strip()
+    strategy = None
+    if payload.get("strategy") is not None:
+        try:
+            strategy = normalize_strategy(payload.get("strategy"))
+        except (TypeError, ValueError) as exc:
+            raise PayloadValidationError(f"strategy is invalid: {exc}") from None
+        strategy_workspace_id = strategy["course"]["id"]
+        if workspace_id and workspace_id != strategy_workspace_id:
+            raise PayloadValidationError("workspace_id must match strategy.course.id")
+        workspace_id = strategy_workspace_id
     if not WORKSPACE_ID_RE.fullmatch(workspace_id):
         raise PayloadValidationError("workspace_id is invalid")
     session_id = str(payload.get("session_id", "")).strip()
@@ -1087,7 +1598,107 @@ def validate_guide_payload(payload: dict) -> dict:
     language = normalize_language(payload.get("content_language", ""))
     if payload.get("content_language") and not language:
         raise PayloadValidationError("content_language must be zh or en")
-    return {"workspace_id": workspace_id, "session_id": session_id, "content_language": language}
+    return {
+        "workspace_id": workspace_id,
+        "session_id": session_id,
+        "content_language": language,
+        "strategy": strategy,
+    }
+
+
+def normalize_strategy_runtime_context(payload: dict, strategy: dict) -> dict:
+    raw_runtime = payload.get("runtime_context", {})
+    if raw_runtime is None:
+        raw_runtime = {}
+    if not isinstance(raw_runtime, dict):
+        raise PayloadValidationError("runtime_context must be an object")
+
+    if strategy["schema_version"] == 2:
+        defaults = strategy["planning_context"]
+        exam_date_text = normalize_sentence(raw_runtime.get("exam_date", defaults["exam_date"]))
+        raw_hours = raw_runtime.get("hours_per_day", defaults["availability"]["hours_per_day"])
+        default_timezone = defaults["timezone"]
+    else:
+        defaults = strategy["course"]
+        default_exam_date = date.today() + timedelta(days=int(defaults["days_left"]))
+        exam_date_text = normalize_sentence(raw_runtime.get("exam_date", default_exam_date.isoformat()))
+        raw_hours = raw_runtime.get("hours_per_day", defaults["hours_per_day"])
+        default_timezone = ""
+
+    timezone_name = normalize_sentence(raw_runtime.get("timezone", default_timezone))
+    if timezone_name:
+        try:
+            today = datetime.now(ZoneInfo(timezone_name)).date()
+        except (ZoneInfoNotFoundError, ValueError):
+            raise PayloadValidationError("runtime_context.timezone must be a valid IANA timezone") from None
+    else:
+        today = date.today()
+
+    try:
+        exam_date = date.fromisoformat(exam_date_text)
+    except ValueError:
+        raise PayloadValidationError("runtime_context.exam_date must use YYYY-MM-DD") from None
+    try:
+        hours_per_day = float(raw_hours)
+    except (TypeError, ValueError):
+        raise PayloadValidationError("runtime_context.hours_per_day must be a number") from None
+    if not 0 < hours_per_day <= 20:
+        raise PayloadValidationError("runtime_context.hours_per_day must be greater than 0 and no more than 20")
+
+    days_left = (exam_date - today).days
+    if days_left < MIN_PLAN_DAYS:
+        raise PayloadValidationError(
+            f"The exam date must leave at least {MIN_PLAN_DAYS} full days. Choose a later date."
+        )
+    if days_left > 365:
+        raise PayloadValidationError("The exam date must be within 365 days")
+
+    daily_capacity = int(round(hours_per_day * 60))
+    sessions = strategy.get("action_list", [])
+    oversized = [session for session in sessions if int(session.get("duration_minutes", 0)) > daily_capacity]
+    if oversized:
+        longest = max(int(session["duration_minutes"]) for session in oversized)
+        required_hours = longest / 60
+        raise PayloadValidationError(
+            f"A Session needs {required_hours:g} hr, but the current daily limit is {hours_per_day:g} hr. "
+            "Increase daily time or shorten that Session in strategy.json."
+        )
+    if len(sessions) > days_left:
+        raise PayloadValidationError(
+            f"The plan has {len(sessions)} Sessions but only {days_left} days. "
+            "Extend the exam date or trim Sessions in strategy.json."
+        )
+    session_minutes = sum(int(session.get("duration_minutes", 0)) for session in sessions)
+    available_minutes = days_left * daily_capacity
+    if session_minutes > available_minutes:
+        missing_hours = (session_minutes - available_minutes) / 60
+        raise PayloadValidationError(
+            f"The plan exceeds current capacity by {missing_hours:g} hr. "
+            "Extend the exam date, increase daily time, or trim Sessions in strategy.json."
+        )
+    return {
+        "exam_date": exam_date.isoformat(),
+        "hours_per_day": hours_per_day,
+        "days_left": days_left,
+        "available_minutes": available_minutes,
+        "session_minutes": session_minutes,
+        "timezone": timezone_name,
+    }
+
+
+def validate_strategy_import_payload(payload: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise PayloadValidationError("Request body must be a JSON object")
+    if payload.get("strategy") is None:
+        raise PayloadValidationError("strategy is required")
+    try:
+        strategy = normalize_strategy(payload.get("strategy"))
+    except (TypeError, ValueError) as exc:
+        raise PayloadValidationError(f"strategy is invalid: {exc}") from None
+    return {
+        "strategy": strategy,
+        "runtime_context": normalize_strategy_runtime_context(payload, strategy),
+    }
 
 
 def validate_guide_revision_payload(payload: dict) -> dict:
@@ -1963,10 +2574,12 @@ def call_model(payload: dict) -> dict:
 
 
 def call_guide_model(payload: dict) -> dict:
-    strategy = load_workspace_strategy(payload["workspace_id"])
+    strategy = payload.get("strategy") or load_workspace_strategy(payload["workspace_id"])
     session = next((item for item in strategy["action_list"] if item["id"] == payload["session_id"]), None)
     if not session:
         raise PayloadValidationError("Session not found in strategy.json")
+    session = dict(session)
+    session["source_refs"] = resolve_strategy_session_sources(strategy, session)
     language = payload.get("content_language") or strategy["course"]["language"]
     priorities_by_id = {item["id"]: item for item in strategy["priorities"]}
     nodes_by_id = {item["id"]: item for item in strategy["knowledge_graph"]["nodes"]}
@@ -1997,11 +2610,11 @@ def call_guide_model(payload: dict) -> dict:
     )
     system_prompt = (
         "You are a Session Guide compiler, not a strategy planner. Return one JSON object only. "
-        "The supplied Session title, objective, duration, priority, dependencies, success criteria, knowledge nodes, and sources are locked. "
+        "The supplied Session title, objective, duration, priority, dependencies, success criteria, knowledge nodes, sources, and expected outputs are locked. "
         "Do not add, delete, rename, reschedule, or change the duration of the Session. "
         "Generate 3-7 concrete steps whose minutes sum exactly to the locked duration. "
         "The first step must be the only setup step and is capped at 10 minutes. The last step must be the only review step. Every middle step must be execute, and execute steps hold most of the time. "
-        "Every step must state an observable output and use an exact source label from the supplied Session. "
+        "Every step must state an observable output and use an exact source label from the supplied Session. Treat expected_outputs as work to create or complete during this Session, never as prerequisite files that already exist. "
         "For calculation-heavy work, prefer closed-book reconstruction, first attempt, scoring-point reverse engineering, condition mutation, and error classification when relevant. "
         "Never invent page numbers, exercise counts, question types inside a file, files, facts, or answer keys. Refer to available relevant questions unless strategy.json explicitly names them. If no answer or scoring source is supplied, do not tell the user to compare against one. "
         f"{language_rule} Match this shape: {json.dumps(schema_example, ensure_ascii=False)}"
@@ -2038,10 +2651,12 @@ def call_guide_model(payload: dict) -> dict:
 
 
 def call_guide_revision_model(payload: dict) -> dict:
-    strategy = load_workspace_strategy(payload["workspace_id"])
+    strategy = payload.get("strategy") or load_workspace_strategy(payload["workspace_id"])
     session = next((item for item in strategy["action_list"] if item["id"] == payload["session_id"]), None)
     if not session:
         raise PayloadValidationError("Session not found in strategy.json")
+    session = dict(session)
+    session["source_refs"] = resolve_strategy_session_sources(strategy, session)
     language = payload.get("content_language") or strategy["course"]["language"]
     priorities_by_id = {item["id"]: item for item in strategy["priorities"]}
     nodes_by_id = {item["id"]: item for item in strategy["knowledge_graph"]["nodes"]}
@@ -2070,13 +2685,13 @@ def call_guide_revision_model(payload: dict) -> dict:
     )
     system_prompt = (
         "You revise one Session Guide from execution evidence. You are not a strategy planner. Return one JSON object only. "
-        "Only the current Guide may change. The Session title, objective, duration, date, phase, priority, dependencies, success criteria, knowledge nodes, and sources are locked. "
+        "Only the current Guide may change. The Session title, objective, duration, date, phase, priority, dependencies, success criteria, knowledge nodes, sources, and expected outputs are locked. "
         "Do not create, delete, rename, reschedule, or change the duration of any Session. "
         "Diagnose one concrete execution bottleneck from the user's evidence, then make the smallest useful Guide revision. "
         "Keep completed steps as historical evidence and preserve them verbatim whenever they remain valid; focus changes on unfinished work. "
         "Generate 3-7 concrete steps whose minutes sum exactly to the locked duration. The first step must be the only setup step and is capped at 10 minutes. "
         "The last step must be the only review step. Every middle step must be execute, and execute steps hold most of the time. "
-        "Every step must state an observable output and use an exact source label from the locked Session. "
+        "Every step must state an observable output and use an exact source label from the locked Session. Treat expected_outputs as work to create or complete during this Session, never as prerequisite files that already exist. "
         "Never invent page numbers, exercise counts, facts, files, question types, answer keys, or scoring rules. "
         "Return 1-5 short change summaries. Do not mention changes outside this Guide. "
         f"{language_rule} Match this shape: {json.dumps(schema_example, ensure_ascii=False)}"
@@ -2298,7 +2913,7 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
             return
-        if request_path not in {"/api/plan", "/api/plan/repair", "/api/guide", "/api/guide/revise"}:
+        if request_path not in {"/api/plan", "/api/plan/repair", "/api/guide", "/api/guide/revise", "/api/strategy/validate"}:
             self._send_json(404, {"ok": False, "error": "Not Found"})
             return
         try:
@@ -2318,12 +2933,18 @@ class Handler(SimpleHTTPRequestHandler):
                 return
             length = int(self.headers.get("Content-Length", "0"))
             max_body = int(os.environ.get("MAX_BODY_BYTES", "20000"))
+            if request_path in {"/api/strategy/validate", "/api/guide", "/api/guide/revise"}:
+                strategy_max_body = int(os.environ.get("MAX_STRATEGY_BODY_BYTES", "120000"))
+                max_body = min(500000, max(max_body, strategy_max_body))
             if length > max_body:
                 self._send_json(413, {"ok": False, "error": "Payload Too Large"})
                 return
             raw = self.rfile.read(length).decode("utf-8", errors="replace")
             payload = json.loads(raw or "{}")
-            if request_path == "/api/plan/repair":
+            if request_path == "/api/strategy/validate":
+                imported = validate_strategy_import_payload(payload)
+                self._send_json(200, {"ok": True, **imported})
+            elif request_path == "/api/plan/repair":
                 payload = validate_repair_payload(payload)
                 repair = call_repair_model(payload)
                 self._send_json(200, {"ok": True, "repair": repair})

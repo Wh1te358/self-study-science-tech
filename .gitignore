@@ -2,6 +2,6 @@
 __pycache__/
 *.pyc
 
-# Local course evidence can be large or private. Keep only manifests and generated plans in git.
-courses/*/reference/
-courses/*/progress/legacy/
+# Course workspaces are local and may contain private exam material.
+# Production users import strategy.json through the browser instead of receiving bundled courses.
+courses/
