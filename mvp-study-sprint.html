@@ -1259,6 +1259,20 @@
     .plan-code { color: var(--accent); font-size: 10px; font-weight: 850; letter-spacing: 0.16em; }
     ul { padding-left: 20px; gap: 9px; font-size: 14px; line-height: 1.62; }
     li::marker { color: var(--accent); }
+    .drop-item { overflow-wrap: anywhere; }
+    .drop-item-title {
+      display: block;
+      color: var(--list-text);
+      font-weight: 750;
+    }
+    .drop-item-detail {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .drop-item-reentry { color: color-mix(in srgb, var(--accent) 72%, var(--muted)); }
     .export-status { min-height: 18px; margin: 14px 0 0; color: var(--muted); font-size: 12px; text-align: right; }
 
     .hits-card,
@@ -3200,6 +3214,8 @@
         emptySummary: "填完上方 5 项，然后点击“生成复习计划”。",
         mustTitle: "必拿分模块",
         dropTitle: "可放弃清单",
+        dropReasonLabel: "原因",
+        dropReentryLabel: "重新纳入条件",
         todoTitle: "可执行 Todo",
         todoEmpty: "生成计划后，阶段会拆成可排期 Session；打开 Session 即可看到分钟级步骤。",
         todoPhaseProgress: "{completed}/{total} Session 完成",
@@ -3523,6 +3539,8 @@
         emptySummary: "Complete the five inputs above, then select “Generate study plan.”",
         mustTitle: "High-yield modules",
         dropTitle: "Skip list",
+        dropReasonLabel: "Why",
+        dropReentryLabel: "Re-enter when",
         todoTitle: "Executable Todos",
         todoEmpty: "Generate a plan to split phases into schedulable Sessions with minute-level guidance.",
         todoPhaseProgress: "{completed}/{total} Sessions complete",
@@ -4220,6 +4238,21 @@
       }).filter((output) => output.label);
     }
 
+    function normalizeDropItem(item) {
+      if (item && typeof item === "object" && !Array.isArray(item)) {
+        const title = String(item.title || item.label || "").trim();
+        if (!title) return null;
+        return {
+          id: String(item.id || "").trim(),
+          title,
+          reason: String(item.reason || "").trim(),
+          reentryCondition: String(item.reentryCondition ?? item.reentry_condition ?? "").trim()
+        };
+      }
+      const text = String(item ?? "").trim();
+      return text || null;
+    }
+
     function strategySessionSourceRefs(strategy, session) {
       if (Number(strategy?.schema_version) !== 2) return normalizeSourceRefs(session);
       const materialsById = new Map(
@@ -4246,8 +4279,18 @@
       };
       add(source?.headline);
       add(source?.summary);
-      ["must", "drop", "hits"].forEach((key) => {
+      ["must", "hits"].forEach((key) => {
         (Array.isArray(source?.[key]) ? source[key] : []).forEach(add);
+      });
+      (Array.isArray(source?.drop) ? source.drop : []).forEach((rawItem) => {
+        const item = normalizeDropItem(rawItem);
+        if (typeof item === "string") {
+          add(item);
+        } else if (item) {
+          add(item.title);
+          add(item.reason);
+          add(item.reentryCondition);
+        }
       });
       const collectSession = (session) => {
         if (!session || typeof session !== "object") return;
@@ -4440,7 +4483,9 @@
           ? "Sessions come from strategy.json. The website schedules them and generates only minute-level execution Guides."
           : "Session 来自 strategy.json；网站只负责排期，并按需生成分钟级执行 Guide。",
         must: priorities.filter((item) => item.level === "must_win").slice(0, 5).map((item) => item.title),
-        drop: Array.isArray(strategy?.abandon) ? strategy.abandon.slice(0, 3) : [],
+        drop: Array.isArray(strategy?.abandon)
+          ? strategy.abandon.map(normalizeDropItem).filter(Boolean).slice(0, 3)
+          : [],
         hits: nodes.filter((item) => item.mastery === "must_know").slice(0, 10).map((item) => item.label),
         phases
       };
@@ -4538,7 +4583,7 @@
         headline,
         summary: String(source.summary || ""),
         must: Array.isArray(source.must) ? source.must.map(String) : [],
-        drop: Array.isArray(source.drop) ? source.drop.map(String) : [],
+        drop: Array.isArray(source.drop) ? source.drop.map(normalizeDropItem).filter(Boolean) : [],
         phases,
         tasks,
         hits: Array.isArray(source.hits) ? source.hits.map(String) : []
@@ -5754,6 +5799,7 @@
       renderMaterialVault();
       renderSubjectList();
       renderPlanRepairLanguage();
+      if (hasGeneratedPlan && lastPlan) renderDropList(lastPlan.drop);
       renderTodoList();
       renderCalendar();
       themeToggle.textContent = body.getAttribute("data-theme") === "dark" ? t("switchLight") : t("switchDark");
@@ -5842,6 +5888,18 @@
       return (Array.isArray(items) ? items : []).map((item) => `- ${item}`).join("\n");
     }
 
+    function markdownDropList(items, language) {
+      return (Array.isArray(items) ? items : []).map((rawItem) => {
+        const item = normalizeDropItem(rawItem);
+        if (typeof item === "string") return `- ${item}`;
+        if (!item) return "";
+        const lines = [`- ${item.title}`];
+        if (item.reason) lines.push(`  - ${translate(language, "dropReasonLabel")}: ${item.reason}`);
+        if (item.reentryCondition) lines.push(`  - ${translate(language, "dropReentryLabel")}: ${item.reentryCondition}`);
+        return lines.join("\n");
+      }).filter(Boolean).join("\n");
+    }
+
     function formatDuration(minutes, language = currentLanguage) {
       const total = Math.max(0, Math.round(Number(minutes) || 0));
       const hours = Math.floor(total / 60);
@@ -5927,7 +5985,7 @@
         markdownList(plan.must),
         "",
         `## ${labels.drop}`,
-        markdownList(plan.drop),
+        markdownDropList(plan.drop, contentLanguage),
         "",
         `## ${labels.tasks}`,
         markdownPhases(plan.phases, contentLanguage),
@@ -8045,7 +8103,7 @@
       headline.replaceChildren(headlineTag);
       document.getElementById("summary").textContent = normalized.summary || "";
       listToUl("must", normalized.must);
-      listToUl("drop", normalized.drop);
+      renderDropList(normalized.drop);
       listToUl("hits", normalized.hits);
       lastPlan = normalized;
       openSessionIds = new Set();
@@ -8134,6 +8192,40 @@
       items.forEach(item => {
         const li = document.createElement("li");
         li.textContent = item;
+        ul.appendChild(li);
+      });
+    }
+
+    function renderDropList(items) {
+      const ul = document.getElementById("drop");
+      ul.innerHTML = "";
+      (Array.isArray(items) ? items : []).forEach((rawItem) => {
+        const item = normalizeDropItem(rawItem);
+        if (!item) return;
+        const li = document.createElement("li");
+        li.className = "drop-item";
+        if (typeof item === "string") {
+          li.textContent = item;
+          ul.appendChild(li);
+          return;
+        }
+
+        const title = document.createElement("span");
+        title.className = "drop-item-title";
+        title.textContent = item.title;
+        li.appendChild(title);
+        if (item.reason) {
+          const reason = document.createElement("span");
+          reason.className = "drop-item-detail";
+          reason.textContent = `${t("dropReasonLabel")}: ${item.reason}`;
+          li.appendChild(reason);
+        }
+        if (item.reentryCondition) {
+          const reentry = document.createElement("span");
+          reentry.className = "drop-item-detail drop-item-reentry";
+          reentry.textContent = `${t("dropReentryLabel")}: ${item.reentryCondition}`;
+          li.appendChild(reentry);
+        }
         ul.appendChild(li);
       });
     }
