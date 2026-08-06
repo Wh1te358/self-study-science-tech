@@ -299,6 +299,7 @@
 
     .system-line {
       gap: 8px;
+      min-width: 0;
       color: var(--muted);
       font-size: 12px;
       letter-spacing: 0.02em;
@@ -306,12 +307,22 @@
     .status-dot {
       width: 7px;
       height: 7px;
+      flex: 0 0 7px;
       border-radius: 50%;
       background: var(--signal);
       box-shadow: 0 0 14px color-mix(in srgb, var(--signal) 72%, transparent);
       animation: statusPulse 2.4s ease-in-out infinite;
     }
-    #apiStatus { margin: 0; font-size: 12px; color: var(--muted); }
+    #apiStatus {
+      min-width: 0;
+      max-width: min(42vw, 520px);
+      margin: 0;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
     .section-nav {
       justify-content: center;
@@ -540,6 +551,29 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
+    .strategy-file-picker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .strategy-file-name {
+      min-width: 0;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .strategy-file-input {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
     .workspace-import-select {
       width: 100%;
       min-width: 0;
@@ -553,7 +587,9 @@
       font-size: 12px;
     }
     .workspace-import-button {
-      width: 100%;
+      width: auto;
+      min-width: 168px;
+      flex: 0 0 auto;
       min-height: 40px;
       padding: 8px 10px;
       border-radius: 9px;
@@ -568,6 +604,8 @@
       font-size: 10px;
       line-height: 1.45;
     }
+    .workspace-import-status[data-state="error"] { color: var(--danger); }
+    .workspace-import-status[data-state="success"] { color: var(--signal); }
     .material-vault {
       display: grid;
       gap: var(--space-sm);
@@ -1423,6 +1461,25 @@
       gap: 5px;
       margin-top: 2px;
     }
+    .todo-outputs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 4px;
+    }
+    .todo-output {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 7px;
+      border: 1px solid color-mix(in srgb, var(--signal) 34%, var(--line));
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--signal) 8%, transparent);
+      color: var(--signal);
+      font-size: 10px;
+      font-weight: 720;
+      line-height: 1.2;
+    }
     .todo-source {
       display: inline-flex;
       align-items: center;
@@ -1461,7 +1518,8 @@
       text-decoration-thickness: 1px;
     }
     .todo-session.is-complete .todo-success,
-    .todo-session.is-complete .todo-source { opacity: 0.58; }
+    .todo-session.is-complete .todo-source,
+    .todo-session.is-complete .todo-output { opacity: 0.58; }
     .todo-session.is-complete .todo-duration { color: var(--signal); }
     .guide-version {
       color: var(--muted);
@@ -2356,7 +2414,7 @@
     .copy-tip[data-state="error"] { color: #c2352a; }
     body[data-theme="dark"] .copy-tip[data-state="error"] { color: #ff8e84; }
 
-    @keyframes statusPulse { 50% { opacity: .42; transform: scale(.72); } }
+    @keyframes statusPulse { 50% { opacity: .5; } }
     @keyframes orbBreathe { 50% { transform: scale(.86); filter: saturate(1.5); } }
     @keyframes scanTrack { from { transform: translateX(-120%); } to { transform: translateX(360%); } }
     @keyframes calendarToastIn {
@@ -2653,12 +2711,13 @@
               <small id="keywordsError" class="field-error" aria-live="polite"></small>
             </div>
             <section class="field full workspace-import-card scope-source-panel" id="strategyScopePanel" aria-labelledby="workspaceImportTitle" hidden>
-              <p class="workspace-import-title" id="workspaceImportTitle">选择已审核课程</p>
-              <select class="workspace-import-select" id="workspaceSelect" aria-label="选择服务器课程目录中的 Strategy JSON">
-                <option value="">正在读取本地资料…</option>
-              </select>
-              <button class="primary workspace-import-button" id="importWorkspace" type="button" disabled>导入所选 Strategy</button>
-              <p class="workspace-import-status" id="workspaceStatus" aria-live="polite">Strategy 从课程目录读取；原始资料可在导入后绑定到当前浏览器。</p>
+              <p class="workspace-import-title" id="workspaceImportTitle">导入 Strategy JSON</p>
+              <div class="strategy-file-picker">
+                <button class="primary workspace-import-button" id="chooseStrategyFile" type="button">选择 strategy.json</button>
+                <span class="strategy-file-name" id="strategyFileName">尚未选择文件</span>
+                <input class="strategy-file-input" id="strategyFileInput" type="file" accept=".json,application/json" aria-hidden="true" tabindex="-1" />
+              </div>
+              <p class="workspace-import-status" id="workspaceStatus" aria-live="polite">文件只在当前浏览器中选择；网站仅把结构化 Strategy 发送到同源后端校验。</p>
               <section class="material-vault" id="materialVaultPanel" aria-labelledby="materialVaultTitle" hidden>
                 <div class="material-vault-head">
                   <div class="material-vault-copy">
@@ -2943,8 +3002,9 @@
     const subjectEmpty = document.getElementById("subjectEmpty");
     const subjectCount = document.getElementById("subjectCount");
     const launchShell = document.querySelector(".launch-shell");
-    const workspaceSelect = document.getElementById("workspaceSelect");
-    const importWorkspaceBtn = document.getElementById("importWorkspace");
+    const chooseStrategyFileBtn = document.getElementById("chooseStrategyFile");
+    const strategyFileInput = document.getElementById("strategyFileInput");
+    const strategyFileName = document.getElementById("strategyFileName");
     const workspaceStatus = document.getElementById("workspaceStatus");
     const materialVaultPanel = document.getElementById("materialVaultPanel");
     const materialVaultProgress = document.getElementById("materialVaultProgress");
@@ -2988,8 +3048,8 @@
     let lastHealth = null;
     let lastPlan = null;
     let subjects = [];
-    let availableWorkspaces = [];
-    let workspaceStatusState = { key: "workspaceLoading", replacements: {} };
+    let selectedStrategyFileName = "";
+    let workspaceStatusState = { key: "workspaceLocalOnly", replacements: {} };
     let materialVaultStatusState = { key: "materialVaultIdle", replacements: {} };
     let materialVaultKeys = new Set();
     let materialSourceAvailability = new Map();
@@ -3022,6 +3082,7 @@
     let planUndoSnapshot = null;
     let planEditToastTimer = null;
     const touchedFields = new Set();
+    const strategyPlanningOverrides = new Set();
     const DRAFT_KEY = "study-sprint-draft-v1";
     const SUBJECTS_KEY = "finals-os-subjects-v1";
     const CALENDAR_SETTINGS_KEY = "finals-os-calendar-settings-v1";
@@ -3049,7 +3110,7 @@
         configureTitle: "输入考试信息",
         configureDesc: "范围写得越具体，生成的计划越能直接执行。",
         configureTitleStrategy: "确认排期并导入 Strategy",
-        configureDescStrategy: "Strategy 决定学什么；这里只确认考试日期和每天可用时间。",
+        configureDescStrategy: "Strategy 会预填考试日期和每天可用时间；你在网站中的最新修改优先。",
         courseLabel: "课程名",
         dateLabel: "考试日期",
         hoursLabel: "每天能学几小时（1–20）",
@@ -3209,19 +3270,15 @@
         manualStepSource: "当前课程",
         subjectsTitle: "科目",
         newSubject: "＋ 新建科目",
-        workspaceImportTitle: "选择已审核课程",
-        workspaceSelectAria: "选择服务器课程目录中的 Strategy JSON",
-        workspacePlaceholder: "选择已审核的 strategy.json",
-        workspaceImport: "导入所选 Strategy",
-        workspaceLoading: "正在读取本地课程清单…",
-        workspaceLocalOnly: "Strategy 从课程目录读取；原始资料可在导入后绑定到当前浏览器。",
-        workspaceEmpty: "没有找到可导入的课程工作区。",
-        workspaceLoadFailed: "本地课程清单读取失败。请确认 server.py 正在运行。",
-        workspaceImporting: "正在导入课程、计划和资料索引…",
-        workspaceImported: "已导入“{name}”：{materialCount} 份原始证据、{sessionCount} 个 Session。",
-        workspaceImportFailed: "导入失败。请检查课程清单与本地服务。",
+        workspaceImportTitle: "导入 Strategy JSON",
+        strategyFileChoose: "选择 strategy.json",
+        strategyFileEmpty: "尚未选择文件",
+        workspaceLocalOnly: "文件只在当前浏览器中选择；网站仅把结构化 Strategy 发送到同源后端校验。",
+        workspaceImporting: "正在校验并导入 strategy.json…",
+        workspaceImported: "已导入“{name}”：{materialCount} 份原始证据、{sessionCount} 个 Session；按 {examDate}、每天 {hours} 小时排期。",
+        workspaceImportFailed: "导入失败：{reason}",
+        workspaceFileTooLarge: "文件超过 100 KB；请只保留 Strategy 结构，不要嵌入原始资料。",
         workspaceInfeasible: "暂不导入：{reason}",
-        workspaceMaterialCount: "{count} 份证据",
         materialVaultTitle: "本地资料库",
         materialVaultDescription: "Strategy 只保存资料索引；未随网站发布的文件需要当前浏览器提供。",
         materialVaultBulkBind: "批量补齐资料",
@@ -3305,6 +3362,7 @@
         todoIncompleteState: "完成",
         todoSuccessCriteria: "完成标准",
         todoSource: "资料",
+        todoOutput: "本次产出",
         hitsTitle: "优先考点（10条）",
         feedbackHeading: "遇到问题，直接告诉我",
         feedbackDescription: "选择最适合的方式反馈，我会用它继续改进。",
@@ -3368,7 +3426,7 @@
         configureTitle: "Enter exam details",
         configureDesc: "The more specific the scope, the more actionable the plan.",
         configureTitleStrategy: "Confirm timing and import Strategy",
-        configureDescStrategy: "The Strategy decides what to study; confirm only the exam date and daily availability here.",
+        configureDescStrategy: "Strategy prefills the exam date and daily availability; your latest edits on this page take priority.",
         courseLabel: "Course",
         dateLabel: "Exam date",
         hoursLabel: "Daily hours (1–20)",
@@ -3528,19 +3586,15 @@
         manualStepSource: "Current course",
         subjectsTitle: "Subjects",
         newSubject: "+ New subject",
-        workspaceImportTitle: "Choose a reviewed course",
-        workspaceSelectAria: "Select a Strategy JSON from the server course directory",
-        workspacePlaceholder: "Select a reviewed strategy.json",
-        workspaceImport: "Import selected Strategy",
-        workspaceLoading: "Reading local course workspaces…",
-        workspaceLocalOnly: "Strategy is read from the course directory. Bind original files to this browser after import.",
-        workspaceEmpty: "No importable course workspace was found.",
-        workspaceLoadFailed: "Could not read local courses. Confirm that server.py is running.",
-        workspaceImporting: "Importing the course, plan, and source index…",
-        workspaceImported: "Imported “{name}”: {materialCount} primary sources and {sessionCount} Sessions.",
-        workspaceImportFailed: "Import failed. Check the course manifests and local service.",
+        workspaceImportTitle: "Import Strategy JSON",
+        strategyFileChoose: "Choose strategy.json",
+        strategyFileEmpty: "No file selected",
+        workspaceLocalOnly: "The file is selected in this browser. Only the structured Strategy is sent to the same-origin backend for validation.",
+        workspaceImporting: "Validating and importing strategy.json…",
+        workspaceImported: "Imported “{name}”: {materialCount} primary sources and {sessionCount} Sessions, scheduled for {examDate} at {hours} hr/day.",
+        workspaceImportFailed: "Import failed: {reason}",
+        workspaceFileTooLarge: "The file exceeds 100 KB. Keep only the Strategy structure; do not embed source files.",
         workspaceInfeasible: "Not imported: {reason}",
-        workspaceMaterialCount: "{count} sources",
         materialVaultTitle: "Local material vault",
         materialVaultDescription: "Strategy stores the source index. Files not shipped with the site must be supplied by this browser.",
         materialVaultBulkBind: "Add missing files",
@@ -3624,6 +3678,7 @@
         todoIncompleteState: "complete",
         todoSuccessCriteria: "Done when",
         todoSource: "Source",
+        todoOutput: "Output",
         hitsTitle: "Priority topics (10)",
         feedbackHeading: "Found a problem? Tell me.",
         feedbackDescription: "Choose the route that fits. Your feedback will shape the next iteration.",
@@ -3710,7 +3765,7 @@
       subjectsTitle: "subjectsTitle",
       newSubject: "newSubject",
       workspaceImportTitle: "workspaceImportTitle",
-      importWorkspace: "workspaceImport",
+      chooseStrategyFile: "strategyFileChoose",
       materialVaultTitle: "materialVaultTitle",
       materialVaultDescription: "materialVaultDescription",
       bindMaterials: "materialVaultBulkBind",
@@ -4084,6 +4139,43 @@
       }).filter((ref) => ref.label);
     }
 
+    function normalizeExpectedOutputs(source) {
+      const rawOutputs = Array.isArray(source?.expectedOutputs)
+        ? source.expectedOutputs
+        : (Array.isArray(source?.expected_outputs) ? source.expected_outputs : []);
+      return rawOutputs.map((output) => {
+        const item = output && typeof output === "object" ? output : { label: String(output || "") };
+        const rawHref = String(item.href || "").trim();
+        const safeHref = rawHref.startsWith("/") || /^https?:\/\//i.test(rawHref) ? rawHref : "";
+        return {
+          id: String(item.id || "").trim(),
+          label: String(item.label || "").trim(),
+          type: String(item.type || "other").trim(),
+          status: item.status === "available" ? "available" : "planned",
+          href: safeHref,
+          path: String(item.path || "").trim()
+        };
+      }).filter((output) => output.label);
+    }
+
+    function strategySessionSourceRefs(strategy, session) {
+      if (Number(strategy?.schema_version) !== 2) return normalizeSourceRefs(session);
+      const materialsById = new Map(
+        (Array.isArray(strategy?.source_materials) ? strategy.source_materials : [])
+          .map((material) => [String(material?.id || ""), material])
+      );
+      return (Array.isArray(session?.input_material_ids) ? session.input_material_ids : [])
+        .map((materialId) => materialsById.get(String(materialId)))
+        .filter(Boolean)
+        .map((material) => ({
+          label: String(material.label || material.id || "").trim(),
+          href: String(material.href || "").trim(),
+          pages: "",
+          kind: String(material.kind || "").trim()
+        }))
+        .filter((ref) => ref.label);
+    }
+
     function collectPlanLanguageText(source) {
       const values = [];
       const add = (value) => {
@@ -4158,6 +4250,7 @@
       const source = task && typeof task === "object" ? task : { title: String(task || "") };
       const rawDuration = Number(source.durationMinutes ?? source.duration_minutes ?? 0);
       const sourceRefs = normalizeSourceRefs(source);
+      const expectedOutputs = normalizeExpectedOutputs(source);
       const title = String(source.title || "").trim();
       const successCriteria = String(source.successCriteria ?? source.success_criteria ?? "").trim();
       const phaseId = String(phase.id || source.phaseId || source.phase_id || "phase-01");
@@ -4234,6 +4327,7 @@
           : "",
         successCriteria,
         sourceRefs,
+        expectedOutputs,
         guideStatus: steps.length ? "ready" : guideStatus,
         guideVersion: Math.max(1, Number(source.guideVersion ?? source.guide_version) || 1),
         guideUndo,
@@ -4266,7 +4360,8 @@
           day_index: session.recommended_day_index,
           duration_minutes: session.duration_minutes,
           success_criteria: session.success_criteria,
-          source_refs: session.source_refs,
+          source_refs: strategySessionSourceRefs(strategy, session),
+          expected_outputs: session.expected_outputs,
           guide_status: "pending",
           steps: []
         });
@@ -4411,6 +4506,7 @@
             ? record.inputs.contentLanguagePreference
             : "auto"
         },
+        strategy: record.strategy && typeof record.strategy === "object" ? record.strategy : null,
         plan: normalizePlan(record.plan),
         scheduleVersion: Math.max(1, Math.min(7, Math.floor(Number(record.scheduleVersion) || 1))),
         createdAt: String(record.createdAt || new Date().toISOString()),
@@ -4858,6 +4954,7 @@
       contentLanguageSelect.value = "auto";
       applyScopeSourceMode("manual");
       touchedFields.clear();
+      strategyPlanningOverrides.clear();
       validationSummary.textContent = "";
       clearPlanState();
       renderSubjectList();
@@ -4889,6 +4986,11 @@
       contentLanguageSelect.value = subject.inputs.contentLanguagePreference || "auto";
       applyScopeSourceMode(strategySubject ? "strategy" : "manual");
       touchedFields.clear();
+      strategyPlanningOverrides.clear();
+      if (strategySubject) {
+        strategyPlanningOverrides.add(dateInput.id);
+        strategyPlanningOverrides.add(hoursInput.id);
+      }
       validationSummary.textContent = "";
       applyPlan(subject.plan, { scroll: false, hideHero: strategySubject });
       renderSubjectList();
@@ -5577,9 +5679,8 @@
         document.getElementById("summary").textContent = t("emptySummary");
       }
       sidebarBackdrop.setAttribute("aria-label", t("closeSubjectMenu"));
-      workspaceSelect.setAttribute("aria-label", t("workspaceSelectAria"));
       setSidebarOpen(body.classList.contains("sidebar-open"));
-      renderWorkspaceOptions();
+      renderStrategyFileName();
       renderWorkspaceStatus();
       materialVaultStatus.textContent = t(materialVaultStatusState.key, materialVaultStatusState.replacements);
       renderMaterialVault();
@@ -5617,6 +5718,7 @@
 
     function setStatus(text) {
       apiStatus.textContent = text;
+      apiStatus.title = text;
     }
 
     function setCopyTip(text, state = "") {
@@ -5704,6 +5806,10 @@
           (Array.isArray(task.sourceRefs) ? task.sourceRefs : []).forEach((ref) => {
             const source = ref.href ? `[${ref.label}](${ref.href})` : ref.label;
             lines.push(`  - ${translate(contentLanguage, "todoSource")}${contentLanguage === "en" ? ": " : "："}${source}`);
+          });
+          (Array.isArray(task.expectedOutputs) ? task.expectedOutputs : []).forEach((output) => {
+            const artifact = output.href ? `[${output.label}](${output.href})` : output.label;
+            lines.push(`  - ${translate(contentLanguage, "todoOutput")}${contentLanguage === "en" ? ": " : "："}${artifact}`);
           });
         });
         return lines.join("\n");
@@ -6284,29 +6390,16 @@
       }
     }
 
-    function renderWorkspaceOptions() {
-      const selectedId = workspaceSelect.value;
-      workspaceSelect.replaceChildren();
-      const placeholder = document.createElement("option");
-      placeholder.value = "";
-      placeholder.textContent = t("workspacePlaceholder");
-      workspaceSelect.appendChild(placeholder);
-      availableWorkspaces.forEach((workspace) => {
-        const option = document.createElement("option");
-        option.value = workspace.id;
-        option.textContent = `${workspace.name} · ${t("workspaceMaterialCount", { count: workspace.material_count || 0 })}`;
-        workspaceSelect.appendChild(option);
-      });
-      workspaceSelect.value = availableWorkspaces.some((workspace) => workspace.id === selectedId)
-        ? selectedId
-        : (availableWorkspaces[0]?.id || "");
-      const hasWorkspace = availableWorkspaces.length > 0;
-      workspaceSelect.disabled = !hasWorkspace;
-      importWorkspaceBtn.disabled = !hasWorkspace;
+    function renderStrategyFileName() {
+      strategyFileName.textContent = selectedStrategyFileName || t("strategyFileEmpty");
+      strategyFileName.title = selectedStrategyFileName;
     }
 
     function renderWorkspaceStatus() {
       workspaceStatus.textContent = t(workspaceStatusState.key, workspaceStatusState.replacements);
+      workspaceStatus.dataset.state = workspaceStatusState.key === "workspaceImported"
+        ? "success"
+        : (["workspaceImportFailed", "workspaceInfeasible", "workspaceFileTooLarge"].includes(workspaceStatusState.key) ? "error" : "");
     }
 
     function setWorkspaceStatus(key, replacements = {}) {
@@ -6315,25 +6408,49 @@
       return workspaceStatus.textContent;
     }
 
-    async function loadLocalWorkspaces() {
-      setWorkspaceStatus("workspaceLoading");
-      workspaceSelect.disabled = true;
-      importWorkspaceBtn.disabled = true;
-      try {
-        const response = await fetch(`${getApiBase()}/api/workspaces`, {
-          method: "GET",
-          credentials: "include"
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        availableWorkspaces = Array.isArray(data?.workspaces) ? data.workspaces : [];
-        renderWorkspaceOptions();
-        setWorkspaceStatus(availableWorkspaces.length ? "workspaceLocalOnly" : "workspaceEmpty");
-      } catch {
-        availableWorkspaces = [];
-        renderWorkspaceOptions();
-        setWorkspaceStatus("workspaceLoadFailed");
+    function getStrategyPlanningDefaults(strategy) {
+      if (Number(strategy?.schema_version) === 2) {
+        return {
+          examDate: String(strategy?.planning_context?.exam_date || "").trim(),
+          hoursPerDay: Number(strategy?.planning_context?.availability?.hours_per_day)
+        };
       }
+      const rawDays = Number(strategy?.course?.days_left);
+      const examDate = new Date();
+      examDate.setHours(12, 0, 0, 0);
+      if (Number.isFinite(rawDays)) examDate.setDate(examDate.getDate() + Math.max(0, Math.round(rawDays)));
+      return {
+        examDate: Number.isFinite(rawDays) ? toLocalDateValue(examDate) : "",
+        hoursPerDay: Number(strategy?.course?.hours_per_day)
+      };
+    }
+
+    function applyStrategyPlanningDefaults(strategy) {
+      const defaults = getStrategyPlanningDefaults(strategy);
+      if (!strategyPlanningOverrides.has(dateInput.id) && isValidDateValue(defaults.examDate)) {
+        dateInput.value = defaults.examDate;
+      }
+      if (!strategyPlanningOverrides.has(hoursInput.id)
+        && Number.isFinite(defaults.hoursPerDay)
+        && defaults.hoursPerDay > 0
+        && defaults.hoursPerDay <= 20) {
+        hoursInput.value = String(defaults.hoursPerDay);
+      }
+      updateMetrics();
+    }
+
+    function countStrategySources(strategy) {
+      if (Number(strategy?.schema_version) === 2) {
+        return Array.isArray(strategy?.source_materials) ? strategy.source_materials.length : 0;
+      }
+      const labels = new Set();
+      (strategy?.action_list || []).forEach((session) => {
+        (session?.source_refs || []).forEach((ref) => {
+          const label = String(ref?.label || "").trim();
+          if (label) labels.add(label);
+        });
+      });
+      return labels.size;
     }
 
     function mergeImportedTaskState(plan, previousPlan) {
@@ -6366,31 +6483,57 @@
       return normalized;
     }
 
-    async function importSelectedWorkspace() {
-      const workspaceId = workspaceSelect.value;
-      if (!workspaceId) return;
-      if (!validateForm(true)) {
-        getRelevantFormInputs().find((input) => getFieldError(input))?.focus();
+    async function importStrategyFile(file) {
+      if (!file) return;
+      selectedStrategyFileName = file.name;
+      renderStrategyFileName();
+      if (file.size > 100000) {
+        const message = setWorkspaceStatus("workspaceFileTooLarge");
+        setStatus(message);
         return;
       }
       materialVaultExpanded = false;
       applyScopeSourceMode("strategy");
-      importWorkspaceBtn.disabled = true;
-      workspaceSelect.disabled = true;
+      chooseStrategyFileBtn.disabled = true;
       setWorkspaceStatus("workspaceImporting");
       try {
-        const response = await fetch(`${getApiBase()}/api/workspaces/${encodeURIComponent(workspaceId)}`, {
-          method: "GET",
-          credentials: "include"
+        let rawStrategy;
+        try {
+          rawStrategy = JSON.parse(await file.text());
+        } catch {
+          throw new Error(t("parseError"));
+        }
+        if (!rawStrategy || typeof rawStrategy !== "object" || Array.isArray(rawStrategy)) {
+          throw new Error(t("parseError"));
+        }
+        applyStrategyPlanningDefaults(rawStrategy);
+        if (!validateForm(true)) {
+          const invalidInput = getRelevantFormInputs().find((input) => getFieldError(input));
+          invalidInput?.focus();
+          throw new Error(invalidInput ? getFieldError(invalidInput) : "Invalid scheduling input");
+        }
+        const response = await fetch(`${getApiBase()}/api/strategy/validate`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            strategy: rawStrategy,
+            runtime_context: {
+              exam_date: dateInput.value,
+              hours_per_day: Number(hoursInput.value),
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            }
+          })
         });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        const workspace = data?.workspace;
-        if ((!workspace?.plan && !workspace?.strategy) || !workspace?.name) throw new Error("Invalid workspace payload");
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data?.strategy) throw new Error(data?.error || `HTTP ${response.status}`);
+        const strategy = data.strategy;
+        const workspaceId = strategy.course.id;
+        const courseName = strategy.course.name;
 
-        courseInput.value = workspace.name;
-        goalInput.value = String(workspace.target_score);
-        keywordsInput.value = workspace.keywords || "";
+        courseInput.value = courseName;
+        goalInput.value = String(strategy.course.target_score);
+        keywordsInput.value = (strategy.knowledge_graph?.nodes || []).map((node) => node.label).filter(Boolean).join(", ").slice(0, 1000);
         contentLanguageSelect.value = "auto";
         touchedFields.clear();
         validationSummary.textContent = "";
@@ -6399,10 +6542,9 @@
         renderContentLanguageControl();
         saveDraft();
 
-        let subject = subjects.find((item) => item.workspaceId === workspace.id);
+        let subject = subjects.find((item) => item.workspaceId === workspaceId);
         const timestamp = new Date().toISOString();
-        const strategyPlan = planFromStrategy(workspace.strategy);
-        const importedPlan = mergeImportedTaskState(strategyPlan || workspace.plan, subject?.plan);
+        const importedPlan = mergeImportedTaskState(planFromStrategy(strategy), subject?.plan);
         const feasibility = assessPlanFeasibility(importedPlan, dateInput.value, hoursInput.value);
         if (!feasibility.ok) {
           const message = setWorkspaceStatus("workspaceInfeasible", { reason: feasibility.message });
@@ -6414,11 +6556,12 @@
         if (!subject) {
           subject = {
             id: createLocalId("subject"),
-            workspaceId: workspace.id,
-            name: workspace.name,
+            workspaceId,
+            name: courseName,
             color: SUBJECT_COLORS[subjects.length % SUBJECT_COLORS.length],
             examDate: inputs.date,
             inputs,
+            strategy,
             plan: lastPlan,
             scheduleVersion: 7,
             createdAt: timestamp,
@@ -6426,9 +6569,10 @@
           };
           subjects.unshift(subject);
         } else {
-          subject.name = workspace.name;
+          subject.name = courseName;
           subject.examDate = inputs.date;
           subject.inputs = inputs;
+          subject.strategy = strategy;
           subject.plan = lastPlan;
           subject.updatedAt = timestamp;
         }
@@ -6448,16 +6592,23 @@
         renderTodoList();
         renderCalendar();
         setSidebarOpen(false);
-        const materialCount = Array.isArray(workspace.materials) ? workspace.materials.length : 0;
+        const materialCount = countStrategySources(strategy);
         const sessionCount = Array.isArray(lastPlan?.tasks) ? lastPlan.tasks.length : 0;
-        const message = setWorkspaceStatus("workspaceImported", { name: workspace.name, materialCount, sessionCount });
+        const message = setWorkspaceStatus("workspaceImported", {
+          name: courseName,
+          materialCount,
+          sessionCount,
+          examDate: dateInput.value,
+          hours: hoursInput.value
+        });
         setStatus(message);
         window.setTimeout(() => resultSection.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
-      } catch {
-        setWorkspaceStatus("workspaceImportFailed");
-        setStatus(t("workspaceImportFailed"));
+      } catch (error) {
+        const reason = String(error?.message || "Unknown error").slice(0, 240);
+        const message = setWorkspaceStatus("workspaceImportFailed", { reason });
+        setStatus(message);
       } finally {
-        renderWorkspaceOptions();
+        chooseStrategyFileBtn.disabled = false;
       }
     }
 
@@ -6574,6 +6725,26 @@
       container.appendChild(sources);
     }
 
+    function appendSessionOutputs(container, task) {
+      if (!Array.isArray(task.expectedOutputs) || !task.expectedOutputs.length) return;
+      const outputs = document.createElement("span");
+      outputs.className = "todo-outputs";
+      task.expectedOutputs.forEach((output) => {
+        const isLinked = output.status === "available" && Boolean(output.href);
+        const element = isLinked ? document.createElement("a") : document.createElement("span");
+        element.className = "todo-output";
+        element.dataset.state = output.status;
+        element.textContent = `${t("todoOutput")} · ${output.label}`;
+        if (isLinked) {
+          element.href = output.href;
+          element.target = "_blank";
+          element.rel = "noopener";
+        }
+        outputs.appendChild(element);
+      });
+      container.appendChild(outputs);
+    }
+
     function clonePlan(plan) {
       return JSON.parse(JSON.stringify(plan));
     }
@@ -6629,7 +6800,8 @@
           body: JSON.stringify({
             workspace_id: subject.workspaceId,
             session_id: task.id,
-            content_language: lastPlan?.contentLanguage || ""
+            content_language: lastPlan?.contentLanguage || "",
+            strategy: subject.strategy || undefined
           })
         });
         const data = await response.json().catch(() => ({}));
@@ -7250,6 +7422,7 @@
             workspace_id: subject.workspaceId,
             session_id: task.id,
             content_language: lastPlan?.contentLanguage || "",
+            strategy: subject.strategy || undefined,
             result: state.result,
             feedback,
             current_steps: task.steps.map((step) => ({
@@ -7641,6 +7814,7 @@
         guide.appendChild(success);
       }
       appendSessionSources(guide, task);
+      appendSessionOutputs(guide, task);
       if (task.steps.length) guide.appendChild(createGuideFeedbackLoop(task));
       return guide;
     }
@@ -8011,7 +8185,13 @@
       subjectMenuToggle.focus();
     });
     newSubjectBtn.addEventListener("click", startNewSubject);
-    importWorkspaceBtn.addEventListener("click", importSelectedWorkspace);
+    chooseStrategyFileBtn.addEventListener("click", () => {
+      strategyFileInput.value = "";
+      strategyFileInput.click();
+    });
+    strategyFileInput.addEventListener("change", () => {
+      importStrategyFile(strategyFileInput.files[0]);
+    });
     bindMaterialsBtn.addEventListener("click", () => {
       materialFilesInput.value = "";
       materialFilesInput.click();
@@ -8116,7 +8296,8 @@
     planForm.addEventListener("submit", (event) => {
       event.preventDefault();
       if (scopeSourceMode === "strategy") {
-        importSelectedWorkspace();
+        strategyFileInput.value = "";
+        strategyFileInput.click();
       } else {
         generatePlan();
       }
@@ -8159,6 +8340,9 @@
     copyWxBtn.addEventListener("click", copyWxId);
     formInputs.forEach((input) => {
       input.addEventListener("input", () => {
+        if (scopeSourceMode === "strategy" && [dateInput, hoursInput].includes(input)) {
+          strategyPlanningOverrides.add(input.id);
+        }
         if (touchedFields.has(input.id)) validateField(input, true);
         validationSummary.textContent = "";
         updateMetrics();
@@ -8201,7 +8385,8 @@
     initSubjectLibrary();
     initCalendar();
     initSectionNavigation();
-    loadLocalWorkspaces();
+    renderStrategyFileName();
+    renderWorkspaceStatus();
     validateForm(false);
     updateMetrics();
     refreshHealth();
