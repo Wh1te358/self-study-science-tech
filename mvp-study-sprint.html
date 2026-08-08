@@ -3147,7 +3147,7 @@
     const MATERIAL_DB_STORE = "materials";
     const SUBJECT_COLORS = ["#176bff", "#6d4aff", "#00a67e", "#e68019", "#d6538a", "#2b9bbd"];
     const LONG_PRESS_MS = 450;
-    const REQUEST_TIMEOUT_MS = 90000;
+    const REQUEST_TIMEOUT_MS = 360000;
 
     const translations = {
       zh: {
@@ -3473,7 +3473,7 @@
         keywordsLength: "考试范围需为 3–1000 个字符。",
         invalidForm: "请先修正标红字段。",
         requestCancelled: "已停止生成，输入已保留。",
-        requestTimedOut: "等待超过 90 秒，已停止生成。输入已保留，请重试。"
+        requestTimedOut: "等待超过 6 分钟，已停止生成。输入已保留，请重试。"
       },
       en: {
         documentTitle: "Exam Survival Sprint MVP",
@@ -3798,7 +3798,7 @@
         keywordsLength: "Use 3–1000 characters for the exam scope.",
         invalidForm: "Fix the highlighted fields first.",
         requestCancelled: "Generation stopped. Your inputs are saved.",
-        requestTimedOut: "Generation stopped after 90 seconds. Your inputs are saved; try again."
+        requestTimedOut: "Generation stopped after 6 minutes. Your inputs are saved; try again."
       }
     };
 
