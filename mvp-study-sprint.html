@@ -490,7 +490,7 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
-      width: min(100%, 420px);
+      width: min(100%, 440px);
       margin: 0;
       padding: 0;
       border: 0;
@@ -535,78 +535,320 @@
       outline-offset: 2px;
     }
     .scope-source-panel[hidden] { display: none; }
-    .workspace-import-card {
+    .evidence-import-card {
       display: grid;
-      gap: 8px;
+      gap: var(--space-md);
       margin: 0;
-      padding: 12px;
+      padding: var(--space-md);
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: 16px;
       background: var(--input-bg);
     }
-    .workspace-import-title {
+    .evidence-import-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-md);
+    }
+    .evidence-import-copy { display: grid; gap: 4px; min-width: 0; }
+    .evidence-import-title {
+      margin: 0;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 820;
+    }
+    .evidence-import-description,
+    .evidence-file-summary,
+    .evidence-exam-status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+    .evidence-file-actions,
+    .evidence-build-action,
+    .evidence-question-types {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .evidence-file-actions button,
+    .evidence-build-action button,
+    .evidence-question-types button,
+    .evidence-unknown-button {
+      width: auto;
+      min-height: 38px;
+      padding: 8px 11px;
+      border-radius: 9px;
+      box-shadow: none;
+      font-size: 11px;
+      font-weight: 760;
+    }
+    .evidence-build-action {
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      padding-top: var(--space-sm);
+      border-top: 1px solid var(--line);
+    }
+    .evidence-build-copy {
+      max-width: 62ch;
       margin: 0;
       color: var(--muted);
       font-size: 10px;
-      font-weight: 850;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      line-height: 1.5;
     }
-    .strategy-file-picker {
-      display: flex;
+    .evidence-question-types button[aria-pressed="true"],
+    .evidence-unknown-button[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .evidence-file-list {
+      display: grid;
+      gap: 0;
+      margin: 0;
+      padding: 0;
+      max-height: 280px;
+      overflow-y: auto;
+      list-style: none;
+      border-block: 1px solid var(--line);
+    }
+    .evidence-file-list[hidden],
+    .evidence-map-summary[hidden],
+    .evidence-progress[hidden] { display: none; }
+    .evidence-file-list li {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 10px;
-      min-width: 0;
+      padding: 8px 0;
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+      color: var(--list-text);
+      font-size: 11px;
+      line-height: 1.45;
     }
-    .strategy-file-name {
+    .evidence-file-list li:last-child { border-bottom: 0; }
+    .evidence-file-list span { color: var(--muted); }
+    .evidence-file-copy {
+      display: grid;
       min-width: 0;
-      overflow: hidden;
+      gap: 2px;
+    }
+    .evidence-file-copy strong { overflow-wrap: anywhere; }
+    .evidence-file-remove {
+      width: auto;
+      min-height: 36px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: transparent;
       color: var(--muted);
-      font-size: 12px;
-      line-height: 1.4;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      font: inherit;
+      font-weight: 760;
+      cursor: pointer;
     }
-    .strategy-file-input {
-      position: fixed;
-      width: 1px;
-      height: 1px;
+    .evidence-file-remove:hover:not(:disabled),
+    .evidence-file-remove:focus-visible {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+    .evidence-file-remove:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+    }
+    .evidence-progress {
+      height: 8px;
       overflow: hidden;
-      clip-path: inset(50%);
-      white-space: nowrap;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--line) 76%, transparent);
     }
-    .workspace-import-select {
-      width: 100%;
-      min-width: 0;
-      min-height: 40px;
-      padding: 8px 10px;
+    .evidence-progress span {
+      display: block;
+      width: 42%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--accent);
+      animation: evidence-indeterminate 1.15s ease-in-out infinite;
+    }
+    @keyframes evidence-indeterminate {
+      from { transform: translateX(-115%); }
+      to { transform: translateX(250%); }
+    }
+    .evidence-map-summary {
+      display: grid;
+      gap: var(--space-sm);
+      padding: var(--space-sm);
+      border: 1px solid color-mix(in srgb, var(--signal) 36%, var(--line));
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--signal) 6%, transparent);
+    }
+    .evidence-result-head { display: grid; gap: 4px; }
+    .evidence-result-description {
+      max-width: 72ch;
+      margin: 0;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+    .evidence-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .evidence-metric {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 2px;
+      min-height: 70px;
+      padding: 9px 10px;
       border: 1px solid var(--line);
       border-radius: 9px;
       background: var(--panel);
       color: var(--text);
-      font: inherit;
-      font-size: 12px;
-    }
-    .workspace-import-button {
-      width: auto;
-      min-width: 168px;
-      flex: 0 0 auto;
-      min-height: 40px;
-      padding: 8px 10px;
-      border-radius: 9px;
-      font-size: 12px;
-      font-weight: 780;
+      text-align: left;
       box-shadow: none;
+      transform: none;
     }
-    .workspace-import-status {
-      min-height: 16px;
+    .evidence-metric:hover:not(:disabled) {
+      border-color: var(--strong-line);
+      background: color-mix(in srgb, var(--accent) 5%, var(--panel));
+      box-shadow: none;
+      transform: none;
+    }
+    .evidence-metric[aria-selected="true"] {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .evidence-metric strong {
+      grid-column: 1 / -1;
+      color: var(--text);
+      font-size: 17px;
+    }
+    .evidence-metric span { align-self: end; color: var(--muted); font-size: 9px; }
+    .evidence-metric .evidence-metric-action {
+      justify-self: end;
+      color: var(--accent);
+      font-weight: 780;
+    }
+    .evidence-detail-panel {
+      display: grid;
+      gap: 10px;
+      padding-top: var(--space-sm);
+      border-top: 1px solid var(--line);
+    }
+    .evidence-detail-head { display: grid; gap: 3px; }
+    .evidence-detail-title {
+      margin: 0;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 820;
+    }
+    .evidence-detail-description {
       margin: 0;
       color: var(--muted);
       font-size: 10px;
+      line-height: 1.5;
+    }
+    .evidence-detail-content {
+      display: grid;
+      gap: 0;
+      border-block: 1px solid var(--line);
+    }
+    .evidence-detail-row,
+    .evidence-detail-item {
+      border: 0;
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+      background: transparent;
+    }
+    .evidence-detail-row:last-child,
+    .evidence-detail-item:last-child { border-bottom: 0; }
+    .evidence-detail-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      padding: 10px 0;
+      color: var(--list-text);
+      font-size: 11px;
       line-height: 1.45;
     }
-    .workspace-import-status[data-state="error"] { color: var(--danger); }
-    .workspace-import-status[data-state="success"] { color: var(--signal); }
+    .evidence-detail-row > span { color: var(--muted); text-align: right; }
+    .evidence-detail-item summary {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto 12px;
+      gap: 10px;
+      align-items: center;
+      min-height: 42px;
+      padding: 9px 0;
+      color: var(--list-text);
+      font-size: 11px;
+      line-height: 1.45;
+      cursor: pointer;
+      list-style: none;
+    }
+    .evidence-detail-item summary::-webkit-details-marker { display: none; }
+    .evidence-detail-item summary::after {
+      content: "⌄";
+      color: var(--muted);
+      font-size: 12px;
+      transition: transform 160ms ease;
+    }
+    .evidence-detail-item[open] summary::after { transform: rotate(180deg); }
+    .evidence-detail-summary-meta { color: var(--muted); font-size: 9px; white-space: nowrap; }
+    .evidence-detail-body {
+      display: grid;
+      gap: 9px;
+      padding: 0 0 12px;
+    }
+    .evidence-detail-field {
+      display: grid;
+      grid-template-columns: minmax(88px, .26fr) minmax(0, 1fr);
+      gap: 10px;
+      margin: 0;
+      color: var(--list-text);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+    .evidence-detail-field dt { color: var(--muted); font-weight: 760; }
+    .evidence-detail-field dd { margin: 0; white-space: normal; }
+    .evidence-ref-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .evidence-ref-link {
+      width: auto;
+      min-height: 30px;
+      padding: 5px 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--accent);
+      font-size: 9px;
+      font-weight: 740;
+      line-height: 1.35;
+      box-shadow: none;
+    }
+    .evidence-ref-link:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: none;
+      transform: none;
+    }
+    .evidence-empty-state {
+      margin: 0;
+      padding: 18px 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .evidence-exam-panel {
+      display: grid;
+      gap: 9px;
+      padding-top: var(--space-sm);
+      border-top: 1px solid var(--line);
+    }
+    .evidence-exam-title { margin: 0; color: var(--text); font-size: 12px; font-weight: 800; }
+    .evidence-exam-note-label { color: var(--list-text); font-size: 11px; font-weight: 720; }
+    .evidence-exam-note { min-height: 82px; }
+    .evidence-exam-status[data-state="accepted"] { color: var(--signal); }
+    .evidence-exam-status[data-state="ignored"] { color: var(--warning); }
     .material-vault {
       display: grid;
       gap: var(--space-sm);
@@ -2045,7 +2287,8 @@
       background: color-mix(in srgb, var(--panel-solid) 66%, transparent);
       transition: background 150ms ease, box-shadow 150ms ease;
     }
-    .calendar-day:last-child { border-right: 0; }
+    .calendar-day:nth-child(7n) { border-right: 0; }
+    .calendar-day:nth-child(n + 8) { border-top: 1px solid var(--line); }
     .calendar-day.is-today { background: color-mix(in srgb, var(--accent) 6%, var(--panel-solid)); }
     .calendar-day.has-conflict {
       background: color-mix(in srgb, #d84343 7%, var(--panel-solid));
@@ -2123,9 +2366,9 @@
       display: grid;
       gap: 4px;
       padding: 9px 10px;
-      border: 1px solid color-mix(in srgb, var(--subject-color) 42%, var(--line));
+      border: 1px solid color-mix(in srgb, var(--subject-color) 72%, var(--strong-line));
       border-radius: 10px;
-      background: color-mix(in srgb, var(--subject-color) 9%, var(--panel-solid));
+      background: color-mix(in srgb, var(--subject-color) 16%, var(--panel-solid));
       color: var(--text);
       text-align: left;
       cursor: grab;
@@ -2136,8 +2379,15 @@
     }
     .calendar-task:hover:not(:disabled) {
       border-color: var(--subject-color);
-      background: color-mix(in srgb, var(--subject-color) 14%, var(--panel-solid));
+      background: color-mix(in srgb, var(--subject-color) 22%, var(--panel-solid));
       transform: none;
+    }
+    body[data-theme="dark"] .calendar-task {
+      border-color: color-mix(in srgb, var(--subject-color) 82%, #dce7ff);
+      background: color-mix(in srgb, var(--subject-color) 28%, var(--panel-solid));
+    }
+    body[data-theme="dark"] .calendar-task:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--subject-color) 36%, var(--panel-solid));
     }
     .calendar-task.is-pressing { box-shadow: inset 0 0 0 1px var(--subject-color); }
     .calendar-task.is-dragging {
@@ -2159,9 +2409,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 7px;
-      color: var(--muted);
+      color: color-mix(in srgb, var(--subject-color) 48%, var(--text));
       font-size: 9px;
       font-weight: 720;
+    }
+    body[data-theme="dark"] .calendar-task-meta {
+      color: color-mix(in srgb, var(--subject-color) 32%, #ffffff);
     }
     .calendar-empty {
       grid-column: 1 / -1;
@@ -2537,6 +2790,7 @@
       #configurationStage .section-head { grid-template-columns: 1fr; }
       .scope-source-choice {
         width: 100%;
+        grid-template-columns: 1fr;
       }
       .scope-source-option span { min-height: 44px; padding-inline: 8px; }
       .actions button { width: 100%; }
@@ -2593,6 +2847,12 @@
       .material-vault-item { grid-template-columns: minmax(0, 1fr) auto; }
       .material-vault-item-actions { flex-wrap: wrap; }
       .material-vault-item-button { min-height: 44px; }
+      .evidence-file-actions,
+      .evidence-build-action { align-items: stretch; flex-direction: column; }
+      .evidence-file-actions button,
+      .evidence-build-action button { width: 100%; }
+      .evidence-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .evidence-detail-field { grid-template-columns: 1fr; gap: 2px; }
       .calendar-drag-status {
         right: 12px;
         bottom: max(12px, env(safe-area-inset-bottom));
@@ -2687,15 +2947,15 @@
                 <span id="manualScopeModeLabel">手动输入</span>
               </label>
               <label class="scope-source-option">
-                <input type="radio" name="scopeSourceMode" value="strategy">
-                <span id="strategyScopeModeLabel">导入 Strategy JSON</span>
+                <input type="radio" name="scopeSourceMode" value="materials">
+                <span id="materialsScopeModeLabel">上传课程资料</span>
               </label>
             </div>
           </fieldset>
           <div class="grid">
             <div class="field" id="courseField">
               <div class="field-heading"><label for="course" id="courseLabel">课程名</label></div>
-              <input id="course" name="course" type="text" value="大学物理" required minlength="2" maxlength="80" aria-describedby="courseError" />
+              <input id="course" name="course" type="text" placeholder="例如：大学物理" required minlength="2" maxlength="80" aria-describedby="courseError" />
               <small id="courseError" class="field-error" aria-live="polite"></small>
             </div>
             <div class="field" id="dateField">
@@ -2724,17 +2984,63 @@
             </div>
             <div class="field full scope-source-panel" id="manualScopePanel">
               <div class="field-heading"><label for="keywords" id="keywordsLabel">考试范围与题型（逗号分隔）</label></div>
-              <textarea id="keywords" name="keywords" required minlength="3" maxlength="1000" placeholder="例如：动量守恒，刚体转动，计算题" aria-describedby="keywordsError">动量守恒, 刚体转动, 热力学第一定律, 简答题, 计算题</textarea>
+              <textarea id="keywords" name="keywords" required minlength="3" maxlength="1000" placeholder="例如：动量守恒，刚体转动，计算题" aria-describedby="keywordsError"></textarea>
               <small id="keywordsError" class="field-error" aria-live="polite"></small>
             </div>
-            <section class="field full workspace-import-card scope-source-panel" id="strategyScopePanel" aria-labelledby="workspaceImportTitle" hidden>
-              <p class="workspace-import-title" id="workspaceImportTitle">导入 Strategy JSON</p>
-              <div class="strategy-file-picker">
-                <button class="primary workspace-import-button" id="chooseStrategyFile" type="button">选择 strategy.json</button>
-                <span class="strategy-file-name" id="strategyFileName">尚未选择文件</span>
-                <input class="strategy-file-input" id="strategyFileInput" type="file" accept=".json,application/json" aria-hidden="true" tabindex="-1" />
+            <section class="field full evidence-import-card scope-source-panel" id="evidenceScopePanel" aria-labelledby="evidenceImportTitle" hidden>
+              <div class="evidence-import-head">
+                <div class="evidence-import-copy">
+                  <h3 class="evidence-import-title" id="evidenceImportTitle">上传并整理课程资料</h3>
+                  <p class="evidence-import-description" id="evidenceImportDescription">先选择资料，再让网站提取可检查的知识点、出处和不确定项。只有整理后的结果会进入复习计划。</p>
+                </div>
               </div>
-              <p class="workspace-import-status" id="workspaceStatus" aria-live="polite">文件只在当前浏览器中选择；网站仅把结构化 Strategy 发送到同源后端校验。</p>
+              <div class="evidence-file-actions">
+                <button class="primary" id="chooseEvidenceFiles" type="button">选择课程文件</button>
+              </div>
+              <input id="evidenceFilesInput" type="file" accept=".pdf,.md,.markdown,.txt,.docx,.pptx" multiple hidden>
+              <p class="evidence-file-summary" id="evidenceFileSummary" aria-live="polite">先选择课程文件；选择后会列出文件，再由你确认开始分析。</p>
+              <ul class="evidence-file-list" id="evidenceFileList" hidden></ul>
+              <div class="evidence-build-action">
+                <button class="primary" id="buildEvidenceMap" type="button" disabled>分析资料，生成复习依据</button>
+                <p class="evidence-build-copy" id="evidenceBuildCopy">网站会从这些资料中整理知识点、出处和无法确认的信息，完成后由你检查。</p>
+              </div>
+              <div class="evidence-progress" id="evidenceProgress" role="progressbar" hidden aria-label="资料分析进度" aria-valuetext="正在解析文件并核对来源"><span id="evidenceProgressBar"></span></div>
+              <section class="evidence-map-summary" id="evidenceMapSummary" hidden aria-labelledby="evidenceMapSummaryTitle">
+                <div class="evidence-result-head">
+                  <h4 class="evidence-exam-title" id="evidenceMapSummaryTitle">资料分析结果</h4>
+                  <p class="evidence-result-description" id="evidenceMapSummaryDescription">点击下面四类结果，检查复习计划将使用的依据。</p>
+                </div>
+                <div class="evidence-metrics" role="tablist" aria-label="资料分析结果">
+                  <button class="evidence-metric" id="evidenceFilesTab" type="button" role="tab" data-evidence-view="files" aria-selected="false" aria-controls="evidenceDetailPanel" tabindex="-1"><strong id="evidenceFileCount">0</strong><span id="evidenceFilesMetricLabel">文件</span><span class="evidence-metric-action">查看</span></button>
+                  <button class="evidence-metric" id="evidenceUnitsTab" type="button" role="tab" data-evidence-view="units" aria-selected="true" aria-controls="evidenceDetailPanel"><strong id="evidenceUnitCount">0</strong><span id="evidenceUnitsMetricLabel">知识单元</span><span class="evidence-metric-action">查看</span></button>
+                  <button class="evidence-metric" id="evidenceRefsTab" type="button" role="tab" data-evidence-view="refs" aria-selected="false" aria-controls="evidenceDetailPanel" tabindex="-1"><strong id="evidenceRefCount">0</strong><span id="evidenceRefsMetricLabel">来源引用</span><span class="evidence-metric-action">查看</span></button>
+                  <button class="evidence-metric" id="evidenceUncertaintiesTab" type="button" role="tab" data-evidence-view="uncertainties" aria-selected="false" aria-controls="evidenceDetailPanel" tabindex="-1"><strong id="evidenceUncertaintyCount">0</strong><span id="evidenceUncertaintiesMetricLabel">不确定项</span><span class="evidence-metric-action">查看</span></button>
+                </div>
+                <section class="evidence-detail-panel" id="evidenceDetailPanel" role="tabpanel" aria-labelledby="evidenceUnitsTab" tabindex="0">
+                  <div class="evidence-detail-head">
+                    <h5 class="evidence-detail-title" id="evidenceDetailTitle">知识单元</h5>
+                    <p class="evidence-detail-description" id="evidenceDetailDescription">展开每个知识单元，检查公式、典型题、前置依赖和出处。</p>
+                  </div>
+                  <div class="evidence-detail-content" id="evidenceDetailContent"></div>
+                </section>
+              </section>
+              <section class="evidence-exam-panel" aria-labelledby="evidenceExamTitle">
+                <h4 class="evidence-exam-title" id="evidenceExamTitle">题型与考试信息（可选）</h4>
+                <div class="evidence-question-types" id="evidenceQuestionTypes" aria-label="选择已知题型">
+                  <button type="button" data-evidence-question-type="choice" aria-pressed="false">选择题</button>
+                  <button type="button" data-evidence-question-type="blank" aria-pressed="false">填空题</button>
+                  <button type="button" data-evidence-question-type="calculation" aria-pressed="false">计算题</button>
+                  <button type="button" data-evidence-question-type="judgment" aria-pressed="false">判断题</button>
+                  <button type="button" data-evidence-question-type="short_answer" aria-pressed="false">简答题</button>
+                  <button type="button" data-evidence-question-type="diagram" aria-pressed="false">作图题</button>
+                </div>
+                <label class="evidence-exam-note-label" id="evidenceExamNoteLabel" for="evidenceExamNote">补充题型、分值或老师强调的范围</label>
+                <textarea class="evidence-exam-note" id="evidenceExamNote" maxlength="240" placeholder="例如：选择题2×10，判断题1×10，计算题40分。"></textarea>
+                <button class="ghost evidence-unknown-button" id="evidenceExamUnknown" type="button" aria-pressed="false">我不知道题型</button>
+                <p class="evidence-exam-status" id="evidenceExamStatus" aria-live="polite">未填写题型，将按资料分析结果生成。</p>
+              </section>
+            </section>
+            <section class="field full scope-source-panel" id="strategyScopePanel" hidden inert aria-hidden="true">
               <section class="material-vault" id="materialVaultPanel" aria-labelledby="materialVaultTitle" hidden>
                 <div class="material-vault-head">
                   <div class="material-vault-copy">
@@ -2776,7 +3082,6 @@
           <div class="actions">
             <button id="generate" class="primary" type="submit">生成复习计划</button>
             <button id="cancelGenerate" class="ghost" type="button" hidden>取消生成</button>
-            <button id="fillDemo" class="ghost" type="button">加载示例</button>
             <p id="validationSummary" class="validation-summary" aria-live="assertive"></p>
           </div>
           <p class="hint" id="proxyHint">生成通常需要 10–60 秒。你可以随时取消，输入会自动保留。</p>
@@ -2792,7 +3097,7 @@
       </section>
     </div>
 
-    <section class="stage" id="resultSection" aria-live="polite">
+    <section class="stage" id="resultSection">
       <div class="section-head">
         <div class="section-index" aria-hidden="true">OUT</div>
         <div>
@@ -2838,7 +3143,7 @@
             </div>
             <div class="plan-repair-field">
               <label id="repairCommandLabel" for="planRepairCommand">告诉 AI 哪些约束变了</label>
-              <textarea id="planRepairCommand" aria-describedby="planRepairGuardrail planRepairError" autocomplete="off"></textarea>
+              <textarea id="planRepairCommand" maxlength="600" aria-describedby="planRepairGuardrail planRepairError" autocomplete="off"></textarea>
               <p class="plan-repair-error" id="planRepairError" role="alert"></p>
             </div>
             <div class="plan-repair-footer">
@@ -2895,7 +3200,7 @@
       <div class="calendar-scroll">
         <div class="calendar-grid" id="calendarGrid"></div>
       </div>
-      <p class="calendar-hint" id="calendarDragHint">鼠标可直接拖动；触屏长按约 0.45 秒后拖到同周其他日期。松手后会立即保存并重新检查冲突。</p>
+      <p class="calendar-hint" id="calendarDragHint">鼠标可直接拖动；触屏长按约 0.45 秒后拖到当前两周中的其他日期。松手后会立即保存并重新检查冲突。</p>
     </section>
     <p class="calendar-drag-status" id="calendarDragStatus" role="status" aria-live="polite" aria-atomic="true" hidden></p>
 
@@ -3005,7 +3310,6 @@
     const planForm = document.getElementById("planForm");
     const generateBtn = document.getElementById("generate");
     const cancelGenerateBtn = document.getElementById("cancelGenerate");
-    const fillDemoBtn = document.getElementById("fillDemo");
     const validationSummary = document.getElementById("validationSummary");
     const proxyHint = document.getElementById("proxyHint");
     const heroSubtitle = document.getElementById("appSubtitle");
@@ -3022,6 +3326,30 @@
     const scopeSourceChoice = document.getElementById("scopeSourceChoice");
     const scopeSourceModeInputs = [...document.querySelectorAll('input[name="scopeSourceMode"]')];
     const manualScopePanel = document.getElementById("manualScopePanel");
+    const evidenceScopePanel = document.getElementById("evidenceScopePanel");
+    const chooseEvidenceFilesBtn = document.getElementById("chooseEvidenceFiles");
+    const buildEvidenceMapBtn = document.getElementById("buildEvidenceMap");
+    const evidenceFilesInput = document.getElementById("evidenceFilesInput");
+    const evidenceFileSummary = document.getElementById("evidenceFileSummary");
+    const evidenceFileList = document.getElementById("evidenceFileList");
+    const evidenceProgress = document.getElementById("evidenceProgress");
+    const evidenceProgressBar = document.getElementById("evidenceProgressBar");
+    const evidenceMapSummary = document.getElementById("evidenceMapSummary");
+    const evidenceFileCount = document.getElementById("evidenceFileCount");
+    const evidenceUnitCount = document.getElementById("evidenceUnitCount");
+    const evidenceRefCount = document.getElementById("evidenceRefCount");
+    const evidenceUncertaintyCount = document.getElementById("evidenceUncertaintyCount");
+    const evidenceMetricButtons = [...document.querySelectorAll("[data-evidence-view]")];
+    const evidenceDetailPanel = document.getElementById("evidenceDetailPanel");
+    const evidenceDetailTitle = document.getElementById("evidenceDetailTitle");
+    const evidenceDetailDescription = document.getElementById("evidenceDetailDescription");
+    const evidenceDetailContent = document.getElementById("evidenceDetailContent");
+    const evidenceQuestionTypes = document.getElementById("evidenceQuestionTypes");
+    const evidenceExamNoteLabel = document.getElementById("evidenceExamNoteLabel");
+    const evidenceExamNote = document.getElementById("evidenceExamNote");
+    const evidenceExamUnknownBtn = document.getElementById("evidenceExamUnknown");
+    const evidenceExamStatus = document.getElementById("evidenceExamStatus");
+    const evidenceQuestionTypeButtons = [...document.querySelectorAll("[data-evidence-question-type]")];
     const strategyScopePanel = document.getElementById("strategyScopePanel");
     const contentLanguageSelect = document.getElementById("contentLanguagePreference");
     const contentLanguageStatus = document.getElementById("contentLanguageStatus");
@@ -3059,10 +3387,6 @@
     const subjectEmpty = document.getElementById("subjectEmpty");
     const subjectCount = document.getElementById("subjectCount");
     const launchShell = document.querySelector(".launch-shell");
-    const chooseStrategyFileBtn = document.getElementById("chooseStrategyFile");
-    const strategyFileInput = document.getElementById("strategyFileInput");
-    const strategyFileName = document.getElementById("strategyFileName");
-    const workspaceStatus = document.getElementById("workspaceStatus");
     const materialVaultPanel = document.getElementById("materialVaultPanel");
     const materialVaultProgress = document.getElementById("materialVaultProgress");
     const materialVaultStatus = document.getElementById("materialVaultStatus");
@@ -3105,8 +3429,6 @@
     let lastHealth = null;
     let lastPlan = null;
     let subjects = [];
-    let selectedStrategyFileName = "";
-    let workspaceStatusState = { key: "workspaceLocalOnly", replacements: {} };
     let materialVaultStatusState = { key: "materialVaultIdle", replacements: {} };
     let materialVaultKeys = new Set();
     let materialSourceAvailability = new Map();
@@ -3139,12 +3461,39 @@
     let planUndoSnapshot = null;
     let planEditToastTimer = null;
     const touchedFields = new Set();
-    const strategyPlanningOverrides = new Set();
     const DRAFT_KEY = "study-sprint-draft-v1";
     const SUBJECTS_KEY = "finals-os-subjects-v1";
     const CALENDAR_SETTINGS_KEY = "finals-os-calendar-settings-v1";
+    const CALENDAR_VISIBLE_DAYS = 14;
     const MATERIAL_DB_NAME = "finals-os-material-vault-v1";
     const MATERIAL_DB_STORE = "materials";
+    const EVIDENCE_MAX_FILES = 60;
+    const EVIDENCE_MAX_FILE_BYTES = 25 * 1024 * 1024;
+    const EVIDENCE_MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
+    const EVIDENCE_REQUEST_TIMEOUT_MS = 210000;
+    const EVIDENCE_QUESTION_TYPES = {
+      choice: { zh: "选择题", en: "Multiple choice" },
+      blank: { zh: "填空题", en: "Fill in the blank" },
+      calculation: { zh: "计算题", en: "Calculation" },
+      judgment: { zh: "判断题", en: "True / false" },
+      short_answer: { zh: "简答题", en: "Short answer" },
+      diagram: { zh: "作图题", en: "Diagram" }
+    };
+    let evidenceBuildController = null;
+    let evidenceBuildTimeout = null;
+    let evidenceSourceFiles = [];
+    let evidenceDetailView = "units";
+    let evidenceSelectedSourceId = "";
+    let courseEvidenceState = {
+      files: [],
+      map: null,
+      building: false,
+      selectionInvalid: false,
+      questionTypes: [],
+      examNote: "",
+      examUnknown: false,
+      statusKey: "evidenceNoFiles"
+    };
     const SUBJECT_COLORS = ["#176bff", "#6d4aff", "#00a67e", "#e68019", "#d6538a", "#2b9bbd"];
     const LONG_PRESS_MS = 450;
     const REQUEST_TIMEOUT_MS = 360000;
@@ -3156,7 +3505,7 @@
         heroLead: "这把，",
         heroAccent: "稳了。",
         appSubtitle: "填完 5 项，拿走一份能直接执行的复习计划。",
-        appSubtitleStrategy: "确认日期与可用时间，导入 Strategy 后直接执行。",
+        appSubtitleMaterials: "先把课程资料整理成可检查的复习依据，再让 AI 安排复习。",
         sectionNavAria: "功能导航",
         navInput: "输入",
         navPlan: "计划",
@@ -3166,9 +3515,10 @@
         hoursMetricUnit: "小时",
         configureTitle: "输入考试信息",
         configureDesc: "范围写得越具体，生成的计划越能直接执行。",
-        configureTitleStrategy: "确认排期并导入 Strategy",
-        configureDescStrategy: "Strategy 会预填考试日期和每天可用时间；你在网站中的最新修改优先。",
+        configureTitleMaterials: "上传资料并生成复习依据",
+        configureDescMaterials: "网站先整理可检查的知识点、出处和不确定项，再用它生成计划；未解析的内容不会被当成证据。",
         courseLabel: "课程名",
+        coursePlaceholder: "例如：大学物理",
         dateLabel: "考试日期",
         hoursLabel: "每天能学几小时（1–20）",
         goalLabel: "目标分（60–100）",
@@ -3177,7 +3527,77 @@
         scopeSourceLabel: "考试范围与题型来源",
         scopeSourceAria: "选择考试范围来源",
         manualScopeMode: "手动输入",
-        strategyScopeMode: "导入 Strategy JSON",
+        materialsScopeMode: "上传课程资料",
+        evidenceImportTitle: "上传并整理课程资料",
+        evidenceImportDescription: "先选择资料，再让网站提取可检查的知识点、出处和不确定项。只有整理后的结果会进入复习计划。",
+        chooseEvidenceFiles: "选择课程文件",
+        addEvidenceFiles: "继续添加文件",
+        removeEvidenceFile: "删除",
+        removeEvidenceFileAria: "删除 {name}",
+        evidenceFileNeedsReselect: "页面重新打开后，浏览器不会保留原文件正文。请重新选择全部文件后再修改清单。",
+        buildEvidenceMap: "分析资料，生成复习依据",
+        evidenceMapBuilding: "正在分析资料…",
+        evidenceMapCancel: "取消资料分析",
+        evidenceBuildCopy: "网站会从这些资料中整理知识点、出处和无法确认的信息，完成后由你检查。",
+        evidenceMapReady: "资料分析结果",
+        evidenceMapDescription: "点击下面四类结果，检查复习计划将使用的依据。",
+        evidenceFilesMetric: "文件",
+        evidenceUnitsMetric: "知识单元",
+        evidenceRefsMetric: "来源引用",
+        evidenceUncertaintiesMetric: "不确定项",
+        evidenceMetricAction: "查看",
+        evidenceFilesDetailTitle: "文件清单",
+        evidenceFilesDetailDescription: "这里显示本次分析使用的全部文件和解析状态。",
+        evidenceUnitsDetailTitle: "知识单元",
+        evidenceUnitsDetailDescription: "展开每个知识单元，检查公式、典型题、前置依赖和出处。",
+        evidenceRefsDetailTitle: "来源引用",
+        evidenceRefsDetailDescription: "按原文件查看它支撑了哪些知识单元、考试信号或不确定项。",
+        evidenceUncertaintiesDetailTitle: "不确定项",
+        evidenceUncertaintiesDetailDescription: "这些信息无法从当前资料中确认，计划不会把它们当成事实。",
+        evidenceFormula: "公式",
+        evidenceTypicalQuestion: "典型题",
+        evidencePrerequisite: "前置依赖",
+        evidenceSources: "出处",
+        evidenceReferencedBy: "关联内容",
+        evidenceKnowledgeUnitType: "知识单元",
+        evidenceExamSignalType: "考试信号",
+        evidenceUncertaintyType: "不确定项",
+        evidenceReferenceCount: "{count} 处引用",
+        evidenceNoReferences: "没有可显示的来源引用。",
+        evidenceNoUncertainties: "当前没有记录不确定项。",
+        evidenceUnknownValue: "当前资料无法确认",
+        evidenceParseAudited: "已解析",
+        evidenceParseParsed: "已解析正文",
+        evidenceParseMetadata: "仅文件名",
+        evidenceParseUnknown: "状态未知",
+        evidenceExamTitle: "题型与考试信息（可选）",
+        evidenceExamNoteLabel: "补充题型、分值或老师强调的范围",
+        evidenceQuestionTypesAria: "选择已知题型",
+        evidenceExamPlaceholder: "例如：选择题2×10，判断题1×10，计算题40分。",
+        evidenceExamUnknown: "我不知道题型",
+        evidenceNoFiles: "先选择课程文件；选择后会列出文件，再由你确认开始分析。",
+        evidenceFilesSelected: "已选择 {count} 份资料。核对文件后，点击“分析资料，生成复习依据”。",
+        evidenceFilesAdded: "已新增 {added} 份、同名更新 {replaced} 份；当前共 {count} 份。核对后开始分析。",
+        evidenceFilesChanged: "资料清单已变更（新增 {added} 份、同名更新 {replaced} 份）；旧分析已清除，请重新分析。",
+        evidenceFilesRestarted: "已载入 {count} 份新资料。此前保存的分析只保留了结果，没有原文件正文，因此本次从新清单开始。",
+        evidenceFileRemoved: "已删除“{name}”；当前还剩 {count} 份。核对后开始分析。",
+        evidenceFileRemovedAfterAnalysis: "已删除“{name}”；旧分析已清除，当前还剩 {count} 份。请重新分析。",
+        evidenceAnalysisRunning: "正在读取 {count} 份资料，并核对每条结论的出处。你可以取消。",
+        evidenceProgressAria: "正在解析文件并核对来源",
+        evidenceReady: "资料分析完成：提取了 {count} 个可追溯知识单元。请检查来源与不确定项。",
+        evidenceCancelled: "资料分析已取消。文件仍保留，可重新开始。",
+        evidenceTooMany: "文件未添加：最多可保留 60 份资料；原清单保持不变。",
+        evidenceUnsupported: "文件未添加：仅支持 PDF、TXT、Markdown、DOCX 或 PPTX；原清单保持不变。",
+        evidenceNoExtractable: "没有读到可分析的正文。扫描版 PDF 请先做 OCR；旧版 .doc/.ppt 请另存为 .docx/.pptx。",
+        evidenceTooLarge: "文件未添加：单个文件不得超过 25 MB，总计不得超过 100 MB；原清单保持不变。",
+        evidenceBuildTimeout: "资料分析超时。文件仍保留，可重试或减少文件数量。",
+        evidenceBuildFailed: "资料分析失败：{message}。文件仍保留，可重试。",
+        evidenceMetadataOnly: "资料已整理，但没有可核验的正文引用。请重新上传可解析版本。",
+        evidenceRequired: "先选择课程资料，然后点击“分析资料，生成复习依据”。",
+        evidenceExamEmpty: "未填写题型，将按资料分析结果生成。",
+        evidenceExamUnknownStatus: "题型未知，将按资料分析结果生成。",
+        evidenceExamAccepted: "已补充：{value}",
+        evidenceExamIgnored: "未识别到有效的题型或考试信息，已忽略。",
         contentLanguageLabel: "内容语言",
         contentLanguageSelectAria: "选择计划内容语言",
         contentLanguageAuto: "自动",
@@ -3189,14 +3609,11 @@
         generate: "生成复习计划",
         generating: "正在生成…",
         cancelGenerate: "取消生成",
-        fillDemo: "加载示例",
         switchDark: "深色",
         switchLight: "浅色",
         languageToggleAria: "Switch interface to English",
         proxyHint: "生成通常需要 10–60 秒。你可以随时取消，输入会自动保留。",
-        strategyImportHint: "Strategy 会直接生成锁定的 Session；网站只负责排期和按需拆解 Guide。",
-        strategyScheduleUpdated: "排期条件已更新，未完成 Session 已重新排期。",
-        strategyScheduleRejected: "排期条件尚未应用：{reason}",
+        evidenceImportHint: "资料分析完成后先检查依据，再生成计划；题型信息始终可选。",
         feasibilitySessionTooLong: "“{title}”需要 {required}，超过你每天的 {available}。请增加每天可用时间，或先拆小这个 Session。",
         feasibilityTooManySessions: "还有 {sessions} 个 Session，但考试前只有 {days} 天。本站每天最多安排 1 个 Session；请延后考试日期或精简 Strategy。",
         feasibilityTotalOverCapacity: "计划还需 {required}，但剩余 {days} 天只有 {available}。请延后考试日期、增加每天可用时间或精简 Session。",
@@ -3242,7 +3659,7 @@
         executionFeedbackSubmit: "让 AI 修正本次 Guide",
         executionFeedbackLoading: "AI 正在定位卡点…",
         executionFeedbackRequired: "先写下可判断的执行证据。",
-        executionRevisionWorkspaceRequired: "只有从 strategy.json 导入的 Session 才能调用 AI 修正；当前计划仍可手动编辑 Guide。",
+        executionRevisionWorkspaceRequired: "当前 Session 缺少可验证的上下文；仍可手动编辑 Guide。",
         executionRevisionFailed: "无法生成 Guide 修改提案：{error}",
         guideRevisionProposalTitle: "AI Guide 修改提案",
         guideRevisionScope: "只修改当前 Guide",
@@ -3251,7 +3668,7 @@
         guideRevisionAfter: "修改后",
         guideRevisionKeep: "保留原 Guide",
         guideRevisionApply: "确认并应用",
-        guideRevisionIntegrity: "Session、排期与 strategy.json 保持不变。",
+        guideRevisionIntegrity: "Session 与排期保持不变。",
         guideRevisionApplied: "已应用“{title}”的 Guide 修改；Session 和 Strategy 未变。",
         guideRevisionUndo: "撤销 AI 修改",
         guideRevisionUndone: "已撤销，恢复“{title}”的原 Guide。",
@@ -3275,6 +3692,7 @@
         planRepairCancel: "放弃提案",
         planRepairApply: "确认并应用",
         planRepairEmpty: "先写清楚发生了什么变化。",
+        planRepairInvalid: "未检测到有效的约束变化。",
         planRepairTimeout: "AI 请求超过 75 秒。计划没有改动，请重试。",
         planRepairFailed: "无法生成安全的修改提案：{message}",
         planRepairTotalMinutes: "计划总时长",
@@ -3329,15 +3747,6 @@
         manualStepSource: "当前课程",
         subjectsTitle: "科目",
         newSubject: "＋ 新建科目",
-        workspaceImportTitle: "导入 Strategy JSON",
-        strategyFileChoose: "选择 strategy.json",
-        strategyFileEmpty: "尚未选择文件",
-        workspaceLocalOnly: "文件只在当前浏览器中选择；网站仅把结构化 Strategy 发送到同源后端校验。",
-        workspaceImporting: "正在校验并导入 strategy.json…",
-        workspaceImported: "已导入“{name}”：{materialCount} 份原始证据、{sessionCount} 个 Session；按 {examDate}、每天 {hours} 小时排期。",
-        workspaceImportFailed: "导入失败：{reason}",
-        workspaceFileTooLarge: "文件超过 100 KB；请只保留 Strategy 结构，不要嵌入原始资料。",
-        workspaceInfeasible: "暂不导入：{reason}",
         materialVaultTitle: "本地资料库",
         materialVaultDescription: "Strategy 只保存资料索引；未随网站发布的文件需要当前浏览器提供。",
         materialVaultBulkBind: "批量补齐资料",
@@ -3378,25 +3787,25 @@
         previousWeek: "上一周",
         currentWeek: "本周",
         nextWeek: "下一周",
-        calendarWeekNav: "周导航",
+        calendarWeekNav: "两周导航",
         calendarCapacity: "每日总可用时间",
         calendarCapacityUnit: "小时",
         calendarNoSubjects: "还没有可检查的科目。先生成至少一份复习计划。",
-        calendarNoTasks: "这一周没有任务。使用左右箭头检查其他周。",
+        calendarNoTasks: "这两周没有任务。使用左右箭头检查其他日期。",
         calendarNoConflict: "当前排期没有发现时间冲突。",
         calendarConflictSummary: "发现 {count} 个超载日，最严重的一天超出 {duration}。",
         calendarConflictDay: "天",
         calendarConflictDays: "天",
         calendarConflictBadge: "{count} 个时间冲突",
         calendarOverBy: "超出 {duration}",
-        calendarDragHint: "鼠标可直接拖动；触屏长按约 0.45 秒后拖到同周其他日期。松手后会立即保存并重新检查冲突。",
+        calendarDragHint: "鼠标可直接拖动；触屏长按约 0.45 秒后拖动；键盘聚焦任务后用左右方向键逐日改期，按 Enter 打开编辑。",
         calendarMoveInvalid: "这个日期不能放置该任务。",
         calendarMovePast: "不能移到过去。请选择今天或之后的日期。",
         calendarMoveExamBoundary: "这个科目的考试是 {date}，不能再往后排。",
-        calendarDropOutside: "请放到当前周的一天；暂不支持跨周拖动。",
+        calendarDropOutside: "请放到当前两周中的一天。",
         calendarDropReady: "松手后移到 {date}。",
         calendarMoved: "已把“{title}”移到 {date}，冲突检查已更新。",
-        calendarTaskAria: "{subject}：{title}，{duration}，安排在 {date}。鼠标拖动或触屏长按可改期。",
+        calendarTaskAria: "{subject}：{title}，{duration}，安排在 {date}。左右方向键逐日改期，Enter 打开编辑。",
         calendarToday: "今天",
         calendarUnscheduled: "待排期",
         calendarSubjectLegend: "科目颜色",
@@ -3481,7 +3890,7 @@
         heroLead: "EXAM.",
         heroAccent: "SECURED.",
         appSubtitle: "Complete five inputs. Leave with a study plan you can execute today.",
-        appSubtitleStrategy: "Confirm timing, import the Strategy, and execute.",
+        appSubtitleMaterials: "Organize course files into inspectable planning evidence before AI schedules the work.",
         sectionNavAria: "Feature navigation",
         navInput: "Input",
         navPlan: "Plan",
@@ -3491,9 +3900,10 @@
         hoursMetricUnit: "hours",
         configureTitle: "Enter exam details",
         configureDesc: "The more specific the scope, the more actionable the plan.",
-        configureTitleStrategy: "Confirm timing and import Strategy",
-        configureDescStrategy: "Strategy prefills the exam date and daily availability; your latest edits on this page take priority.",
+        configureTitleMaterials: "Upload materials and create planning evidence",
+        configureDescMaterials: "The site organizes inspectable topics, sources, and uncertainties before planning; unread content is never presented as evidence.",
         courseLabel: "Course",
+        coursePlaceholder: "Example: University Physics",
         dateLabel: "Exam date",
         hoursLabel: "Daily hours (1–20)",
         goalLabel: "Target score (60–100)",
@@ -3502,7 +3912,77 @@
         scopeSourceLabel: "Exam scope and question type source",
         scopeSourceAria: "Choose the exam scope source",
         manualScopeMode: "Enter manually",
-        strategyScopeMode: "Import Strategy JSON",
+        materialsScopeMode: "Upload course files",
+        evidenceImportTitle: "Upload and organize course materials",
+        evidenceImportDescription: "Choose materials, then let the site extract inspectable topics, sources, and uncertainties. Only the organized result enters planning.",
+        chooseEvidenceFiles: "Choose course files",
+        addEvidenceFiles: "Add more files",
+        removeEvidenceFile: "Remove",
+        removeEvidenceFileAria: "Remove {name}",
+        evidenceFileNeedsReselect: "Browsers do not retain the original file contents after reopening the page. Reselect all files before editing this list.",
+        buildEvidenceMap: "Analyze materials and create evidence",
+        evidenceMapBuilding: "Analyzing materials…",
+        evidenceMapCancel: "Cancel analysis",
+        evidenceBuildCopy: "The site organizes topics, sources, and unresolved information from these files for you to inspect.",
+        evidenceMapReady: "Material analysis results",
+        evidenceMapDescription: "Open any category below to inspect the evidence that planning will use.",
+        evidenceFilesMetric: "Files",
+        evidenceUnitsMetric: "Knowledge units",
+        evidenceRefsMetric: "Source refs",
+        evidenceUncertaintiesMetric: "Uncertainties",
+        evidenceMetricAction: "View",
+        evidenceFilesDetailTitle: "File inventory",
+        evidenceFilesDetailDescription: "All files used in this analysis, including their parsing status.",
+        evidenceUnitsDetailTitle: "Knowledge units",
+        evidenceUnitsDetailDescription: "Expand a unit to inspect its formula, typical question, prerequisites, and sources.",
+        evidenceRefsDetailTitle: "Source references",
+        evidenceRefsDetailDescription: "See which knowledge units, exam signals, or uncertainties each source supports.",
+        evidenceUncertaintiesDetailTitle: "Uncertainties",
+        evidenceUncertaintiesDetailDescription: "The current materials cannot confirm these claims, so planning will not treat them as facts.",
+        evidenceFormula: "Formula",
+        evidenceTypicalQuestion: "Typical question",
+        evidencePrerequisite: "Prerequisite",
+        evidenceSources: "Sources",
+        evidenceReferencedBy: "Referenced by",
+        evidenceKnowledgeUnitType: "Knowledge unit",
+        evidenceExamSignalType: "Exam signal",
+        evidenceUncertaintyType: "Uncertainty",
+        evidenceReferenceCount: "{count} references",
+        evidenceNoReferences: "No source references to display.",
+        evidenceNoUncertainties: "No uncertainties are currently recorded.",
+        evidenceUnknownValue: "Not confirmed by current materials",
+        evidenceParseAudited: "Parsed",
+        evidenceParseParsed: "Body parsed",
+        evidenceParseMetadata: "Filename only",
+        evidenceParseUnknown: "Unknown status",
+        evidenceExamTitle: "Question types and exam details (optional)",
+        evidenceExamNoteLabel: "Add question types, marks, or a scope emphasized by the instructor",
+        evidenceQuestionTypesAria: "Choose known question types",
+        evidenceExamPlaceholder: "Example: 10 multiple-choice questions, 10 true/false questions, and 40 points of calculations.",
+        evidenceExamUnknown: "I do not know the question types",
+        evidenceNoFiles: "Choose course files first. The site will list them before you confirm analysis.",
+        evidenceFilesSelected: "Selected {count} materials. Check the files, then choose “Analyze materials and create evidence.”",
+        evidenceFilesAdded: "Added {added} and updated {replaced} matching names; {count} files are now selected. Check the list, then start analysis.",
+        evidenceFilesChanged: "The file list changed ({added} added, {replaced} matching names updated). The old analysis was cleared; analyze again.",
+        evidenceFilesRestarted: "Loaded {count} new files. The saved analysis retained its results but not the original file contents, so this starts a new list.",
+        evidenceFileRemoved: "Removed “{name}”; {count} files remain. Check the list, then start analysis.",
+        evidenceFileRemovedAfterAnalysis: "Removed “{name}”. The old analysis was cleared; {count} files remain. Analyze again.",
+        evidenceAnalysisRunning: "Reading {count} materials and checking the source of every claim. You can cancel.",
+        evidenceProgressAria: "Parsing files and checking sources",
+        evidenceReady: "Analysis complete: extracted {count} traceable knowledge units. Check sources and uncertainties.",
+        evidenceCancelled: "Analysis cancelled. Your files are still selected, so you can retry.",
+        evidenceTooMany: "Files were not added: the list can contain at most 60 materials. The existing list is unchanged.",
+        evidenceUnsupported: "Files were not added: use PDF, TXT, Markdown, DOCX, or PPTX. The existing list is unchanged.",
+        evidenceNoExtractable: "No analyzable body text was found. OCR scanned PDFs first; save legacy .doc/.ppt files as .docx/.pptx.",
+        evidenceTooLarge: "Files were not added: each file must be at most 25 MB and the total at most 100 MB. The existing list is unchanged.",
+        evidenceBuildTimeout: "Material analysis timed out. Your files are still selected; retry or use fewer files.",
+        evidenceBuildFailed: "Material analysis failed: {message}. Your files are still selected, so you can retry.",
+        evidenceMetadataOnly: "Materials were organized, but no verifiable body references are available. Upload a parseable version.",
+        evidenceRequired: "Choose course materials, then select “Analyze materials and create evidence.”",
+        evidenceExamEmpty: "No question types supplied; planning will use the material analysis.",
+        evidenceExamUnknownStatus: "Question types are unknown; planning will use the material analysis.",
+        evidenceExamAccepted: "Added: {value}",
+        evidenceExamIgnored: "No valid question type or exam information was detected; the text was ignored.",
         contentLanguageLabel: "Plan content language",
         contentLanguageSelectAria: "Choose the plan content language",
         contentLanguageAuto: "Auto",
@@ -3514,14 +3994,11 @@
         generate: "Generate study plan",
         generating: "Generating…",
         cancelGenerate: "Stop generating",
-        fillDemo: "Load demo",
         switchDark: "Dark",
         switchLight: "Light",
         languageToggleAria: "将界面切换为中文",
         proxyHint: "Generation usually takes 10–60 seconds. You can cancel at any time; your inputs are saved.",
-        strategyImportHint: "A Strategy creates locked Sessions directly; the site only schedules them and generates Guides on demand.",
-        strategyScheduleUpdated: "Scheduling constraints updated. Unfinished Sessions have been rescheduled.",
-        strategyScheduleRejected: "Scheduling constraints were not applied: {reason}",
+        evidenceImportHint: "Inspect the evidence after analysis, then generate the plan; question-type information remains optional.",
         feasibilitySessionTooLong: "“{title}” needs {required}, which exceeds your daily {available}. Increase daily time or split this Session first.",
         feasibilityTooManySessions: "There are {sessions} Sessions but only {days} days before the exam. This site schedules at most one Session per day; extend the date or trim the Strategy.",
         feasibilityTotalOverCapacity: "The plan still needs {required}, but the remaining {days} days provide only {available}. Extend the date, increase daily time, or trim Sessions.",
@@ -3567,7 +4044,7 @@
         executionFeedbackSubmit: "Let AI revise this Guide",
         executionFeedbackLoading: "AI is isolating the blockage…",
         executionFeedbackRequired: "Add execution evidence that AI can evaluate.",
-        executionRevisionWorkspaceRequired: "AI revision is available for Sessions imported from strategy.json. You can still edit this Guide manually.",
+        executionRevisionWorkspaceRequired: "This Session is missing verifiable context. You can still edit the Guide manually.",
         executionRevisionFailed: "Could not generate a Guide revision: {error}",
         guideRevisionProposalTitle: "AI Guide revision",
         guideRevisionScope: "Current Guide only",
@@ -3576,7 +4053,7 @@
         guideRevisionAfter: "Proposed Guide",
         guideRevisionKeep: "Keep original Guide",
         guideRevisionApply: "Confirm and apply",
-        guideRevisionIntegrity: "Session, schedule, and strategy.json remain unchanged.",
+        guideRevisionIntegrity: "The Session and schedule remain unchanged.",
         guideRevisionApplied: "Applied the Guide revision for “{title}.” Session and Strategy stayed unchanged.",
         guideRevisionUndo: "Undo AI revision",
         guideRevisionUndone: "Undid the revision and restored the original Guide for “{title}.”",
@@ -3600,6 +4077,7 @@
         planRepairCancel: "Discard proposal",
         planRepairApply: "Confirm and apply",
         planRepairEmpty: "Describe the constraint that changed first.",
+        planRepairInvalid: "No valid constraint change detected",
         planRepairTimeout: "The AI request exceeded 75 seconds. The plan was not changed; try again.",
         planRepairFailed: "Could not generate a safe change proposal: {message}",
         planRepairTotalMinutes: "Total plan time",
@@ -3654,15 +4132,6 @@
         manualStepSource: "Current course",
         subjectsTitle: "Subjects",
         newSubject: "+ New subject",
-        workspaceImportTitle: "Import Strategy JSON",
-        strategyFileChoose: "Choose strategy.json",
-        strategyFileEmpty: "No file selected",
-        workspaceLocalOnly: "The file is selected in this browser. Only the structured Strategy is sent to the same-origin backend for validation.",
-        workspaceImporting: "Validating and importing strategy.json…",
-        workspaceImported: "Imported “{name}”: {materialCount} primary sources and {sessionCount} Sessions, scheduled for {examDate} at {hours} hr/day.",
-        workspaceImportFailed: "Import failed: {reason}",
-        workspaceFileTooLarge: "The file exceeds 100 KB. Keep only the Strategy structure; do not embed source files.",
-        workspaceInfeasible: "Not imported: {reason}",
         materialVaultTitle: "Local material vault",
         materialVaultDescription: "Strategy stores the source index. Files not shipped with the site must be supplied by this browser.",
         materialVaultBulkBind: "Add missing files",
@@ -3703,25 +4172,25 @@
         previousWeek: "Previous week",
         currentWeek: "This week",
         nextWeek: "Next week",
-        calendarWeekNav: "Week navigation",
+        calendarWeekNav: "Two-week navigation",
         calendarCapacity: "Total daily capacity",
         calendarCapacityUnit: "hours",
         calendarNoSubjects: "There are no subjects to check yet. Generate at least one study plan.",
-        calendarNoTasks: "No tasks are scheduled this week. Use the arrows to check another week.",
+        calendarNoTasks: "No tasks are scheduled in these two weeks. Use the arrows to check other dates.",
         calendarNoConflict: "No time conflicts found in the current schedule.",
         calendarConflictSummary: "{count} overloaded {countLabel}; the worst day exceeds capacity by {duration}.",
         calendarConflictDay: "day",
         calendarConflictDays: "days",
         calendarConflictBadge: "{count} time conflicts",
         calendarOverBy: "{duration} over",
-        calendarDragHint: "Drag with a mouse, or press and hold for about 0.45 seconds on touch, then move the task within this week. Changes save instantly.",
+        calendarDragHint: "Drag with a mouse, press and hold on touch, or focus a task and use Left/Right Arrow to move by one day. Press Enter to edit.",
         calendarMoveInvalid: "This task cannot be placed on that date.",
         calendarMovePast: "Tasks cannot be moved into the past. Choose today or a later date.",
         calendarMoveExamBoundary: "This subject's exam is on {date}. The task cannot be scheduled any later.",
-        calendarDropOutside: "Drop on a day in this week. Cross-week dragging is not supported yet.",
+        calendarDropOutside: "Drop on a day in this two-week window.",
         calendarDropReady: "Release to move to {date}.",
         calendarMoved: "Moved “{title}” to {date}. Conflict check updated.",
-        calendarTaskAria: "{subject}: {title}, {duration}, scheduled for {date}. Drag with a mouse or press and hold on touch to reschedule.",
+        calendarTaskAria: "{subject}: {title}, {duration}, scheduled for {date}. Use Left or Right Arrow to move by one day; press Enter to edit.",
         calendarToday: "Today",
         calendarUnscheduled: "Unscheduled",
         calendarSubjectLegend: "Subject colors",
@@ -3822,11 +4291,24 @@
       keywordsLabel: "keywordsLabel",
       scopeSourceTitle: "scopeSourceLabel",
       manualScopeModeLabel: "manualScopeMode",
-      strategyScopeModeLabel: "strategyScopeMode",
+      materialsScopeModeLabel: "materialsScopeMode",
+      evidenceImportTitle: "evidenceImportTitle",
+      evidenceImportDescription: "evidenceImportDescription",
+      chooseEvidenceFiles: "chooseEvidenceFiles",
+      buildEvidenceMap: "buildEvidenceMap",
+      evidenceBuildCopy: "evidenceBuildCopy",
+      evidenceMapSummaryTitle: "evidenceMapReady",
+      evidenceMapSummaryDescription: "evidenceMapDescription",
+      evidenceFilesMetricLabel: "evidenceFilesMetric",
+      evidenceUnitsMetricLabel: "evidenceUnitsMetric",
+      evidenceRefsMetricLabel: "evidenceRefsMetric",
+      evidenceUncertaintiesMetricLabel: "evidenceUncertaintiesMetric",
+      evidenceExamTitle: "evidenceExamTitle",
+      evidenceExamNoteLabel: "evidenceExamNoteLabel",
+      evidenceExamUnknown: "evidenceExamUnknown",
       contentLanguageLabel: "contentLanguageLabel",
       generate: "generate",
       cancelGenerate: "cancelGenerate",
-      fillDemo: "fillDemo",
       proxyHint: "proxyHint",
       analysisTitle: "analysisTitle",
       resultTitle: "resultTitle",
@@ -3839,8 +4321,6 @@
       hitsTitle: "hitsTitle",
       subjectsTitle: "subjectsTitle",
       newSubject: "newSubject",
-      workspaceImportTitle: "workspaceImportTitle",
-      chooseStrategyFile: "strategyFileChoose",
       materialVaultTitle: "materialVaultTitle",
       materialVaultDescription: "materialVaultDescription",
       bindMaterials: "materialVaultBulkBind",
@@ -3880,6 +4360,640 @@
 
     function t(key, replacements = {}) {
       return translate(currentLanguage, key, replacements);
+    }
+
+    function normalizeEvidenceExamConstraint(value) {
+      const raw = String(value || "");
+      const roleLike = raw.split(/\r?\n/).some((line) => (
+        /^\s*(system|assistant|developer|tool|user)\s*[:：]/i.test(line)
+        || /\[\s*(system|assistant|developer|tool)\s*\]/i.test(line)
+      ));
+      const overrideLike = /\b(ignore|disregard|forget|override)\b.{0,40}\b(previous|prior|above|instructions?|prompts?|rules?)\b/i.test(raw)
+        || /(忽略|覆盖|绕过).{0,24}(之前|先前|以上|系统).{0,16}(指令|规则|要求)/i.test(raw);
+      if (roleLike || overrideLike) return "";
+      return raw
+        .replace(/<\s*(think|thinking|analysis|reasoning|system|assistant|developer|tool|script|style)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, " ")
+        .replace(/<[^>]{0,500}>/g, " ")
+        .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f\u200b-\u200f\u202a-\u202e\u2060\ufeff]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 240);
+    }
+
+    function evidenceQuestionLabel(type) {
+      return EVIDENCE_QUESTION_TYPES[type]?.[currentLanguage] || type;
+    }
+
+    function normalizeEvidenceQuestionType(type) {
+      const migrated = type === "proof" ? "judgment" : type;
+      return EVIDENCE_QUESTION_TYPES[migrated] ? migrated : "";
+    }
+
+    function getEvidenceExamConstraint() {
+      const note = normalizeEvidenceExamConstraint(courseEvidenceState.examNote);
+      const resolved = courseEvidenceState.examUnknown || courseEvidenceState.questionTypes.length > 0 || note.length >= 2;
+      return {
+        source_type: resolved ? "user_constraint" : "not_provided",
+        knowledge_status: courseEvidenceState.examUnknown ? "unknown_by_user" : resolved ? "user_supplied" : "not_provided",
+        question_types: [...courseEvidenceState.questionTypes],
+        note: note || null
+      };
+    }
+
+    function getEvidenceExamSummary() {
+      if (courseEvidenceState.examUnknown) return "";
+      const note = normalizeEvidenceExamConstraint(courseEvidenceState.examNote);
+      return [...courseEvidenceState.questionTypes.map(evidenceQuestionLabel), note].filter(Boolean).join("；");
+    }
+
+    function validateCourseEvidenceMap(map) {
+      if (!map || map.version !== "course-evidence-map.v1") throw new Error("invalid_evidence_map");
+      if (!["demo_audited", "local_metadata", "ai_extracted"].includes(map.map_mode)) throw new Error("invalid_evidence_mode");
+      if (!["page_cited", "filename_only", "locator_cited"].includes(map.evidence_level)) throw new Error("invalid_evidence_level");
+      if (!Array.isArray(map.files) || map.files.length < 1 || map.files.length > EVIDENCE_MAX_FILES) throw new Error("invalid_evidence_files");
+      if (!Array.isArray(map.knowledge_units) || map.knowledge_units.length < 1 || map.knowledge_units.length > 24) throw new Error("invalid_evidence_units");
+      if (!Array.isArray(map.exam_signals) || !Array.isArray(map.uncertainties)) throw new Error("invalid_evidence_collections");
+      const sourceIds = new Set(map.files.map((file) => file.id));
+      if (sourceIds.size !== map.files.length) throw new Error("duplicate_evidence_source");
+      [...map.knowledge_units, ...map.exam_signals, ...map.uncertainties].forEach((item) => {
+        if (!Array.isArray(item.source_refs) || item.source_refs.length < 1) throw new Error("missing_evidence_source_ref");
+        item.source_refs.forEach((ref) => {
+          if (!sourceIds.has(ref.source_id)) throw new Error("unknown_evidence_source_ref");
+          if (!String(ref.locator || "").trim()) throw new Error("missing_evidence_locator");
+        });
+      });
+      return true;
+    }
+
+    function getCourseEvidenceMap() {
+      if (!courseEvidenceState.map) return null;
+      const map = JSON.parse(JSON.stringify(courseEvidenceState.map));
+      map.exam_constraint = getEvidenceExamConstraint();
+      return map;
+    }
+
+    function getEffectiveKeywords() {
+      if (scopeSourceMode !== "materials") return keywordsInput.value.trim();
+      const map = getCourseEvidenceMap();
+      if (!map) return "";
+      const topics = map.knowledge_units.map((unit) => unit.title);
+      const exam = getEvidenceExamSummary();
+      return [...topics, exam].filter(Boolean).join("，").slice(0, 1000);
+    }
+
+    function formatEvidenceBytes(value) {
+      const bytes = Math.max(0, Number(value) || 0);
+      if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+      if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
+      return `${Math.round(bytes)} B`;
+    }
+
+    function evidenceFileKey(file) {
+      return String(file?.name || "").normalize("NFKC").trim().toLocaleLowerCase();
+    }
+
+    function mergeEvidenceFileQueue(existingFiles, requestedFiles) {
+      const incoming = Array.from(requestedFiles || []);
+      const allowed = /\.(pdf|md|markdown|txt|docx|pptx)$/i;
+      if (!incoming.length) return { files: [...existingFiles], added: 0, replaced: 0 };
+      if (incoming.some((file) => !allowed.test(String(file?.name || "")))) {
+        return { errorKey: "evidenceUnsupported" };
+      }
+      if (incoming.some((file) => Math.max(0, Number(file?.size) || 0) > EVIDENCE_MAX_FILE_BYTES)) {
+        return { errorKey: "evidenceTooLarge" };
+      }
+      const files = [...existingFiles];
+      const indexes = new Map(files.map((file, index) => [evidenceFileKey(file), index]));
+      let added = 0;
+      let replaced = 0;
+      incoming.forEach((file) => {
+        const key = evidenceFileKey(file);
+        if (indexes.has(key)) {
+          files[indexes.get(key)] = file;
+          replaced += 1;
+        } else {
+          indexes.set(key, files.length);
+          files.push(file);
+          added += 1;
+        }
+      });
+      if (files.length > EVIDENCE_MAX_FILES) return { errorKey: "evidenceTooMany" };
+      const totalBytes = files.reduce((sum, file) => sum + Math.max(0, Number(file?.size) || 0), 0);
+      if (totalBytes > EVIDENCE_MAX_UPLOAD_BYTES) return { errorKey: "evidenceTooLarge" };
+      return { files, added, replaced };
+    }
+
+    function evidenceFilesMetadata(files) {
+      return files.map((file, index) => ({
+        id: `F-${String(index + 1).padStart(3, "0")}`,
+        name: String(file.name || "").slice(0, 180),
+        kind: file.name.toLowerCase().endsWith(".pdf") ? "PDF" : "Document",
+        size_bytes: Math.max(0, Number(file.size) || 0),
+        pages: null
+      }));
+    }
+
+    function invalidateEvidenceAnalysis() {
+      evidenceBuildController?.abort();
+      evidenceBuildController = null;
+      window.clearTimeout(evidenceBuildTimeout);
+      evidenceBuildTimeout = null;
+      courseEvidenceState.map = null;
+      courseEvidenceState.building = false;
+      courseEvidenceState.selectionInvalid = false;
+      evidenceDetailView = "units";
+      evidenceSelectedSourceId = "";
+    }
+
+    function renderEvidenceExamStatus() {
+      const normalized = normalizeEvidenceExamConstraint(courseEvidenceState.examNote);
+      const summary = getEvidenceExamSummary();
+      evidenceQuestionTypes.setAttribute("aria-label", t("evidenceQuestionTypesAria"));
+      evidenceExamNoteLabel.textContent = t("evidenceExamNoteLabel");
+      evidenceExamNote.placeholder = t("evidenceExamPlaceholder");
+      evidenceQuestionTypeButtons.forEach((button) => {
+        const type = button.dataset.evidenceQuestionType;
+        button.textContent = evidenceQuestionLabel(type);
+        button.setAttribute("aria-pressed", String(courseEvidenceState.questionTypes.includes(type)));
+      });
+      evidenceExamUnknownBtn.setAttribute("aria-pressed", String(courseEvidenceState.examUnknown));
+      if (courseEvidenceState.examUnknown) {
+        evidenceExamStatus.dataset.state = "accepted";
+        evidenceExamStatus.textContent = t("evidenceExamUnknownStatus");
+      } else if (summary) {
+        evidenceExamStatus.dataset.state = "accepted";
+        evidenceExamStatus.textContent = t("evidenceExamAccepted", { value: summary });
+      } else if (String(courseEvidenceState.examNote || "").trim() && !normalized) {
+        evidenceExamStatus.dataset.state = "ignored";
+        evidenceExamStatus.textContent = t("evidenceExamIgnored");
+      } else {
+        evidenceExamStatus.dataset.state = "empty";
+        evidenceExamStatus.textContent = t("evidenceExamEmpty");
+      }
+    }
+
+    function updateEvidenceGenerateState() {
+      if (scopeSourceMode === "materials") {
+        generateBtn.disabled = isGenerating || courseEvidenceState.building || !courseEvidenceState.map;
+      } else {
+        generateBtn.disabled = isGenerating;
+      }
+    }
+
+    function evidenceDisplayValue(value) {
+      const text = String(value ?? "").trim();
+      return !text || text.toLowerCase() === "unknown" ? t("evidenceUnknownValue") : text;
+    }
+
+    function evidenceParseLabel(file) {
+      if (file?.parse_status === "audited") return t("evidenceParseAudited");
+      if (file?.parse_status === "parsed") return t("evidenceParseParsed");
+      if (file?.parse_status === "metadata_only") return t("evidenceParseMetadata");
+      return t("evidenceParseUnknown");
+    }
+
+    function evidenceFileById(map, sourceId) {
+      return map.files.find((file) => file.id === sourceId) || null;
+    }
+
+    function collectEvidenceReferences(map) {
+      const references = [];
+      const seen = new Set();
+      const groups = [
+        { type: "unit", typeKey: "evidenceKnowledgeUnitType", items: map.knowledge_units || [], labelField: "title" },
+        { type: "exam", typeKey: "evidenceExamSignalType", items: map.exam_signals || [], labelField: "signal" },
+        { type: "uncertainty", typeKey: "evidenceUncertaintyType", items: map.uncertainties || [], labelField: "description" }
+      ];
+      groups.forEach((group) => {
+        group.items.forEach((item, index) => {
+          (Array.isArray(item.source_refs) ? item.source_refs : []).forEach((ref) => {
+            const sourceId = String(ref?.source_id || "");
+            const locator = String(ref?.locator || "");
+            const contextId = String(item.id || `${group.type}-${index + 1}`);
+            const key = `${group.type}|${contextId}|${sourceId}|${locator}`;
+            if (!sourceId || seen.has(key)) return;
+            seen.add(key);
+            references.push({
+              sourceId,
+              locator,
+              contextId,
+              contextTypeKey: group.typeKey,
+              contextLabel: String(item[group.labelField] || contextId)
+            });
+          });
+        });
+      });
+      return references;
+    }
+
+    function appendEvidenceDetailField(container, label, content) {
+      const field = document.createElement("dl");
+      field.className = "evidence-detail-field";
+      const term = document.createElement("dt");
+      term.textContent = label;
+      const definition = document.createElement("dd");
+      if (content instanceof Node) definition.appendChild(content);
+      else definition.textContent = String(content ?? "");
+      field.append(term, definition);
+      container.appendChild(field);
+    }
+
+    function focusEvidenceSource(sourceId) {
+      const sourceItems = [...evidenceDetailContent.querySelectorAll("[data-evidence-source-id]")];
+      const target = sourceItems.find((item) => item.dataset.evidenceSourceId === sourceId);
+      if (!(target instanceof HTMLDetailsElement)) return;
+      target.open = true;
+      target.querySelector("summary")?.focus();
+    }
+
+    function createEvidenceReferenceList(refs, map) {
+      const list = document.createElement("div");
+      list.className = "evidence-ref-list";
+      (Array.isArray(refs) ? refs : []).forEach((ref) => {
+        const file = evidenceFileById(map, ref.source_id);
+        const button = document.createElement("button");
+        button.className = "evidence-ref-link";
+        button.type = "button";
+        button.textContent = `${file?.name || ref.source_id} · ${ref.locator}`;
+        button.title = button.textContent;
+        button.addEventListener("click", () => {
+          evidenceDetailView = "refs";
+          evidenceSelectedSourceId = ref.source_id;
+          renderEvidenceMapDetails();
+          window.setTimeout(() => focusEvidenceSource(ref.source_id), 0);
+        });
+        list.appendChild(button);
+      });
+      return list;
+    }
+
+    function renderEvidenceFilesDetail(map) {
+      map.files.forEach((file) => {
+        const row = document.createElement("div");
+        row.className = "evidence-detail-row";
+        const name = document.createElement("strong");
+        name.textContent = file.name;
+        const meta = document.createElement("span");
+        const sizeOrPages = file.pages ? `${file.pages} p` : formatEvidenceBytes(file.size_bytes);
+        meta.textContent = `${file.kind} · ${sizeOrPages} · ${evidenceParseLabel(file)}`;
+        row.append(name, meta);
+        evidenceDetailContent.appendChild(row);
+      });
+    }
+
+    function renderEvidenceUnitsDetail(map) {
+      map.knowledge_units.forEach((unit, index) => {
+        const item = document.createElement("details");
+        item.className = "evidence-detail-item";
+        item.open = index === 0;
+        const summary = document.createElement("summary");
+        const title = document.createElement("strong");
+        title.textContent = unit.title;
+        const meta = document.createElement("span");
+        meta.className = "evidence-detail-summary-meta";
+        meta.textContent = t("evidenceReferenceCount", { count: unit.source_refs.length });
+        summary.append(title, meta);
+        const body = document.createElement("div");
+        body.className = "evidence-detail-body";
+        appendEvidenceDetailField(body, t("evidenceFormula"), evidenceDisplayValue(unit.formula));
+        appendEvidenceDetailField(body, t("evidenceTypicalQuestion"), evidenceDisplayValue(unit.typical_question));
+        appendEvidenceDetailField(body, t("evidencePrerequisite"), evidenceDisplayValue(unit.prerequisite));
+        appendEvidenceDetailField(body, t("evidenceSources"), createEvidenceReferenceList(unit.source_refs, map));
+        item.append(summary, body);
+        evidenceDetailContent.appendChild(item);
+      });
+    }
+
+    function renderEvidenceReferencesDetail(map) {
+      const references = collectEvidenceReferences(map);
+      const grouped = new Map();
+      references.forEach((reference) => {
+        if (!grouped.has(reference.sourceId)) grouped.set(reference.sourceId, []);
+        grouped.get(reference.sourceId).push(reference);
+      });
+      if (!grouped.size) {
+        const empty = document.createElement("p");
+        empty.className = "evidence-empty-state";
+        empty.textContent = t("evidenceNoReferences");
+        evidenceDetailContent.appendChild(empty);
+        return;
+      }
+      [...grouped.entries()].forEach(([sourceId, sourceReferences], index) => {
+        const file = evidenceFileById(map, sourceId);
+        const item = document.createElement("details");
+        item.className = "evidence-detail-item";
+        item.dataset.evidenceSourceId = sourceId;
+        item.open = sourceId === evidenceSelectedSourceId || (!evidenceSelectedSourceId && index === 0);
+        const summary = document.createElement("summary");
+        const title = document.createElement("strong");
+        title.textContent = file?.name || sourceId;
+        const meta = document.createElement("span");
+        meta.className = "evidence-detail-summary-meta";
+        meta.textContent = t("evidenceReferenceCount", { count: sourceReferences.length });
+        summary.append(title, meta);
+        const body = document.createElement("div");
+        body.className = "evidence-detail-body";
+        sourceReferences.forEach((reference) => {
+          appendEvidenceDetailField(
+            body,
+            t(reference.contextTypeKey),
+            `${reference.contextLabel} · ${reference.locator}`
+          );
+        });
+        item.append(summary, body);
+        evidenceDetailContent.appendChild(item);
+      });
+    }
+
+    function renderEvidenceUncertaintiesDetail(map) {
+      const uncertainties = Array.isArray(map.uncertainties) ? map.uncertainties : [];
+      if (!uncertainties.length) {
+        const empty = document.createElement("p");
+        empty.className = "evidence-empty-state";
+        empty.textContent = t("evidenceNoUncertainties");
+        evidenceDetailContent.appendChild(empty);
+        return;
+      }
+      uncertainties.forEach((uncertainty, index) => {
+        const item = document.createElement("details");
+        item.className = "evidence-detail-item";
+        item.open = index === 0;
+        const summary = document.createElement("summary");
+        const title = document.createElement("strong");
+        title.textContent = uncertainty.description;
+        const meta = document.createElement("span");
+        meta.className = "evidence-detail-summary-meta";
+        meta.textContent = t("evidenceReferenceCount", { count: uncertainty.source_refs.length });
+        summary.append(title, meta);
+        const body = document.createElement("div");
+        body.className = "evidence-detail-body";
+        appendEvidenceDetailField(body, t("evidenceSources"), createEvidenceReferenceList(uncertainty.source_refs, map));
+        item.append(summary, body);
+        evidenceDetailContent.appendChild(item);
+      });
+    }
+
+    function renderEvidenceMapDetails() {
+      const map = courseEvidenceState.map;
+      if (!map) return;
+      evidenceMapSummary.querySelector(".evidence-metrics")?.setAttribute("aria-label", t("evidenceMapReady"));
+      const viewConfig = {
+        files: { tabId: "evidenceFilesTab", titleKey: "evidenceFilesDetailTitle", descriptionKey: "evidenceFilesDetailDescription", render: renderEvidenceFilesDetail },
+        units: { tabId: "evidenceUnitsTab", titleKey: "evidenceUnitsDetailTitle", descriptionKey: "evidenceUnitsDetailDescription", render: renderEvidenceUnitsDetail },
+        refs: { tabId: "evidenceRefsTab", titleKey: "evidenceRefsDetailTitle", descriptionKey: "evidenceRefsDetailDescription", render: renderEvidenceReferencesDetail },
+        uncertainties: { tabId: "evidenceUncertaintiesTab", titleKey: "evidenceUncertaintiesDetailTitle", descriptionKey: "evidenceUncertaintiesDetailDescription", render: renderEvidenceUncertaintiesDetail }
+      };
+      const config = viewConfig[evidenceDetailView] || viewConfig.units;
+      evidenceDetailView = Object.hasOwn(viewConfig, evidenceDetailView) ? evidenceDetailView : "units";
+      evidenceMetricButtons.forEach((button) => {
+        const selected = button.dataset.evidenceView === evidenceDetailView;
+        button.setAttribute("aria-selected", String(selected));
+        button.tabIndex = selected ? 0 : -1;
+        const action = button.querySelector(".evidence-metric-action");
+        if (action) action.textContent = t("evidenceMetricAction");
+      });
+      evidenceDetailPanel.setAttribute("aria-labelledby", config.tabId);
+      evidenceDetailTitle.textContent = t(config.titleKey);
+      evidenceDetailDescription.textContent = t(config.descriptionKey);
+      evidenceDetailContent.replaceChildren();
+      config.render(map);
+    }
+
+    function setEvidenceDetailView(view, { focus = false } = {}) {
+      if (!evidenceMetricButtons.some((button) => button.dataset.evidenceView === view)) return;
+      evidenceDetailView = view;
+      if (view !== "refs") evidenceSelectedSourceId = "";
+      renderEvidenceMapDetails();
+      if (focus) evidenceMetricButtons.find((button) => button.dataset.evidenceView === view)?.focus();
+    }
+
+    function renderCourseEvidenceState() {
+      const map = courseEvidenceState.map;
+      evidenceFileList.replaceChildren();
+      const filesAreAttached = evidenceSourceFiles.length === courseEvidenceState.files.length
+        && courseEvidenceState.files.length > 0;
+      courseEvidenceState.files.forEach((file, index) => {
+        const item = document.createElement("li");
+        const copy = document.createElement("div");
+        copy.className = "evidence-file-copy";
+        const name = document.createElement("strong");
+        name.textContent = file.name;
+        const meta = document.createElement("span");
+        meta.textContent = file.pages ? `${file.pages} p · ${file.kind}` : `${formatEvidenceBytes(file.size_bytes)} · ${file.kind}`;
+        const remove = document.createElement("button");
+        remove.className = "evidence-file-remove";
+        remove.type = "button";
+        remove.textContent = t("removeEvidenceFile");
+        remove.setAttribute("aria-label", t("removeEvidenceFileAria", { name: file.name }));
+        remove.disabled = courseEvidenceState.building || isGenerating || !filesAreAttached;
+        if (!filesAreAttached) remove.title = t("evidenceFileNeedsReselect");
+        remove.addEventListener("click", () => removeEvidenceFile(index));
+        copy.append(name, meta);
+        item.append(copy, remove);
+        evidenceFileList.appendChild(item);
+      });
+      evidenceFileList.hidden = courseEvidenceState.files.length === 0;
+      evidenceFileSummary.textContent = t(courseEvidenceState.statusKey, courseEvidenceState.statusReplacements || {});
+      evidenceProgress.hidden = !courseEvidenceState.building;
+      evidenceProgress.setAttribute("aria-valuetext", t("evidenceProgressAria"));
+      chooseEvidenceFilesBtn.disabled = courseEvidenceState.building || isGenerating;
+      chooseEvidenceFilesBtn.textContent = t(courseEvidenceState.files.length ? "addEvidenceFiles" : "chooseEvidenceFiles");
+      buildEvidenceMapBtn.disabled = isGenerating || (!courseEvidenceState.building && (
+        courseEvidenceState.files.length === 0 || courseEvidenceState.selectionInvalid
+      ));
+      buildEvidenceMapBtn.textContent = t(courseEvidenceState.building ? "evidenceMapCancel" : "buildEvidenceMap");
+      evidenceMapSummary.hidden = !map;
+      if (map) {
+        const references = collectEvidenceReferences(map);
+        evidenceFileCount.textContent = String(map.files.length);
+        evidenceUnitCount.textContent = String(map.knowledge_units.length);
+        evidenceRefCount.textContent = String(references.length);
+        evidenceUncertaintyCount.textContent = String(map.uncertainties.length);
+        renderEvidenceMapDetails();
+      } else {
+        evidenceDetailContent.replaceChildren();
+      }
+      renderEvidenceExamStatus();
+      updateEvidenceGenerateState();
+    }
+
+    function resetCourseEvidenceState({ keepExam = false } = {}) {
+      window.clearTimeout(evidenceBuildTimeout);
+      evidenceBuildTimeout = null;
+      evidenceBuildController?.abort();
+      evidenceBuildController = null;
+      evidenceSourceFiles = [];
+      evidenceDetailView = "units";
+      evidenceSelectedSourceId = "";
+      courseEvidenceState = {
+        files: [],
+        map: null,
+        building: false,
+        selectionInvalid: false,
+        questionTypes: keepExam ? [...courseEvidenceState.questionTypes] : [],
+        examNote: keepExam ? courseEvidenceState.examNote : "",
+        examUnknown: keepExam ? courseEvidenceState.examUnknown : false,
+        statusKey: "evidenceNoFiles",
+        statusReplacements: {}
+      };
+      evidenceFilesInput.value = "";
+      evidenceExamNote.value = courseEvidenceState.examNote;
+      renderCourseEvidenceState();
+    }
+
+    function restoreCourseEvidenceStateFromMap(rawMap) {
+      const map = rawMap && typeof rawMap === "object" ? JSON.parse(JSON.stringify(rawMap)) : null;
+      if (!map) {
+        resetCourseEvidenceState();
+        return;
+      }
+      const exam = map.exam_constraint && typeof map.exam_constraint === "object" ? map.exam_constraint : {};
+      delete map.exam_constraint;
+      validateCourseEvidenceMap(map);
+      evidenceDetailView = "units";
+      evidenceSelectedSourceId = "";
+      courseEvidenceState = {
+        files: map.files.map((file) => ({ ...file })),
+        map,
+        building: false,
+        selectionInvalid: false,
+        questionTypes: Array.isArray(exam.question_types)
+          ? [...new Set(exam.question_types.map(normalizeEvidenceQuestionType).filter(Boolean))]
+          : [],
+        examNote: typeof exam.note === "string" ? exam.note : "",
+        examUnknown: exam.knowledge_status === "unknown_by_user",
+        statusKey: map.map_mode === "ai_extracted" ? "evidenceReady" : "evidenceMetadataOnly",
+        statusReplacements: { count: map.knowledge_units.length }
+      };
+      evidenceExamNote.value = courseEvidenceState.examNote;
+      renderCourseEvidenceState();
+    }
+
+    function setEvidenceFiles(fileList) {
+      const requestedFiles = Array.from(fileList || []);
+      evidenceFilesInput.value = "";
+      if (!requestedFiles.length) return;
+      const isRestoredAnalysis = Boolean(courseEvidenceState.map)
+        && courseEvidenceState.files.length > 0
+        && evidenceSourceFiles.length === 0;
+      const result = mergeEvidenceFileQueue(isRestoredAnalysis ? [] : evidenceSourceFiles, requestedFiles);
+      if (result.errorKey) {
+        courseEvidenceState.statusKey = result.errorKey;
+        courseEvidenceState.statusReplacements = {};
+        renderCourseEvidenceState();
+        return;
+      }
+      const hadMap = Boolean(courseEvidenceState.map);
+      invalidateEvidenceAnalysis();
+      evidenceSourceFiles = result.files;
+      courseEvidenceState.files = evidenceFilesMetadata(result.files);
+      courseEvidenceState.statusKey = isRestoredAnalysis
+        ? "evidenceFilesRestarted"
+        : result.files.length === requestedFiles.length && result.added === requestedFiles.length
+          ? "evidenceFilesSelected"
+          : hadMap ? "evidenceFilesChanged" : "evidenceFilesAdded";
+      courseEvidenceState.statusReplacements = {
+        count: result.files.length,
+        added: result.added,
+        replaced: result.replaced
+      };
+      renderCourseEvidenceState();
+    }
+
+    function removeEvidenceFile(index) {
+      if (courseEvidenceState.building || isGenerating) return;
+      if (evidenceSourceFiles.length !== courseEvidenceState.files.length) {
+        courseEvidenceState.statusKey = "evidenceFileNeedsReselect";
+        courseEvidenceState.statusReplacements = {};
+        renderCourseEvidenceState();
+        return;
+      }
+      const removed = evidenceSourceFiles[index];
+      if (!removed) return;
+      const hadMap = Boolean(courseEvidenceState.map);
+      invalidateEvidenceAnalysis();
+      evidenceSourceFiles = evidenceSourceFiles.filter((_, fileIndex) => fileIndex !== index);
+      courseEvidenceState.files = evidenceFilesMetadata(evidenceSourceFiles);
+      courseEvidenceState.statusKey = evidenceSourceFiles.length
+        ? hadMap ? "evidenceFileRemovedAfterAnalysis" : "evidenceFileRemoved"
+        : "evidenceNoFiles";
+      courseEvidenceState.statusReplacements = {
+        name: String(removed.name || "").slice(0, 180),
+        count: evidenceSourceFiles.length
+      };
+      renderCourseEvidenceState();
+    }
+
+    async function beginEvidenceMapBuild() {
+      if (courseEvidenceState.building) {
+        evidenceBuildController?.abort();
+        return;
+      }
+      if (courseEvidenceState.selectionInvalid || evidenceSourceFiles.length === 0) return;
+      courseEvidenceState.map = null;
+      courseEvidenceState.building = true;
+      courseEvidenceState.statusKey = "evidenceAnalysisRunning";
+      courseEvidenceState.statusReplacements = { count: courseEvidenceState.files.length };
+      renderCourseEvidenceState();
+      const controller = new AbortController();
+      evidenceBuildController = controller;
+      let timedOut = false;
+      evidenceBuildTimeout = window.setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, EVIDENCE_REQUEST_TIMEOUT_MS);
+      const formData = new FormData();
+      evidenceSourceFiles.forEach((file) => formData.append("files", file, file.name));
+      formData.append("language", currentLanguage);
+      try {
+        const response = await fetch("/api/evidence/map", {
+          method: "POST",
+          body: formData,
+          credentials: "same-origin",
+          signal: controller.signal
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok || !data.evidence_map) {
+          const error = new Error(String(data.error || `HTTP ${response.status}`).slice(0, 180));
+          error.status = response.status;
+          throw error;
+        }
+        const map = JSON.parse(JSON.stringify(data.evidence_map));
+        delete map.exam_constraint;
+        validateCourseEvidenceMap(map);
+        courseEvidenceState.map = map;
+        courseEvidenceState.files = map.files.map((file) => ({ ...file }));
+        evidenceDetailView = "units";
+        evidenceSelectedSourceId = "";
+        courseEvidenceState.statusKey = "evidenceReady";
+        courseEvidenceState.statusReplacements = { count: map.knowledge_units.length };
+        saveDraft();
+      } catch (error) {
+        if (evidenceBuildController !== controller) return;
+        courseEvidenceState.map = null;
+        if (error?.name === "AbortError") {
+          courseEvidenceState.statusKey = timedOut ? "evidenceBuildTimeout" : "evidenceCancelled";
+          courseEvidenceState.statusReplacements = {};
+        } else if (error?.status === 413) {
+          courseEvidenceState.statusKey = "evidenceTooLarge";
+          courseEvidenceState.statusReplacements = {};
+        } else if (error?.status === 422) {
+          courseEvidenceState.statusKey = "evidenceNoExtractable";
+          courseEvidenceState.statusReplacements = {};
+        } else {
+          courseEvidenceState.statusKey = "evidenceBuildFailed";
+          courseEvidenceState.statusReplacements = { message: String(error?.message || "unknown error") };
+        }
+      } finally {
+        if (evidenceBuildController === controller) {
+          window.clearTimeout(evidenceBuildTimeout);
+          evidenceBuildTimeout = null;
+          evidenceBuildController = null;
+          courseEvidenceState.building = false;
+          renderCourseEvidenceState();
+          renderContentLanguageControl();
+        }
+      }
     }
 
     function renderPlanRepairLanguage() {
@@ -4010,7 +5124,7 @@
       if (preference) {
         return { language: preference, source: "manual", confidence: 1, detectedLanguage: "" };
       }
-      const detected = analyzeInputLanguage(courseInput.value, keywordsInput.value);
+      const detected = analyzeInputLanguage(courseInput.value, getEffectiveKeywords());
       return {
         language: detected.language || currentLanguage,
         source: "auto",
@@ -4480,8 +5594,8 @@
         plan_origin: "strategy",
         headline: language === "en" ? "Strategy locked; compile the Guides" : "战略已锁定，只拆 Guide",
         summary: language === "en"
-          ? "Sessions come from strategy.json. The website schedules them and generates only minute-level execution Guides."
-          : "Session 来自 strategy.json；网站只负责排期，并按需生成分钟级执行 Guide。",
+          ? "The imported Sessions remain fixed. The website schedules them and generates only minute-level execution Guides."
+          : "已导入的 Session 保持不变；网站只负责排期，并按需生成分钟级执行 Guide。",
         must: priorities.filter((item) => item.level === "must_win").slice(0, 5).map((item) => item.title),
         drop: Array.isArray(strategy?.abandon)
           ? strategy.abandon.map(normalizeDropItem).filter(Boolean).slice(0, 3)
@@ -4868,8 +5982,10 @@
         date: dateInput.value,
         hours: hoursInput.value,
         goal: goalInput.value,
-        keywords: keywordsInput.value.trim(),
-        contentLanguagePreference: contentLanguageSelect.value
+        keywords: getEffectiveKeywords(),
+        contentLanguagePreference: contentLanguageSelect.value,
+        scopeSourceMode,
+        evidenceMap: scopeSourceMode === "materials" ? getCourseEvidenceMap() : null
       };
     }
 
@@ -5011,35 +6127,35 @@
     }
 
     function applyScopeSourceMode(mode, { focus = false, persist = false } = {}) {
-      scopeSourceMode = mode === "strategy" ? "strategy" : "manual";
+      scopeSourceMode = ["manual", "materials"].includes(mode) ? mode : "manual";
       const isManual = scopeSourceMode === "manual";
+      const isMaterials = scopeSourceMode === "materials";
       launchShell.dataset.scopeMode = scopeSourceMode;
-      heroSubtitle.textContent = t(isManual ? "appSubtitle" : "appSubtitleStrategy");
-      configureTitle.textContent = t(isManual ? "configureTitle" : "configureTitleStrategy");
-      configureDesc.textContent = t(isManual ? "configureDesc" : "configureDescStrategy");
+      heroSubtitle.textContent = t(isManual ? "appSubtitle" : "appSubtitleMaterials");
+      configureTitle.textContent = t(isManual ? "configureTitle" : "configureTitleMaterials");
+      configureDesc.textContent = t(isManual ? "configureDesc" : "configureDescMaterials");
       scopeSourceModeInputs.forEach((input) => {
         input.checked = input.value === scopeSourceMode;
       });
-      courseField.hidden = !isManual;
-      goalField.hidden = !isManual;
+      courseField.hidden = false;
+      goalField.hidden = false;
       manualScopePanel.hidden = !isManual;
-      strategyScopePanel.hidden = isManual;
-      contentLanguageField.hidden = !isManual;
+      evidenceScopePanel.hidden = !isMaterials;
+      strategyScopePanel.hidden = true;
+      contentLanguageField.hidden = false;
       keywordsInput.required = isManual;
-      generateBtn.hidden = !isManual;
-      fillDemoBtn.hidden = !isManual;
-      cancelGenerateBtn.hidden = !isManual || !isGenerating;
-      proxyHint.textContent = t(isManual ? "proxyHint" : "strategyImportHint");
-      if (!isManual) {
-        [courseInput, goalInput, keywordsInput].forEach((input) => {
-          touchedFields.delete(input.id);
-          validateField(input, false);
-        });
+      generateBtn.hidden = false;
+      cancelGenerateBtn.hidden = !isGenerating;
+      proxyHint.textContent = t(isManual ? "proxyHint" : "evidenceImportHint");
+      if (isMaterials) {
+        touchedFields.delete(keywordsInput.id);
+        validateField(keywordsInput, false);
       }
       renderMaterialVault();
+      renderCourseEvidenceState();
       if (persist) saveDraft();
       if (focus) {
-        window.setTimeout(() => (isManual ? courseInput : dateInput).focus(), 0);
+        window.setTimeout(() => courseInput.focus(), 0);
       }
     }
 
@@ -5059,9 +6175,9 @@
       goalInput.value = "80";
       keywordsInput.value = "";
       contentLanguageSelect.value = "auto";
+      resetCourseEvidenceState();
       applyScopeSourceMode("manual");
       touchedFields.clear();
-      strategyPlanningOverrides.clear();
       validationSummary.textContent = "";
       clearPlanState();
       renderSubjectList();
@@ -5091,13 +6207,11 @@
       goalInput.value = subject.inputs.goal;
       keywordsInput.value = subject.inputs.keywords;
       contentLanguageSelect.value = subject.inputs.contentLanguagePreference || "auto";
-      applyScopeSourceMode(strategySubject ? "strategy" : "manual");
+      const restoredMode = !strategySubject && subject.inputs.scopeSourceMode === "materials" ? "materials" : "manual";
+      if (restoredMode === "materials" && subject.inputs.evidenceMap) restoreCourseEvidenceStateFromMap(subject.inputs.evidenceMap);
+      else if (restoredMode !== "materials") resetCourseEvidenceState();
+      applyScopeSourceMode(restoredMode);
       touchedFields.clear();
-      strategyPlanningOverrides.clear();
-      if (strategySubject) {
-        strategyPlanningOverrides.add(dateInput.id);
-        strategyPlanningOverrides.add(hoursInput.id);
-      }
       validationSummary.textContent = "";
       applyPlan(subject.plan, { scroll: false, hideHero: strategySubject });
       renderSubjectList();
@@ -5266,7 +6380,7 @@
     function renderCalendar() {
       if (!calendarWeekStart) calendarWeekStart = getWeekStartValue();
       if (calendarDragState) cancelCalendarDrag();
-      const weekEnd = addDaysToDateValue(calendarWeekStart, 6);
+      const weekEnd = addDaysToDateValue(calendarWeekStart, CALENDAR_VISIBLE_DAYS - 1);
       const rangeStart = formatCalendarDate(calendarWeekStart, { year: "numeric", month: "short", day: "numeric" });
       const rangeEnd = formatCalendarDate(weekEnd, { month: "short", day: "numeric" });
       calendarWeekLabel.textContent = `${rangeStart} – ${rangeEnd}`;
@@ -5293,26 +6407,27 @@
       const capacityMinutes = calendarSettings.dailyCapacityHours * 60;
       const dayNames = translations[currentLanguage].calendarDayNames;
       const todayValue = toLocalDateValue(new Date());
-      let weekTaskCount = 0;
+      let visibleTaskCount = 0;
 
-      for (let index = 0; index < 7; index += 1) {
+      for (let index = 0; index < CALENDAR_VISIBLE_DAYS; index += 1) {
         const dateValue = addDaysToDateValue(calendarWeekStart, index);
         const dayEntries = entries.filter(({ task }) => task.scheduledDate === dateValue);
         const dayLoad = loads.get(dateValue) || 0;
         const hasConflict = dayLoad > capacityMinutes;
-        weekTaskCount += dayEntries.length;
+        visibleTaskCount += dayEntries.length;
 
         const day = document.createElement("article");
         day.className = `calendar-day${dateValue === todayValue ? " is-today" : ""}${hasConflict ? " has-conflict" : ""}`;
         day.dataset.date = dateValue;
-        day.setAttribute("aria-label", `${dayNames[index]} ${formatCalendarDate(dateValue, { month: "long", day: "numeric" })}`);
+        const dayNameLabel = dayNames[index % dayNames.length];
+        day.setAttribute("aria-label", `${dayNameLabel} ${formatCalendarDate(dateValue, { month: "long", day: "numeric" })}`);
 
         const head = document.createElement("div");
         head.className = "calendar-day-head";
         const dateCopy = document.createElement("div");
         const dayName = document.createElement("span");
         dayName.className = "calendar-day-name";
-        dayName.textContent = `${dayNames[index]}${dateValue === todayValue ? ` · ${t("calendarToday")}` : ""}`;
+        dayName.textContent = `${dayNameLabel}${dateValue === todayValue ? ` · ${t("calendarToday")}` : ""}`;
         const dateNumber = document.createElement("span");
         dateNumber.className = "calendar-day-date";
         dateNumber.textContent = formatCalendarDate(dateValue, { month: "numeric", day: "numeric" });
@@ -5361,7 +6476,7 @@
         calendarGrid.appendChild(day);
       }
 
-      if (!weekTaskCount && !getCalendarConflicts(loads).length) {
+      if (!visibleTaskCount && !getCalendarConflicts(loads).length) {
         calendarSummary.textContent = t("calendarNoTasks");
       }
     }
@@ -5499,7 +6614,7 @@
         const message = constraint ? t(constraint.key, constraint.replacements) : t("calendarMoveInvalid");
         setExportStatus(message);
         setCalendarDragFeedback(message, "invalid", true);
-        return;
+        return false;
       }
       task.scheduledDate = dateValue;
       subject.updatedAt = new Date().toISOString();
@@ -5516,10 +6631,30 @@
       });
       setExportStatus(message);
       setCalendarDragFeedback(message, "success", true);
+      return true;
+    }
+
+    function openCalendarTaskEditor(subjectId, taskId) {
+      const subject = subjects.find((item) => item.id === subjectId);
+      if (!subject?.plan?.tasks?.some((item) => item.id === taskId)) return;
+      if (activeSubjectId !== subjectId) selectSubject(subjectId);
+      const location = getTaskLocation(taskId);
+      if (!location) return;
+      openSessionIds.add(taskId);
+      planEditorState = {
+        kind: "edit-session",
+        phaseId: location.phase.id,
+        sessionId: taskId,
+        stepId: ""
+      };
+      renderTodoList();
+      todoSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.setTimeout(() => document.getElementById(`plan-session-date-${taskId}`)?.focus({ preventScroll: true }), 120);
     }
 
     function finishCalendarDrag(state) {
       if (!state || calendarDragState !== state) return;
+      const wasActive = state.active;
       const shouldMove = state.active && state.targetValid && state.targetDate;
       const rejectedDrop = state.active && !shouldMove;
       const targetDate = state.targetDate;
@@ -5527,6 +6662,10 @@
       const taskId = state.task.id;
       const targetMessage = state.targetMessage || t("calendarDropOutside");
       cancelCalendarDrag({ keepFeedback: true });
+      if (wasActive) {
+        state.button.dataset.suppressClick = "true";
+        window.setTimeout(() => delete state.button.dataset.suppressClick, 0);
+      }
       if (shouldMove) {
         rescheduleCalendarTask(subjectId, taskId, targetDate);
       } else if (rejectedDrop) {
@@ -5536,6 +6675,34 @@
     }
 
     function bindCalendarTaskDrag(button, subject, task) {
+      button.addEventListener("click", () => {
+        if (button.dataset.suppressClick === "true") return;
+        openCalendarTaskEditor(subject.id, task.id);
+      });
+      button.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openCalendarTaskEditor(subject.id, task.id);
+          return;
+        }
+        if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+        event.preventDefault();
+        const offset = event.key === "ArrowLeft" ? -1 : 1;
+        const targetDate = addDaysToDateValue(task.scheduledDate, offset);
+        const visibleEnd = addDaysToDateValue(calendarWeekStart, CALENDAR_VISIBLE_DAYS - 1);
+        if (targetDate < calendarWeekStart || targetDate > visibleEnd) {
+          const message = t("calendarDropOutside");
+          setExportStatus(message);
+          setCalendarDragFeedback(message, "invalid", true);
+          return;
+        }
+        if (!rescheduleCalendarTask(subject.id, task.id, targetDate)) return;
+        window.setTimeout(() => {
+          [...calendarGrid.querySelectorAll(".calendar-task")]
+            .find((candidate) => candidate.dataset.subjectId === subject.id && candidate.dataset.taskId === task.id)
+            ?.focus();
+        }, 0);
+      });
       button.addEventListener("pointerdown", (event) => {
         if (event.button !== 0 || calendarDragState) return;
         if ((event.pointerType || "mouse") === "mouse") return;
@@ -5660,7 +6827,10 @@
           goal: goalInput.value,
           keywords: keywordsInput.value,
           contentLanguagePreference: contentLanguageSelect.value,
-          scopeSourceMode
+          scopeSourceMode,
+          evidenceExamNote: courseEvidenceState.examNote,
+          evidenceQuestionTypes: courseEvidenceState.questionTypes,
+          evidenceExamUnknown: courseEvidenceState.examUnknown
         }));
       } catch {
         // Local storage is optional; the current form state still remains intact.
@@ -5683,9 +6853,17 @@
         if (["auto", "zh", "en"].includes(draft.contentLanguagePreference)) {
           contentLanguageSelect.value = draft.contentLanguagePreference;
         }
-        if (["manual", "strategy"].includes(draft.scopeSourceMode)) {
+        if (["manual", "materials"].includes(draft.scopeSourceMode)) {
           scopeSourceMode = draft.scopeSourceMode;
         }
+        if (typeof draft.evidenceExamNote === "string") courseEvidenceState.examNote = draft.evidenceExamNote.slice(0, 240);
+        if (Array.isArray(draft.evidenceQuestionTypes)) {
+          courseEvidenceState.questionTypes = [
+            ...new Set(draft.evidenceQuestionTypes.map(normalizeEvidenceQuestionType).filter(Boolean))
+          ];
+        }
+        courseEvidenceState.examUnknown = draft.evidenceExamUnknown === true;
+        evidenceExamNote.value = courseEvidenceState.examNote;
       }
       if (!dateInput.value || dateInput.value < toLocalDateValue(defaultDate)) {
         dateInput.value = toLocalDateValue(defaultDate);
@@ -5695,12 +6873,12 @@
     }
 
     function getRelevantFormInputs() {
-      return scopeSourceMode === "strategy" ? [dateInput, hoursInput] : formInputs;
+      if (scopeSourceMode === "materials") return [courseInput, dateInput, hoursInput, goalInput];
+      return formInputs;
     }
 
     function getFieldError(input) {
       const value = input.value.trim();
-      if (scopeSourceMode === "strategy" && ![dateInput, hoursInput].includes(input)) return "";
       if (input === courseInput) {
         if (!value) return t("courseRequired");
         if (value.length < 2 || value.length > 80) return t("courseLength");
@@ -5782,6 +6960,7 @@
       copyWxBtn.disabled = false;
       copyWxBtn.removeAttribute("aria-busy");
       setCopyTip("");
+      courseInput.placeholder = t("coursePlaceholder");
       keywordsInput.placeholder = t("keywordsPlaceholder");
       scopeSourceChoice.setAttribute("aria-label", t("scopeSourceAria"));
       applyScopeSourceMode(scopeSourceMode);
@@ -5793,8 +6972,6 @@
       }
       sidebarBackdrop.setAttribute("aria-label", t("closeSubjectMenu"));
       setSidebarOpen(body.classList.contains("sidebar-open"));
-      renderStrategyFileName();
-      renderWorkspaceStatus();
       materialVaultStatus.textContent = t(materialVaultStatusState.key, materialVaultStatusState.replacements);
       renderMaterialVault();
       renderSubjectList();
@@ -6516,271 +7693,6 @@
       }
     }
 
-    function renderStrategyFileName() {
-      strategyFileName.textContent = selectedStrategyFileName || t("strategyFileEmpty");
-      strategyFileName.title = selectedStrategyFileName;
-    }
-
-    function renderWorkspaceStatus() {
-      workspaceStatus.textContent = t(workspaceStatusState.key, workspaceStatusState.replacements);
-      workspaceStatus.dataset.state = workspaceStatusState.key === "workspaceImported"
-        ? "success"
-        : (["workspaceImportFailed", "workspaceInfeasible", "workspaceFileTooLarge"].includes(workspaceStatusState.key) ? "error" : "");
-    }
-
-    function setWorkspaceStatus(key, replacements = {}) {
-      workspaceStatusState = { key, replacements };
-      renderWorkspaceStatus();
-      return workspaceStatus.textContent;
-    }
-
-    function getStrategyPlanningDefaults(strategy) {
-      if (Number(strategy?.schema_version) === 2) {
-        return {
-          examDate: String(strategy?.planning_context?.exam_date || "").trim(),
-          hoursPerDay: Number(strategy?.planning_context?.availability?.hours_per_day)
-        };
-      }
-      const rawDays = Number(strategy?.course?.days_left);
-      const examDate = new Date();
-      examDate.setHours(12, 0, 0, 0);
-      if (Number.isFinite(rawDays)) examDate.setDate(examDate.getDate() + Math.max(0, Math.round(rawDays)));
-      return {
-        examDate: Number.isFinite(rawDays) ? toLocalDateValue(examDate) : "",
-        hoursPerDay: Number(strategy?.course?.hours_per_day)
-      };
-    }
-
-    function applyStrategyPlanningDefaults(strategy) {
-      const defaults = getStrategyPlanningDefaults(strategy);
-      if (!strategyPlanningOverrides.has(dateInput.id) && isValidDateValue(defaults.examDate)) {
-        dateInput.value = defaults.examDate;
-      }
-      if (!strategyPlanningOverrides.has(hoursInput.id)
-        && Number.isFinite(defaults.hoursPerDay)
-        && defaults.hoursPerDay > 0
-        && defaults.hoursPerDay <= 20) {
-        hoursInput.value = String(defaults.hoursPerDay);
-      }
-      updateMetrics();
-    }
-
-    function countStrategySources(strategy) {
-      if (Number(strategy?.schema_version) === 2) {
-        return Array.isArray(strategy?.source_materials) ? strategy.source_materials.length : 0;
-      }
-      const labels = new Set();
-      (strategy?.action_list || []).forEach((session) => {
-        (session?.source_refs || []).forEach((ref) => {
-          const label = String(ref?.label || "").trim();
-          if (label) labels.add(label);
-        });
-      });
-      return labels.size;
-    }
-
-    function mergeImportedTaskState(plan, previousPlan) {
-      const normalized = normalizePlan(plan);
-      const previousTasks = normalizePlan(previousPlan).tasks;
-      const previousById = new Map(previousTasks.map((task) => [task.id, task]));
-      const previousByTitle = new Map(previousTasks.map((task) => [task.title, task]));
-      normalized.tasks.forEach((task) => {
-        const previous = previousById.get(task.id) || previousByTitle.get(task.title);
-        if (!previous) return;
-        task.scheduledDate = previous.scheduledDate;
-        if (!task.steps.length && previous.steps?.length) {
-          task.steps = clonePlan(previous.steps);
-          task.guideStatus = "ready";
-        }
-        const previousStepsById = new Map((previous.steps || []).map((step) => [step.id, step]));
-        const previousStepsByAction = new Map((previous.steps || []).map((step) => [step.action, step]));
-        task.steps.forEach((step) => {
-          const previousStep = previousStepsById.get(step.id) || previousStepsByAction.get(step.action);
-          if (previousStep) step.completed = previousStep.completed;
-        });
-        task.guideVersion = Math.max(1, Number(previous.guideVersion) || 1);
-        task.guideUndo = previous.guideUndo ? clonePlan(previous.guideUndo) : null;
-        task.executionResult = previous.executionResult || "";
-        task.lastExecutionFeedback = previous.lastExecutionFeedback || "";
-        task.lastGuideDiagnosis = previous.lastGuideDiagnosis || "";
-        task.completed = previous.completed || (task.steps.length > 0 && task.steps.every((step) => step.completed));
-        if (task.completed) task.steps.forEach((step) => { step.completed = true; });
-      });
-      return normalized;
-    }
-
-    async function importStrategyFile(file) {
-      if (!file) return;
-      selectedStrategyFileName = file.name;
-      renderStrategyFileName();
-      if (file.size > 100000) {
-        const message = setWorkspaceStatus("workspaceFileTooLarge");
-        setStatus(message);
-        return;
-      }
-      materialVaultExpanded = false;
-      applyScopeSourceMode("strategy");
-      chooseStrategyFileBtn.disabled = true;
-      setWorkspaceStatus("workspaceImporting");
-      try {
-        let rawStrategy;
-        try {
-          rawStrategy = JSON.parse(await file.text());
-        } catch {
-          throw new Error(t("parseError"));
-        }
-        if (!rawStrategy || typeof rawStrategy !== "object" || Array.isArray(rawStrategy)) {
-          throw new Error(t("parseError"));
-        }
-        applyStrategyPlanningDefaults(rawStrategy);
-        if (!validateForm(true)) {
-          const invalidInput = getRelevantFormInputs().find((input) => getFieldError(input));
-          invalidInput?.focus();
-          throw new Error(invalidInput ? getFieldError(invalidInput) : "Invalid scheduling input");
-        }
-        const response = await fetch(`${getApiBase()}/api/strategy/validate`, {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            strategy: rawStrategy,
-            runtime_context: {
-              exam_date: dateInput.value,
-              hours_per_day: Number(hoursInput.value),
-              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-            }
-          })
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok || !data?.strategy) throw new Error(data?.error || `HTTP ${response.status}`);
-        const strategy = data.strategy;
-        const workspaceId = strategy.course.id;
-        const courseName = strategy.course.name;
-
-        courseInput.value = courseName;
-        goalInput.value = String(strategy.course.target_score);
-        keywordsInput.value = (strategy.knowledge_graph?.nodes || []).map((node) => node.label).filter(Boolean).join(", ").slice(0, 1000);
-        contentLanguageSelect.value = "auto";
-        touchedFields.clear();
-        validationSummary.textContent = "";
-        formInputs.forEach((input) => validateField(input, false));
-        updateMetrics();
-        renderContentLanguageControl();
-        saveDraft();
-
-        let subject = subjects.find((item) => item.workspaceId === workspaceId);
-        const timestamp = new Date().toISOString();
-        const importedPlan = mergeImportedTaskState(planFromStrategy(strategy), subject?.plan);
-        const feasibility = assessPlanFeasibility(importedPlan, dateInput.value, hoursInput.value);
-        if (!feasibility.ok) {
-          const message = setWorkspaceStatus("workspaceInfeasible", { reason: feasibility.message });
-          setStatus(message);
-          return;
-        }
-        applyPlan(importedPlan, { scroll: false, hideHero: true });
-        const inputs = collectCurrentInputs();
-        if (!subject) {
-          subject = {
-            id: createLocalId("subject"),
-            workspaceId,
-            name: courseName,
-            color: SUBJECT_COLORS[subjects.length % SUBJECT_COLORS.length],
-            examDate: inputs.date,
-            inputs,
-            strategy,
-            plan: lastPlan,
-            scheduleVersion: 7,
-            createdAt: timestamp,
-            updatedAt: timestamp
-          };
-          subjects.unshift(subject);
-        } else {
-          subject.name = courseName;
-          subject.examDate = inputs.date;
-          subject.inputs = inputs;
-          subject.strategy = strategy;
-          subject.plan = lastPlan;
-          subject.updatedAt = timestamp;
-        }
-        ensureSubjectTaskSchedule(subject);
-        syncCalendarDailyCapacity(inputs.hours);
-        activeSubjectId = subject.id;
-        lastPlan = subject.plan;
-        calendarWeekStart = getWeekStartValue();
-        saveSubjectStore();
-        try {
-          localStorage.setItem("finals-os-active-subject-v1", activeSubjectId);
-        } catch {
-          // The imported course still works during this session.
-        }
-        renderSubjectList();
-        await refreshMaterialVaultForActiveSubject({ renderTodo: false });
-        renderTodoList();
-        renderCalendar();
-        setSidebarOpen(false);
-        const materialCount = countStrategySources(strategy);
-        const sessionCount = Array.isArray(lastPlan?.tasks) ? lastPlan.tasks.length : 0;
-        const message = setWorkspaceStatus("workspaceImported", {
-          name: courseName,
-          materialCount,
-          sessionCount,
-          examDate: dateInput.value,
-          hours: hoursInput.value
-        });
-        setStatus(message);
-        window.setTimeout(() => resultSection.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
-      } catch (error) {
-        const reason = String(error?.message || "Unknown error").slice(0, 240);
-        const message = setWorkspaceStatus("workspaceImportFailed", { reason });
-        setStatus(message);
-      } finally {
-        chooseStrategyFileBtn.disabled = false;
-      }
-    }
-
-    function updateActiveStrategyScheduleConstraints() {
-      if (scopeSourceMode !== "strategy") return false;
-      const subject = subjects.find((item) => item.id === activeSubjectId);
-      if (!isStrategySubject(subject)) return false;
-      const runtimeInputs = [dateInput, hoursInput];
-      if (!runtimeInputs.map((input) => validateField(input, true)).every(Boolean)) return false;
-      const nextDate = dateInput.value;
-      const nextHours = hoursInput.value;
-      if (subject.examDate === nextDate && String(subject.inputs?.hours || "") === nextHours) {
-        syncCalendarDailyCapacity(nextHours, { render: true });
-        return true;
-      }
-      const feasibility = assessPlanFeasibility(subject.plan, nextDate, nextHours);
-      if (!feasibility.ok) {
-        const message = t("strategyScheduleRejected", { reason: feasibility.message });
-        setWorkspaceStatus("strategyScheduleRejected", { reason: feasibility.message });
-        setStatus(message);
-        return false;
-      }
-
-      subject.examDate = nextDate;
-      subject.inputs = {
-        ...subject.inputs,
-        date: nextDate,
-        hours: nextHours
-      };
-      const tasks = Array.isArray(subject.plan?.tasks) ? subject.plan.tasks : [];
-      tasks.forEach((task) => {
-        if (!task.completed) task.scheduledDate = "";
-      });
-      ensureSubjectTaskSchedule(subject);
-      subject.updatedAt = new Date().toISOString();
-      syncCalendarDailyCapacity(nextHours);
-      saveSubjectStore();
-      saveDraft();
-      renderSubjectList();
-      renderTodoList();
-      renderCalendar();
-      setWorkspaceStatus("strategyScheduleUpdated");
-      setExportStatus(t("strategyScheduleUpdated"));
-      return true;
-    }
-
     async function getHealth() {
       const resp = await fetch(`${getApiBase()}/api/health`, { method: "GET" });
       if (!resp.ok) throw new Error(t("healthCheckFailed", { status: resp.status }));
@@ -7316,6 +8228,61 @@
       return editor.form;
     }
 
+    const PLAN_REPAIR_MAX_INSTRUCTION_CHARS = 600;
+
+    function normalizePlanRepairInstruction(value) {
+      if (typeof value !== "string" || value.length > PLAN_REPAIR_MAX_INSTRUCTION_CHARS) return "";
+      let text = value
+        .replace(/&lt;/gi, "<")
+        .replace(/&gt;/gi, ">")
+        .replace(/&quot;/gi, "\"")
+        .replace(/&#0*39;|&apos;/gi, "'")
+        .replace(/&amp;/gi, "&");
+      const roleLike = text.split(/\r?\n/).some((line) => (
+        /^\s*(?:(?:#{1,6}\s*)?(?:system|assistant|developer|tool|user)\s*:|\[\s*(?:system|assistant|developer|tool|user)\s*\])/i.test(line)
+        || /["']?role["']?\s*:\s*["']?(?:system|assistant|developer|tool)["']?/i.test(line)
+      ));
+      const promptOverride = /\b(?:ignore|disregard|forget|override)\s+(?:all\s+)?(?:previous|prior|above|system|developer)?\s*(?:instructions?|prompts?|rules?)\b/i.test(text)
+        || /\b(?:act|behave|respond)\s+as\s+(?:a|an|the)?\s*(?:system|assistant|developer|tool|administrator)\b/i.test(text);
+      if (roleLike || promptOverride) return "";
+      const controlBlock = /<\s*(think|thinking|analysis|reasoning|system|assistant|developer|tool|script|style)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi;
+      text = text.replace(/<!--[\s\S]*?-->/g, " ");
+      while (controlBlock.test(text)) {
+        text = text.replace(controlBlock, " ");
+        controlBlock.lastIndex = 0;
+      }
+      text = text
+        .replace(/<\s*(?:think|thinking|analysis|reasoning|system|assistant|developer|tool|script|style)\b[^>]*>[\s\S]*$/gi, " ")
+        .replace(/<\s*\/?\s*(?:think|thinking|analysis|reasoning|system|assistant|developer|tool)\b[^>]*>/gi, " ")
+        .replace(/<[^>]{0,500}>/g, " ")
+        .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f\u200b-\u200f\u202a-\u202e\u2060\ufeff]/g, " ");
+      text = text.split(/\r?\n/).filter((line) => (
+        !/^\s*(?:(?:#{1,6}\s*)?(?:system|assistant|developer|tool|user)\s*:|\[\s*(?:system|assistant|developer|tool|user)\s*\])/i.test(line)
+        && !/["']?role["']?\s*:\s*["']?(?:system|assistant|developer|tool)["']?/i.test(line)
+      )).join(" ");
+      text = text
+        .replace(/\b(?:ignore|disregard|forget|override)\s+(?:all\s+)?(?:previous|prior|above|system|developer)?\s*(?:instructions?|prompts?|rules?)\b[^.!?。！？]*[.!?。！？]?/gi, " ")
+        .replace(/\b(?:act|behave|respond)\s+as\s+(?:a|an|the)?\s*(?:system|assistant|developer|tool|administrator)\b[^.!?。！？]*[.!?。！？]?/gi, " ");
+      return text.replace(/\s+/g, " ").trim();
+    }
+
+    function hasValidPlanRepairConstraint(value) {
+      const text = String(value || "");
+      return [
+        /(?:没空|无空|没时间|不能学习|无法学习|有空|可用时间|只能在|不学习|停学|请假)|\b(?:unavailable|available|availability|cannot study|can't study|can only study|no time|free only)\b/i,
+        /(?:改到|移到|挪到|调到|改期|提前|延后|推迟|顺延|重新安排|换到)|\b(?:move|reschedule|postpone|delay|shift|move up|bring forward|schedule (?:it )?(?:on|for|to))\b/i,
+        /(?:每天|每日|只剩|只有|增加|减少|缩短|延长).{0,16}(?:分钟|小时)|\b(?:only|per day|daily|increase|decrease|reduce|shorten|extend).{0,24}\b(?:minutes?|hours?|hrs?)\b/i,
+        /(?:不考|不再考|考试范围|考纲|新增考点|新考点|新增章节|删除章节|删掉|移除|放弃)|\b(?:exam scope|syllabus|coverage|no longer tested|not tested|new topic|new chapter|remove|delete|drop|skip)\b/i,
+        /(?:新增|添加|加上|加入|加一个|新建|删除|删掉|移除|拆分|合并)|\b(?:add|create|delete|remove|drop|skip|split|merge)\b/i,
+        /(?:考试|截止|考期).{0,12}(?:提前|延后|推迟|改到|变更|改期)|\b(?:exam|deadline|test date).{0,24}\b(?:earlier|later|moved|changed|postponed)\b/i
+      ].some((pattern) => pattern.test(text));
+    }
+
+    function clearPendingPlanRepair() {
+      pendingPlanRepair = null;
+      planRepairProposal.hidden = true;
+    }
+
     function getRepairSessions() {
       return (lastPlan?.tasks || []).map((task) => ({
         id: task.id,
@@ -7380,17 +8347,17 @@
     }
 
     async function previewPlanRepair() {
-      const instruction = planRepairCommand.value.trim();
-      if (!instruction) {
-        planRepairError.textContent = t("planRepairEmpty");
+      clearPendingPlanRepair();
+      const instruction = normalizePlanRepairInstruction(planRepairCommand.value);
+      if (!instruction || !hasValidPlanRepairConstraint(instruction)) {
+        planRepairError.textContent = t("planRepairInvalid");
         planRepairCommand.focus();
         return;
       }
+      planRepairCommand.value = instruction;
       if (!lastPlan?.tasks?.length) return;
       const currentSessions = getRepairSessions();
       planRepairError.textContent = "";
-      pendingPlanRepair = null;
-      planRepairProposal.hidden = true;
       planRepairController?.abort();
       planRepairController = new AbortController();
       const timeoutId = window.setTimeout(() => planRepairController?.abort(), 75000);
@@ -7412,6 +8379,7 @@
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok || !data.ok || !data.repair) throw new Error(data.error || `HTTP ${response.status}`);
+        if (data.repair.constraint !== instruction) throw new Error(t("planRepairInvalid"));
         pendingPlanRepair = data.repair;
         renderPlanRepairProposal(pendingPlanRepair, currentSessions);
         planRepairProposal.hidden = false;
@@ -7451,6 +8419,12 @@
 
     function applyPendingPlanRepair() {
       if (!pendingPlanRepair) return;
+      const currentInstruction = normalizePlanRepairInstruction(planRepairCommand.value);
+      if (!hasValidPlanRepairConstraint(currentInstruction) || pendingPlanRepair.constraint !== currentInstruction) {
+        clearPendingPlanRepair();
+        planRepairError.textContent = t("planRepairInvalid");
+        return;
+      }
       const changeCount = pendingPlanRepair.diffs.length;
       const repairedPlan = buildPlanFromRepairSessions(pendingPlanRepair.sessions);
       const activeSubject = subjects.find((subject) => subject.id === activeSubjectId);
@@ -7519,6 +8493,26 @@
       renderCalendar();
     }
 
+    function buildRuntimeGuideSession(task) {
+      const sourceLabels = [
+        ...(Array.isArray(task.sourceRefs) ? task.sourceRefs.map((ref) => ref?.label) : []),
+        ...(Array.isArray(task.steps) ? task.steps.map((step) => step?.source) : [])
+      ].map((value) => String(value || "").trim()).filter(Boolean);
+      const fallbackSource = currentLanguage === "en" ? "User-uploaded course material" : "用户上传的课程资料";
+      const expectedOutputs = (Array.isArray(task.expectedOutputs) ? task.expectedOutputs : [])
+        .map((output) => String(output?.label || output || "").trim())
+        .filter(Boolean);
+      return {
+        id: task.id,
+        title: task.title,
+        objective: task.objective || "",
+        duration_minutes: task.durationMinutes,
+        success_criteria: task.successCriteria || (currentLanguage === "en" ? "Produce a checkable result" : "产出可检查的结果"),
+        source_labels: [...new Set(sourceLabels.length ? sourceLabels : [fallbackSource])].slice(0, 16),
+        expected_outputs: [...new Set(expectedOutputs)].slice(0, 16)
+      };
+    }
+
     async function requestGuideRevision(task) {
       const state = getGuideFeedbackState(task);
       const feedback = String(state.feedback || "").trim();
@@ -7528,7 +8522,7 @@
         return;
       }
       const subject = getActiveSubject();
-      if (!subject?.workspaceId) {
+      if (!subject) {
         state.error = t("executionRevisionWorkspaceRequired");
         renderTodoList();
         return;
@@ -7545,10 +8539,12 @@
           credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            workspace_id: subject.workspaceId,
+            workspace_id: subject.workspaceId || undefined,
             session_id: task.id,
             content_language: lastPlan?.contentLanguage || "",
             strategy: subject.strategy || undefined,
+            session: subject.workspaceId ? undefined : buildRuntimeGuideSession(task),
+            course_name: subject.name,
             result: state.result,
             feedback,
             current_steps: task.steps.map((step) => ({
@@ -8139,7 +9135,8 @@
       const date = dateInput.value;
       const hours = Number(hoursInput.value);
       const goal = Number(goalInput.value);
-      const keywords = keywordsInput.value.trim();
+      const keywords = getEffectiveKeywords();
+      const evidenceMap = scopeSourceMode === "materials" ? getCourseEvidenceMap() : null;
       const inputAnalysis = analyzeInputLanguage(course, keywords);
       const contentLanguage = renderContentLanguageControl();
       const d = daysLeft(date);
@@ -8160,7 +9157,9 @@
           content_language: contentLanguage.language,
           content_language_source: contentLanguage.source,
           input_language: inputAnalysis.language,
-          input_language_confidence: inputAnalysis.confidence
+          input_language_confidence: inputAnalysis.confidence,
+          input_source: scopeSourceMode,
+          evidence_map: evidenceMap
         })
       });
 
@@ -8231,8 +9230,14 @@
     }
 
     async function generatePlan() {
+      if (scopeSourceMode === "materials" && !courseEvidenceState.map) {
+        validationSummary.textContent = t("evidenceRequired");
+        buildEvidenceMapBtn.focus();
+        updateEvidenceGenerateState();
+        return;
+      }
       if (isGenerating || !validateForm(true)) {
-        const firstInvalid = formInputs.find((input) => getFieldError(input));
+        const firstInvalid = getRelevantFormInputs().find((input) => getFieldError(input));
         if (firstInvalid) firstInvalid.focus();
         return;
       }
@@ -8244,6 +9249,7 @@
       generateBtn.textContent = t("generating");
       cancelGenerateBtn.hidden = false;
       scopeSourceModeInputs.forEach((input) => { input.disabled = true; });
+      renderCourseEvidenceState();
       setStatus(t("requestingModel"));
       startAnalysis();
       generationTimeout = window.setTimeout(() => {
@@ -8293,9 +9299,9 @@
         isGenerating = false;
         stopAnalysis();
         cancelGenerateBtn.hidden = true;
-        generateBtn.disabled = false;
         generateBtn.textContent = t("generate");
         scopeSourceModeInputs.forEach((input) => { input.disabled = false; });
+        renderCourseEvidenceState();
       }
     }
 
@@ -8303,31 +9309,6 @@
       if (!generationController) return;
       requestTimedOut = false;
       generationController.abort();
-    }
-
-    function fillDemo() {
-      applyScopeSourceMode("manual");
-      const demo = currentLanguage === "en" ? {
-        course: "Engineering Mechanics",
-        keywords: "free-body diagrams, moment equilibrium, internal forces, mechanics of materials basics, calculation problems, short-answer questions"
-      } : {
-        course: "工程力学",
-        keywords: "受力分析, 力矩平衡, 杆件内力, 材料力学基础, 计算题, 简答题"
-      };
-      courseInput.value = demo.course;
-      contentLanguageSelect.value = "auto";
-      hoursInput.value = 7;
-      goalInput.value = 85;
-      keywordsInput.value = demo.keywords;
-      const d = new Date();
-      d.setDate(d.getDate() + 4);
-      dateInput.value = toLocalDateValue(d);
-      touchedFields.clear();
-      validationSummary.textContent = "";
-      formInputs.forEach((input) => validateField(input, false));
-      updateMetrics();
-      renderContentLanguageControl();
-      saveDraft();
     }
 
     themeToggle.addEventListener("click", () => {
@@ -8345,13 +9326,6 @@
       subjectMenuToggle.focus();
     });
     newSubjectBtn.addEventListener("click", startNewSubject);
-    chooseStrategyFileBtn.addEventListener("click", () => {
-      strategyFileInput.value = "";
-      strategyFileInput.click();
-    });
-    strategyFileInput.addEventListener("change", () => {
-      importStrategyFile(strategyFileInput.files[0]);
-    });
     bindMaterialsBtn.addEventListener("click", () => {
       materialFilesInput.value = "";
       materialFilesInput.click();
@@ -8370,6 +9344,55 @@
       bindSingleMaterial(materialSingleFileInput.files[0]);
     });
     clearMaterialsBtn.addEventListener("click", clearActiveMaterialBindings);
+    chooseEvidenceFilesBtn.addEventListener("click", () => {
+      evidenceFilesInput.value = "";
+      evidenceFilesInput.click();
+    });
+    evidenceFilesInput.addEventListener("change", () => setEvidenceFiles(evidenceFilesInput.files));
+    buildEvidenceMapBtn.addEventListener("click", beginEvidenceMapBuild);
+    evidenceMetricButtons.forEach((button, index) => {
+      button.addEventListener("click", () => setEvidenceDetailView(button.dataset.evidenceView));
+      button.addEventListener("keydown", (event) => {
+        const keyTargets = {
+          ArrowRight: (index + 1) % evidenceMetricButtons.length,
+          ArrowLeft: (index - 1 + evidenceMetricButtons.length) % evidenceMetricButtons.length,
+          Home: 0,
+          End: evidenceMetricButtons.length - 1
+        };
+        if (!Object.hasOwn(keyTargets, event.key)) return;
+        event.preventDefault();
+        const target = evidenceMetricButtons[keyTargets[event.key]];
+        setEvidenceDetailView(target.dataset.evidenceView, { focus: true });
+      });
+    });
+    evidenceQuestionTypeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const type = button.dataset.evidenceQuestionType;
+        courseEvidenceState.examUnknown = false;
+        courseEvidenceState.questionTypes = courseEvidenceState.questionTypes.includes(type)
+          ? courseEvidenceState.questionTypes.filter((item) => item !== type)
+          : [...courseEvidenceState.questionTypes, type];
+        renderEvidenceExamStatus();
+        renderContentLanguageControl();
+        saveDraft();
+      });
+    });
+    evidenceExamNote.addEventListener("input", () => {
+      courseEvidenceState.examNote = evidenceExamNote.value;
+      if (normalizeEvidenceExamConstraint(courseEvidenceState.examNote)) courseEvidenceState.examUnknown = false;
+      renderEvidenceExamStatus();
+      renderContentLanguageControl();
+      saveDraft();
+    });
+    evidenceExamUnknownBtn.addEventListener("click", () => {
+      courseEvidenceState.examUnknown = true;
+      courseEvidenceState.questionTypes = [];
+      courseEvidenceState.examNote = "";
+      evidenceExamNote.value = "";
+      renderEvidenceExamStatus();
+      renderContentLanguageControl();
+      saveDraft();
+    });
     scopeSourceModeInputs.forEach((input) => {
       input.addEventListener("change", () => {
         if (!input.checked) return;
@@ -8407,15 +9430,6 @@
         return;
       }
       const normalized = Math.round(value * 2) / 2;
-      const activeSubject = subjects.find((subject) => subject.id === activeSubjectId);
-      if (scopeSourceMode === "strategy" && isStrategySubject(activeSubject)) {
-        hoursInput.value = String(normalized);
-        if (!updateActiveStrategyScheduleConstraints()) {
-          hoursInput.value = String(activeSubject.inputs?.hours || calendarSettings.dailyCapacityHours);
-          syncCalendarDailyCapacity(hoursInput.value, { render: true });
-        }
-        return;
-      }
       hoursInput.value = String(normalized);
       syncCalendarDailyCapacity(normalized, { render: true });
       saveDraft();
@@ -8455,15 +9469,9 @@
     });
     planForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      if (scopeSourceMode === "strategy") {
-        strategyFileInput.value = "";
-        strategyFileInput.click();
-      } else {
-        generatePlan();
-      }
+      generatePlan();
     });
     cancelGenerateBtn.addEventListener("click", cancelGeneration);
-    fillDemoBtn.addEventListener("click", fillDemo);
     togglePlanRepairBtn.addEventListener("click", () => {
       const isOpening = planRepairPanel.hidden;
       planRepairPanel.hidden = !isOpening;
@@ -8475,9 +9483,12 @@
       }
     });
     previewPlanRepairBtn.addEventListener("click", previewPlanRepair);
+    planRepairCommand.addEventListener("input", () => {
+      if (pendingPlanRepair) clearPendingPlanRepair();
+      planRepairError.textContent = "";
+    });
     document.getElementById("cancelPlanRepair").addEventListener("click", () => {
-      pendingPlanRepair = null;
-      planRepairProposal.hidden = true;
+      clearPendingPlanRepair();
       planRepairError.textContent = "";
       previewPlanRepairBtn.textContent = t("planRepairPreview");
       planRepairCommand.focus();
@@ -8500,17 +9511,12 @@
     copyWxBtn.addEventListener("click", copyWxId);
     formInputs.forEach((input) => {
       input.addEventListener("input", () => {
-        if (scopeSourceMode === "strategy" && [dateInput, hoursInput].includes(input)) {
-          strategyPlanningOverrides.add(input.id);
-        }
         if (touchedFields.has(input.id)) validateField(input, true);
         validationSummary.textContent = "";
         updateMetrics();
         renderContentLanguageControl();
         if (input === hoursInput && hoursInput.value.trim()) {
-          if (scopeSourceMode === "strategy") {
-            updateActiveStrategyScheduleConstraints();
-          } else if (!getFieldError(hoursInput)) {
+          if (!getFieldError(hoursInput)) {
             syncCalendarDailyCapacity(hoursInput.value, { render: true });
           }
         }
@@ -8521,11 +9527,8 @@
         validateField(input, true);
       });
     });
-    dateInput.addEventListener("change", updateActiveStrategyScheduleConstraints);
     hoursInput.addEventListener("change", () => {
-      if (scopeSourceMode === "strategy") {
-        updateActiveStrategyScheduleConstraints();
-      } else if (validateField(hoursInput, true)) {
+      if (validateField(hoursInput, true)) {
         syncCalendarDailyCapacity(hoursInput.value, { render: true });
       }
     });
@@ -8545,8 +9548,6 @@
     initSubjectLibrary();
     initCalendar();
     initSectionNavigation();
-    renderStrategyFileName();
-    renderWorkspaceStatus();
     validateForm(false);
     updateMetrics();
     refreshHealth();
