@@ -1,5 +1,2 @@
-# Runtime dependencies
-#
-# This app uses only Python standard library modules at runtime.
-# Render may still expect a requirements.txt for Python services,
-# so we keep this file as an explicit marker.
+# Runtime dependency for extracting text from uploaded PDFs.
+pypdf>=6,<7
