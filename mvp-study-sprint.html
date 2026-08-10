@@ -3463,10 +3463,13 @@
     const touchedFields = new Set();
     const DRAFT_KEY = "study-sprint-draft-v1";
     const SUBJECTS_KEY = "finals-os-subjects-v1";
+    const ACTIVE_SUBJECT_KEY = "finals-os-active-subject-v1";
+    const DRAFT_SUBJECT_ID = "draft";
     const CALENDAR_SETTINGS_KEY = "finals-os-calendar-settings-v1";
     const CALENDAR_VISIBLE_DAYS = 14;
     const MATERIAL_DB_NAME = "finals-os-material-vault-v1";
     const MATERIAL_DB_STORE = "materials";
+    const EVIDENCE_RECORD_PREFIX = "course-evidence::";
     const EVIDENCE_MAX_FILES = 60;
     const EVIDENCE_MAX_FILE_BYTES = 25 * 1024 * 1024;
     const EVIDENCE_MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
@@ -3481,6 +3484,7 @@
     };
     let evidenceBuildController = null;
     let evidenceBuildTimeout = null;
+    let evidenceRestoreToken = 0;
     let evidenceSourceFiles = [];
     let evidenceDetailView = "units";
     let evidenceSelectedSourceId = "";
@@ -3488,6 +3492,8 @@
       files: [],
       map: null,
       building: false,
+      saving: false,
+      filesPersisted: false,
       selectionInvalid: false,
       questionTypes: [],
       examNote: "",
@@ -3534,7 +3540,13 @@
         addEvidenceFiles: "继续添加文件",
         removeEvidenceFile: "删除",
         removeEvidenceFileAria: "删除 {name}",
-        evidenceFileNeedsReselect: "页面重新打开后，浏览器不会保留原文件正文。请重新选择全部文件后再修改清单。",
+        evidenceFileNeedsReselect: "缓存中的原始文件不完整。请重新选择全部文件后再分析或修改清单。",
+        evidenceSaving: "正在把课程文件保存到此浏览器…",
+        evidenceRestoring: "正在从此浏览器恢复课程文件…",
+        evidenceFilesRestored: "已从此浏览器恢复 {count} 份课程文件。可以继续分析。",
+        evidenceMapRestored: "已恢复 {files} 份课程文件和 Evidence Map（{units} 个知识单元）。",
+        evidenceMapRestoredFilesMissing: "Evidence Map 已恢复，但有 {count} 份原始文件未能从缓存读取；仍可生成计划，重新分析前需重新选择文件。",
+        evidenceStorageFailed: "文件仍可在本次页面使用，但未能保存到此浏览器。请检查浏览器存储空间或隐私设置。",
         buildEvidenceMap: "分析资料，生成复习依据",
         evidenceMapBuilding: "正在分析资料…",
         evidenceMapCancel: "取消资料分析",
@@ -3576,15 +3588,16 @@
         evidenceExamPlaceholder: "例如：选择题2×10，判断题1×10，计算题40分。",
         evidenceExamUnknown: "我不知道题型",
         evidenceNoFiles: "先选择课程文件；选择后会列出文件，再由你确认开始分析。",
-        evidenceFilesSelected: "已选择 {count} 份资料。核对文件后，点击“分析资料，生成复习依据”。",
-        evidenceFilesAdded: "已新增 {added} 份、同名更新 {replaced} 份；当前共 {count} 份。核对后开始分析。",
+        evidenceFilesSelected: "已选择并保存 {count} 份资料到此浏览器。核对后开始分析。",
+        evidenceFilesAdded: "已新增 {added} 份、同名更新 {replaced} 份；当前 {count} 份已保存到此浏览器。",
         evidenceFilesChanged: "资料清单已变更（新增 {added} 份、同名更新 {replaced} 份）；旧分析已清除，请重新分析。",
         evidenceFilesRestarted: "已载入 {count} 份新资料。此前保存的分析只保留了结果，没有原文件正文，因此本次从新清单开始。",
-        evidenceFileRemoved: "已删除“{name}”；当前还剩 {count} 份。核对后开始分析。",
-        evidenceFileRemovedAfterAnalysis: "已删除“{name}”；旧分析已清除，当前还剩 {count} 份。请重新分析。",
+        evidenceFileRemoved: "已删除“{name}”；其余 {count} 份仍保存在此浏览器。",
+        evidenceFileRemovedAfterAnalysis: "已删除“{name}”；旧分析已清除，其余 {count} 份仍保存在此浏览器。",
         evidenceAnalysisRunning: "正在读取 {count} 份资料，并核对每条结论的出处。你可以取消。",
         evidenceProgressAria: "正在解析文件并核对来源",
-        evidenceReady: "资料分析完成：提取了 {count} 个可追溯知识单元。请检查来源与不确定项。",
+        evidenceReady: "资料分析完成并已保存：提取了 {count} 个可追溯知识单元。请检查来源与不确定项。",
+        evidenceReadyUnsavedFiles: "资料分析完成并已保存 Evidence Map，但原始文件未能缓存。刷新后仍可生成计划；重新分析前需重新选择文件。",
         evidenceCancelled: "资料分析已取消。文件仍保留，可重新开始。",
         evidenceTooMany: "文件未添加：最多可保留 60 份资料；原清单保持不变。",
         evidenceUnsupported: "文件未添加：仅支持 PDF、TXT、Markdown、DOCX 或 PPTX；原清单保持不变。",
@@ -3919,7 +3932,13 @@
         addEvidenceFiles: "Add more files",
         removeEvidenceFile: "Remove",
         removeEvidenceFileAria: "Remove {name}",
-        evidenceFileNeedsReselect: "Browsers do not retain the original file contents after reopening the page. Reselect all files before editing this list.",
+        evidenceFileNeedsReselect: "Some original files are missing from browser storage. Reselect every file before analyzing or editing the list.",
+        evidenceSaving: "Saving course files in this browser…",
+        evidenceRestoring: "Restoring course files from this browser…",
+        evidenceFilesRestored: "Restored {count} course files from this browser. You can continue to analysis.",
+        evidenceMapRestored: "Restored {files} course files and the Evidence Map ({units} knowledge units).",
+        evidenceMapRestoredFilesMissing: "The Evidence Map was restored, but {count} original files could not be read from browser storage. You can still generate a plan; reselect the files before re-analysis.",
+        evidenceStorageFailed: "The files remain available on this page, but could not be saved in this browser. Check browser storage space or privacy settings.",
         buildEvidenceMap: "Analyze materials and create evidence",
         evidenceMapBuilding: "Analyzing materials…",
         evidenceMapCancel: "Cancel analysis",
@@ -3961,15 +3980,16 @@
         evidenceExamPlaceholder: "Example: 10 multiple-choice questions, 10 true/false questions, and 40 points of calculations.",
         evidenceExamUnknown: "I do not know the question types",
         evidenceNoFiles: "Choose course files first. The site will list them before you confirm analysis.",
-        evidenceFilesSelected: "Selected {count} materials. Check the files, then choose “Analyze materials and create evidence.”",
-        evidenceFilesAdded: "Added {added} and updated {replaced} matching names; {count} files are now selected. Check the list, then start analysis.",
+        evidenceFilesSelected: "Selected and saved {count} materials in this browser. Check the list, then start analysis.",
+        evidenceFilesAdded: "Added {added} and updated {replaced} matching names; {count} files are saved in this browser.",
         evidenceFilesChanged: "The file list changed ({added} added, {replaced} matching names updated). The old analysis was cleared; analyze again.",
         evidenceFilesRestarted: "Loaded {count} new files. The saved analysis retained its results but not the original file contents, so this starts a new list.",
-        evidenceFileRemoved: "Removed “{name}”; {count} files remain. Check the list, then start analysis.",
-        evidenceFileRemovedAfterAnalysis: "Removed “{name}”. The old analysis was cleared; {count} files remain. Analyze again.",
+        evidenceFileRemoved: "Removed “{name}”; the other {count} files remain saved in this browser.",
+        evidenceFileRemovedAfterAnalysis: "Removed “{name}”. The old analysis was cleared; the other {count} files remain saved in this browser.",
         evidenceAnalysisRunning: "Reading {count} materials and checking the source of every claim. You can cancel.",
         evidenceProgressAria: "Parsing files and checking sources",
-        evidenceReady: "Analysis complete: extracted {count} traceable knowledge units. Check sources and uncertainties.",
+        evidenceReady: "Analysis complete and saved: extracted {count} traceable knowledge units. Check sources and uncertainties.",
+        evidenceReadyUnsavedFiles: "Analysis complete and the Evidence Map was saved, but the original files could not be cached. You can still generate a plan after refresh; reselect files before re-analysis.",
         evidenceCancelled: "Analysis cancelled. Your files are still selected, so you can retry.",
         evidenceTooMany: "Files were not added: the list can contain at most 60 materials. The existing list is unchanged.",
         evidenceUnsupported: "Files were not added: use PDF, TXT, Markdown, DOCX, or PPTX. The existing list is unchanged.",
@@ -4785,9 +4805,9 @@
         remove.type = "button";
         remove.textContent = t("removeEvidenceFile");
         remove.setAttribute("aria-label", t("removeEvidenceFileAria", { name: file.name }));
-        remove.disabled = courseEvidenceState.building || isGenerating || !filesAreAttached;
+        remove.disabled = courseEvidenceState.building || courseEvidenceState.saving || isGenerating || !filesAreAttached;
         if (!filesAreAttached) remove.title = t("evidenceFileNeedsReselect");
-        remove.addEventListener("click", () => removeEvidenceFile(index));
+        remove.addEventListener("click", () => { void removeEvidenceFile(index); });
         copy.append(name, meta);
         item.append(copy, remove);
         evidenceFileList.appendChild(item);
@@ -4796,10 +4816,13 @@
       evidenceFileSummary.textContent = t(courseEvidenceState.statusKey, courseEvidenceState.statusReplacements || {});
       evidenceProgress.hidden = !courseEvidenceState.building;
       evidenceProgress.setAttribute("aria-valuetext", t("evidenceProgressAria"));
-      chooseEvidenceFilesBtn.disabled = courseEvidenceState.building || isGenerating;
+      chooseEvidenceFilesBtn.disabled = courseEvidenceState.building || courseEvidenceState.saving || isGenerating;
       chooseEvidenceFilesBtn.textContent = t(courseEvidenceState.files.length ? "addEvidenceFiles" : "chooseEvidenceFiles");
       buildEvidenceMapBtn.disabled = isGenerating || (!courseEvidenceState.building && (
-        courseEvidenceState.files.length === 0 || courseEvidenceState.selectionInvalid
+        courseEvidenceState.files.length === 0
+        || courseEvidenceState.selectionInvalid
+        || courseEvidenceState.saving
+        || evidenceSourceFiles.length !== courseEvidenceState.files.length
       ));
       buildEvidenceMapBtn.textContent = t(courseEvidenceState.building ? "evidenceMapCancel" : "buildEvidenceMap");
       evidenceMapSummary.hidden = !map;
@@ -4818,6 +4841,7 @@
     }
 
     function resetCourseEvidenceState({ keepExam = false } = {}) {
+      evidenceRestoreToken += 1;
       window.clearTimeout(evidenceBuildTimeout);
       evidenceBuildTimeout = null;
       evidenceBuildController?.abort();
@@ -4829,6 +4853,8 @@
         files: [],
         map: null,
         building: false,
+        saving: false,
+        filesPersisted: false,
         selectionInvalid: false,
         questionTypes: keepExam ? [...courseEvidenceState.questionTypes] : [],
         examNote: keepExam ? courseEvidenceState.examNote : "",
@@ -4837,6 +4863,54 @@
         statusReplacements: {}
       };
       evidenceFilesInput.value = "";
+      evidenceExamNote.value = courseEvidenceState.examNote;
+      renderCourseEvidenceState();
+    }
+
+    function sanitizeStoredEvidenceFiles(rawFiles) {
+      if (!Array.isArray(rawFiles)) return [];
+      const seenNames = new Set();
+      const files = [];
+      for (const rawFile of rawFiles.slice(0, EVIDENCE_MAX_FILES)) {
+        if (!rawFile || typeof rawFile !== "object") continue;
+        const name = String(rawFile.name || "").trim().slice(0, 180);
+        const normalizedName = normalizeMaterialName(name);
+        if (!name || !normalizedName || seenNames.has(normalizedName) || !/\.(pdf|md|markdown|txt|docx|pptx)$/i.test(name)) continue;
+        seenNames.add(normalizedName);
+        files.push({
+          id: String(rawFile.id || `file-${files.length + 1}`),
+          name,
+          kind: String(rawFile.kind || (name.toLowerCase().endsWith(".pdf") ? "PDF" : "Document")),
+          size_bytes: Math.max(0, Number(rawFile.size_bytes) || 0),
+          pages: Number.isFinite(Number(rawFile.pages)) ? Number(rawFile.pages) : null,
+          parse_status: String(rawFile.parse_status || "") || undefined,
+          answer_status: String(rawFile.answer_status || "") || undefined,
+          text_pages: Number.isFinite(Number(rawFile.text_pages)) ? Number(rawFile.text_pages) : undefined
+        });
+      }
+      return files;
+    }
+
+    function restoreCourseEvidenceFilesMetadata(rawFiles, exam = {}) {
+      evidenceRestoreToken += 1;
+      evidenceSourceFiles = [];
+      evidenceDetailView = "units";
+      evidenceSelectedSourceId = "";
+      courseEvidenceState = {
+        files: sanitizeStoredEvidenceFiles(rawFiles),
+        map: null,
+        building: false,
+        saving: false,
+        filesPersisted: false,
+        selectionInvalid: false,
+        questionTypes: Array.isArray(exam.questionTypes)
+          ? [...new Set(exam.questionTypes.map(normalizeEvidenceQuestionType).filter(Boolean))]
+          : [],
+        examNote: typeof exam.note === "string" ? exam.note.slice(0, 240) : "",
+        examUnknown: exam.unknown === true,
+        statusKey: "evidenceFileNeedsReselect",
+        statusReplacements: {}
+      };
       evidenceExamNote.value = courseEvidenceState.examNote;
       renderCourseEvidenceState();
     }
@@ -4850,12 +4924,16 @@
       const exam = map.exam_constraint && typeof map.exam_constraint === "object" ? map.exam_constraint : {};
       delete map.exam_constraint;
       validateCourseEvidenceMap(map);
+      evidenceRestoreToken += 1;
+      evidenceSourceFiles = [];
       evidenceDetailView = "units";
       evidenceSelectedSourceId = "";
       courseEvidenceState = {
         files: map.files.map((file) => ({ ...file })),
         map,
         building: false,
+        saving: false,
+        filesPersisted: false,
         selectionInvalid: false,
         questionTypes: Array.isArray(exam.question_types)
           ? [...new Set(exam.question_types.map(normalizeEvidenceQuestionType).filter(Boolean))]
@@ -4869,7 +4947,7 @@
       renderCourseEvidenceState();
     }
 
-    function setEvidenceFiles(fileList) {
+    async function setEvidenceFiles(fileList) {
       const requestedFiles = Array.from(fileList || []);
       evidenceFilesInput.value = "";
       if (!requestedFiles.length) return;
@@ -4884,24 +4962,42 @@
         return;
       }
       const hadMap = Boolean(courseEvidenceState.map);
+      evidenceRestoreToken += 1;
       invalidateEvidenceAnalysis();
       evidenceSourceFiles = result.files;
       courseEvidenceState.files = evidenceFilesMetadata(result.files);
-      courseEvidenceState.statusKey = isRestoredAnalysis
+      const statusKey = isRestoredAnalysis
         ? "evidenceFilesRestarted"
         : result.files.length === requestedFiles.length && result.added === requestedFiles.length
           ? "evidenceFilesSelected"
           : hadMap ? "evidenceFilesChanged" : "evidenceFilesAdded";
-      courseEvidenceState.statusReplacements = {
+      const statusReplacements = {
         count: result.files.length,
         added: result.added,
         replaced: result.replaced
       };
+      courseEvidenceState.saving = true;
+      courseEvidenceState.filesPersisted = false;
+      courseEvidenceState.statusKey = "evidenceSaving";
+      courseEvidenceState.statusReplacements = {};
       renderCourseEvidenceState();
+      try {
+        await persistEvidenceFilesForCurrentOwner();
+        courseEvidenceState.filesPersisted = true;
+        courseEvidenceState.statusKey = statusKey;
+        courseEvidenceState.statusReplacements = statusReplacements;
+      } catch {
+        persistCourseEvidenceMetadata();
+        courseEvidenceState.statusKey = "evidenceStorageFailed";
+        courseEvidenceState.statusReplacements = {};
+      } finally {
+        courseEvidenceState.saving = false;
+        renderCourseEvidenceState();
+      }
     }
 
-    function removeEvidenceFile(index) {
-      if (courseEvidenceState.building || isGenerating) return;
+    async function removeEvidenceFile(index) {
+      if (courseEvidenceState.building || courseEvidenceState.saving || isGenerating) return;
       if (evidenceSourceFiles.length !== courseEvidenceState.files.length) {
         courseEvidenceState.statusKey = "evidenceFileNeedsReselect";
         courseEvidenceState.statusReplacements = {};
@@ -4911,17 +5007,35 @@
       const removed = evidenceSourceFiles[index];
       if (!removed) return;
       const hadMap = Boolean(courseEvidenceState.map);
+      evidenceRestoreToken += 1;
       invalidateEvidenceAnalysis();
       evidenceSourceFiles = evidenceSourceFiles.filter((_, fileIndex) => fileIndex !== index);
       courseEvidenceState.files = evidenceFilesMetadata(evidenceSourceFiles);
-      courseEvidenceState.statusKey = evidenceSourceFiles.length
+      const statusKey = evidenceSourceFiles.length
         ? hadMap ? "evidenceFileRemovedAfterAnalysis" : "evidenceFileRemoved"
         : "evidenceNoFiles";
-      courseEvidenceState.statusReplacements = {
+      const statusReplacements = {
         name: String(removed.name || "").slice(0, 180),
         count: evidenceSourceFiles.length
       };
+      courseEvidenceState.saving = true;
+      courseEvidenceState.filesPersisted = false;
+      courseEvidenceState.statusKey = "evidenceSaving";
+      courseEvidenceState.statusReplacements = {};
       renderCourseEvidenceState();
+      try {
+        await persistEvidenceFilesForCurrentOwner();
+        courseEvidenceState.filesPersisted = true;
+        courseEvidenceState.statusKey = statusKey;
+        courseEvidenceState.statusReplacements = statusReplacements;
+      } catch {
+        persistCourseEvidenceMetadata();
+        courseEvidenceState.statusKey = "evidenceStorageFailed";
+        courseEvidenceState.statusReplacements = {};
+      } finally {
+        courseEvidenceState.saving = false;
+        renderCourseEvidenceState();
+      }
     }
 
     async function beginEvidenceMapBuild() {
@@ -4929,7 +5043,11 @@
         evidenceBuildController?.abort();
         return;
       }
-      if (courseEvidenceState.selectionInvalid || evidenceSourceFiles.length === 0) return;
+      if (courseEvidenceState.saving
+        || courseEvidenceState.selectionInvalid
+        || evidenceSourceFiles.length === 0
+        || evidenceSourceFiles.length !== courseEvidenceState.files.length) return;
+      const previousMap = courseEvidenceState.map;
       courseEvidenceState.map = null;
       courseEvidenceState.building = true;
       courseEvidenceState.statusKey = "evidenceAnalysisRunning";
@@ -4965,12 +5083,14 @@
         courseEvidenceState.files = map.files.map((file) => ({ ...file }));
         evidenceDetailView = "units";
         evidenceSelectedSourceId = "";
-        courseEvidenceState.statusKey = "evidenceReady";
+        courseEvidenceState.statusKey = courseEvidenceState.filesPersisted
+          ? "evidenceReady"
+          : "evidenceReadyUnsavedFiles";
         courseEvidenceState.statusReplacements = { count: map.knowledge_units.length };
-        saveDraft();
+        persistCourseEvidenceMetadata();
       } catch (error) {
         if (evidenceBuildController !== controller) return;
-        courseEvidenceState.map = null;
+        courseEvidenceState.map = previousMap;
         if (error?.name === "AbortError") {
           courseEvidenceState.statusKey = timedOut ? "evidenceBuildTimeout" : "evidenceCancelled";
           courseEvidenceState.statusReplacements = {};
@@ -5704,6 +5824,22 @@
       };
     }
 
+    function normalizeStoredEvidenceMap(rawMap) {
+      if (!rawMap || typeof rawMap !== "object") return null;
+      try {
+        const map = JSON.parse(JSON.stringify(rawMap));
+        const examConstraint = map.exam_constraint && typeof map.exam_constraint === "object"
+          ? map.exam_constraint
+          : null;
+        delete map.exam_constraint;
+        validateCourseEvidenceMap(map);
+        if (examConstraint) map.exam_constraint = examConstraint;
+        return map;
+      } catch {
+        return null;
+      }
+    }
+
     function normalizeSubjectRecord(record, index = 0) {
       if (!record || typeof record !== "object") return null;
       const name = String(record.name || record.inputs?.course || "").trim();
@@ -5711,6 +5847,13 @@
       const storedColor = typeof record.color === "string" && /^#[0-9a-f]{6}$/i.test(record.color)
         ? record.color
         : SUBJECT_COLORS[index % SUBJECT_COLORS.length];
+      const evidenceMap = normalizeStoredEvidenceMap(record.inputs?.evidenceMap);
+      const evidenceFiles = evidenceMap?.files?.map((file) => ({ ...file }))
+        || sanitizeStoredEvidenceFiles(record.inputs?.evidenceFiles);
+      const storedScopeSourceMode = record.inputs?.scopeSourceMode === "materials"
+        && (evidenceMap || evidenceFiles.length)
+        ? "materials"
+        : "manual";
       return {
         id: typeof record.id === "string" && record.id ? record.id : createLocalId("subject"),
         workspaceId: typeof record.workspaceId === "string" ? record.workspaceId : "",
@@ -5725,7 +5868,15 @@
           keywords: String(record.inputs?.keywords || ""),
           contentLanguagePreference: ["auto", "zh", "en"].includes(record.inputs?.contentLanguagePreference)
             ? record.inputs.contentLanguagePreference
-            : "auto"
+            : "auto",
+          scopeSourceMode: storedScopeSourceMode,
+          evidenceFiles,
+          evidenceMap,
+          evidenceExamNote: String(record.inputs?.evidenceExamNote || "").slice(0, 240),
+          evidenceQuestionTypes: Array.isArray(record.inputs?.evidenceQuestionTypes)
+            ? [...new Set(record.inputs.evidenceQuestionTypes.map(normalizeEvidenceQuestionType).filter(Boolean))]
+            : [],
+          evidenceExamUnknown: record.inputs?.evidenceExamUnknown === true
         },
         strategy: record.strategy && typeof record.strategy === "object" ? record.strategy : null,
         plan: normalizePlan(record.plan),
@@ -5985,6 +6136,10 @@
         keywords: getEffectiveKeywords(),
         contentLanguagePreference: contentLanguageSelect.value,
         scopeSourceMode,
+        evidenceFiles: courseEvidenceState.files.map((file) => ({ ...file })),
+        evidenceExamNote: courseEvidenceState.examNote,
+        evidenceQuestionTypes: [...courseEvidenceState.questionTypes],
+        evidenceExamUnknown: courseEvidenceState.examUnknown,
         evidenceMap: scopeSourceMode === "materials" ? getCourseEvidenceMap() : null
       };
     }
@@ -6081,7 +6236,7 @@
         remove.type = "button";
         remove.textContent = "×";
         remove.setAttribute("aria-label", `${t("deleteSubject")}：${subject.name}`);
-        remove.addEventListener("click", () => deleteSubject(subject.id));
+        remove.addEventListener("click", () => { void deleteSubject(subject.id); });
         actions.append(rename, remove);
 
         item.append(select, actions);
@@ -6153,19 +6308,25 @@
       }
       renderMaterialVault();
       renderCourseEvidenceState();
-      if (persist) saveDraft();
+      if (isMaterials
+        && courseEvidenceState.files.length
+        && evidenceSourceFiles.length === 0
+        && !courseEvidenceState.saving) {
+        void restoreEvidenceFilesForOwner(getEvidenceStorageOwnerId());
+      }
+      if (persist) persistCourseEvidenceMetadata();
       if (focus) {
         window.setTimeout(() => courseInput.focus(), 0);
       }
     }
 
-    function startNewSubject() {
+    async function startNewSubject() {
       activeSubjectId = null;
       editingSubjectId = null;
       planUndoSnapshot = null;
       hidePlanEditToast();
       try {
-        localStorage.removeItem("finals-os-active-subject-v1");
+        localStorage.setItem(ACTIVE_SUBJECT_KEY, DRAFT_SUBJECT_ID);
       } catch {
         // The unsaved form still works without persistent storage.
       }
@@ -6186,6 +6347,13 @@
       saveDraft();
       setSidebarOpen(false);
       courseInput.focus();
+      const cleanupToken = evidenceRestoreToken;
+      courseEvidenceState.saving = true;
+      renderCourseEvidenceState();
+      await deleteEvidenceOwnerRecords(getEvidenceStorageOwnerId(null)).catch(() => {});
+      if (cleanupToken !== evidenceRestoreToken) return;
+      courseEvidenceState.saving = false;
+      renderCourseEvidenceState();
     }
 
     function isStrategySubject(subject) {
@@ -6208,8 +6376,17 @@
       keywordsInput.value = subject.inputs.keywords;
       contentLanguageSelect.value = subject.inputs.contentLanguagePreference || "auto";
       const restoredMode = !strategySubject && subject.inputs.scopeSourceMode === "materials" ? "materials" : "manual";
-      if (restoredMode === "materials" && subject.inputs.evidenceMap) restoreCourseEvidenceStateFromMap(subject.inputs.evidenceMap);
-      else if (restoredMode !== "materials") resetCourseEvidenceState();
+      if (restoredMode === "materials" && subject.inputs.evidenceMap) {
+        restoreCourseEvidenceStateFromMap(subject.inputs.evidenceMap);
+      } else if (restoredMode === "materials" && subject.inputs.evidenceFiles?.length) {
+        restoreCourseEvidenceFilesMetadata(subject.inputs.evidenceFiles, {
+          note: subject.inputs.evidenceExamNote,
+          questionTypes: subject.inputs.evidenceQuestionTypes,
+          unknown: subject.inputs.evidenceExamUnknown
+        });
+      } else {
+        resetCourseEvidenceState();
+      }
       applyScopeSourceMode(restoredMode);
       touchedFields.clear();
       validationSummary.textContent = "";
@@ -6219,7 +6396,7 @@
       renderContentLanguageControl();
       saveDraft();
       try {
-        localStorage.setItem("finals-os-active-subject-v1", activeSubjectId);
+        localStorage.setItem(ACTIVE_SUBJECT_KEY, activeSubjectId);
       } catch {
         // Active selection is optional persistence.
       }
@@ -6227,9 +6404,10 @@
       refreshMaterialVaultForActiveSubject();
     }
 
-    function deleteSubject(id) {
+    async function deleteSubject(id) {
       const subject = subjects.find((item) => item.id === id);
       if (!subject || !window.confirm(t("deleteSubjectConfirm", { name: subject.name }))) return;
+      void deleteEvidenceOwnerRecords(getEvidenceStorageOwnerId(id)).catch(() => {});
       subjects = subjects.filter((item) => item.id !== id);
       saveSubjectStore();
       editingSubjectId = null;
@@ -6237,7 +6415,7 @@
         if (subjects.length) {
           selectSubject(subjects[0].id);
         } else {
-          startNewSubject();
+          await startNewSubject();
         }
       } else {
         renderSubjectList();
@@ -6246,7 +6424,8 @@
       setExportStatus(t("subjectDeleted"));
     }
 
-    function saveGeneratedSubject() {
+    async function saveGeneratedSubject() {
+      const previousEvidenceOwnerId = getEvidenceStorageOwnerId();
       const inputs = collectCurrentInputs();
       const timestamp = new Date().toISOString();
       let subject = subjects.find((item) => item.id === activeSubjectId);
@@ -6274,12 +6453,23 @@
       }
       ensureSubjectTaskSchedule(subject);
       syncCalendarDailyCapacity(inputs.hours);
+      const nextEvidenceOwnerId = getEvidenceStorageOwnerId(subject.id);
+      if (scopeSourceMode === "materials" && previousEvidenceOwnerId !== nextEvidenceOwnerId) {
+        try {
+          await migrateEvidenceOwnerRecords(previousEvidenceOwnerId, nextEvidenceOwnerId);
+          courseEvidenceState.filesPersisted = evidenceSourceFiles.length > 0;
+        } catch {
+          courseEvidenceState.filesPersisted = false;
+          courseEvidenceState.statusKey = "evidenceStorageFailed";
+          courseEvidenceState.statusReplacements = {};
+        }
+      }
       saveSubjectStore();
       renderSubjectList();
       renderTodoList();
       renderCalendar();
       try {
-        localStorage.setItem("finals-os-active-subject-v1", activeSubjectId);
+        localStorage.setItem(ACTIVE_SUBJECT_KEY, activeSubjectId);
       } catch {
         // Active selection is optional persistence.
       }
@@ -6805,14 +6995,17 @@
       loadSubjectStore();
       let savedId = null;
       try {
-        savedId = localStorage.getItem("finals-os-active-subject-v1");
+        savedId = localStorage.getItem(ACTIVE_SUBJECT_KEY);
       } catch {
         savedId = null;
       }
-      const initial = subjects.find((subject) => subject.id === savedId) || subjects[0];
+      const initial = savedId === DRAFT_SUBJECT_ID
+        ? null
+        : subjects.find((subject) => subject.id === savedId) || subjects[0];
       if (initial) {
         selectSubject(initial.id);
       } else {
+        activeSubjectId = null;
         renderSubjectList();
         clearPlanState();
       }
@@ -6828,6 +7021,8 @@
           keywords: keywordsInput.value,
           contentLanguagePreference: contentLanguageSelect.value,
           scopeSourceMode,
+          evidenceFiles: courseEvidenceState.files.map((file) => ({ ...file })),
+          evidenceMap: getCourseEvidenceMap(),
           evidenceExamNote: courseEvidenceState.examNote,
           evidenceQuestionTypes: courseEvidenceState.questionTypes,
           evidenceExamUnknown: courseEvidenceState.examUnknown
@@ -6856,14 +7051,25 @@
         if (["manual", "materials"].includes(draft.scopeSourceMode)) {
           scopeSourceMode = draft.scopeSourceMode;
         }
-        if (typeof draft.evidenceExamNote === "string") courseEvidenceState.examNote = draft.evidenceExamNote.slice(0, 240);
-        if (Array.isArray(draft.evidenceQuestionTypes)) {
-          courseEvidenceState.questionTypes = [
-            ...new Set(draft.evidenceQuestionTypes.map(normalizeEvidenceQuestionType).filter(Boolean))
-          ];
+        const storedEvidenceMap = normalizeStoredEvidenceMap(draft.evidenceMap);
+        if (storedEvidenceMap) {
+          restoreCourseEvidenceStateFromMap(storedEvidenceMap);
+        } else if (Array.isArray(draft.evidenceFiles) && draft.evidenceFiles.length) {
+          restoreCourseEvidenceFilesMetadata(draft.evidenceFiles, {
+            note: draft.evidenceExamNote,
+            questionTypes: draft.evidenceQuestionTypes,
+            unknown: draft.evidenceExamUnknown
+          });
+        } else {
+          if (typeof draft.evidenceExamNote === "string") courseEvidenceState.examNote = draft.evidenceExamNote.slice(0, 240);
+          if (Array.isArray(draft.evidenceQuestionTypes)) {
+            courseEvidenceState.questionTypes = [
+              ...new Set(draft.evidenceQuestionTypes.map(normalizeEvidenceQuestionType).filter(Boolean))
+            ];
+          }
+          courseEvidenceState.examUnknown = draft.evidenceExamUnknown === true;
+          evidenceExamNote.value = courseEvidenceState.examNote;
         }
-        courseEvidenceState.examUnknown = draft.evidenceExamUnknown === true;
-        evidenceExamNote.value = courseEvidenceState.examNote;
       }
       if (!dateInput.value || dateInput.value < toLocalDateValue(defaultDate)) {
         dateInput.value = toLocalDateValue(defaultDate);
@@ -7409,6 +7615,161 @@
       const keys = [...await getAllMaterialKeys()].filter((key) => key.startsWith(`${workspaceId}::`));
       await Promise.all(keys.map((key) => deleteMaterialRecord(key)));
       return keys.length;
+    }
+
+    function getEvidenceStorageOwnerId(subjectId = activeSubjectId) {
+      return subjectId ? `subject:${subjectId}` : "draft";
+    }
+
+    function getEvidenceRecordPrefix(ownerId) {
+      return `${EVIDENCE_RECORD_PREFIX}${ownerId}::`;
+    }
+
+    function getEvidenceRecordKey(ownerId, fileName) {
+      return `${getEvidenceRecordPrefix(ownerId)}${normalizeMaterialName(fileName)}`;
+    }
+
+    async function getEvidenceOwnerRecords(ownerId) {
+      const prefix = getEvidenceRecordPrefix(ownerId);
+      const keys = [...await getAllMaterialKeys()].filter((key) => key.startsWith(prefix));
+      const records = await Promise.all(keys.map((key) => getMaterialRecord(key)));
+      return records.filter((record) => record?.blob instanceof Blob);
+    }
+
+    async function putEvidenceFileRecord(ownerId, file) {
+      const mimeType = inferMaterialMimeType(file);
+      const blob = String(file.type || "").toLowerCase() === mimeType.toLowerCase()
+        ? file
+        : new Blob([file], { type: mimeType });
+      const record = {
+        key: getEvidenceRecordKey(ownerId, file.name),
+        recordType: "course-evidence",
+        ownerId,
+        fileName: String(file.name || "").slice(0, 180),
+        mimeType,
+        size: Math.max(0, Number(file.size) || 0),
+        lastModified: Math.max(0, Number(file.lastModified) || Date.now()),
+        updatedAt: new Date().toISOString(),
+        blob
+      };
+      await runMaterialDbRequest("readwrite", (store) => store.put(record));
+      return record;
+    }
+
+    async function replaceEvidenceOwnerRecords(ownerId, files) {
+      const nextKeys = new Set(files.map((file) => getEvidenceRecordKey(ownerId, file.name)));
+      for (const file of files) await putEvidenceFileRecord(ownerId, file);
+      const prefix = getEvidenceRecordPrefix(ownerId);
+      const staleKeys = [...await getAllMaterialKeys()].filter((key) => key.startsWith(prefix) && !nextKeys.has(key));
+      await Promise.all(staleKeys.map((key) => deleteMaterialRecord(key)));
+      try {
+        await navigator.storage?.persist?.();
+      } catch {
+        // IndexedDB remains usable even when persistent-storage promotion is unavailable.
+      }
+    }
+
+    async function deleteEvidenceOwnerRecords(ownerId) {
+      const prefix = getEvidenceRecordPrefix(ownerId);
+      const keys = [...await getAllMaterialKeys()].filter((key) => key.startsWith(prefix));
+      await Promise.all(keys.map((key) => deleteMaterialRecord(key)));
+      return keys.length;
+    }
+
+    async function migrateEvidenceOwnerRecords(fromOwnerId, toOwnerId) {
+      if (!fromOwnerId || fromOwnerId === toOwnerId) return;
+      const records = await getEvidenceOwnerRecords(fromOwnerId);
+      for (const record of records) {
+        const file = new File([record.blob], record.fileName, {
+          type: record.mimeType || record.blob.type,
+          lastModified: record.lastModified || Date.now()
+        });
+        await putEvidenceFileRecord(toOwnerId, file);
+      }
+      await deleteEvidenceOwnerRecords(fromOwnerId);
+    }
+
+    function persistCourseEvidenceMetadata() {
+      const storedFiles = courseEvidenceState.files.map((file) => ({
+        id: String(file.id || ""),
+        name: String(file.name || "").slice(0, 180),
+        kind: String(file.kind || "Document"),
+        size_bytes: Math.max(0, Number(file.size_bytes) || 0),
+        pages: Number.isFinite(Number(file.pages)) ? Number(file.pages) : null,
+        parse_status: String(file.parse_status || "") || undefined,
+        answer_status: String(file.answer_status || "") || undefined,
+        text_pages: Number.isFinite(Number(file.text_pages)) ? Number(file.text_pages) : undefined
+      }));
+      const evidenceMap = getCourseEvidenceMap();
+      const subject = subjects.find((item) => item.id === activeSubjectId);
+      if (subject?.inputs) {
+        subject.inputs.scopeSourceMode = scopeSourceMode;
+        subject.inputs.evidenceFiles = storedFiles;
+        subject.inputs.evidenceMap = evidenceMap;
+        subject.inputs.evidenceExamNote = courseEvidenceState.examNote;
+        subject.inputs.evidenceQuestionTypes = [...courseEvidenceState.questionTypes];
+        subject.inputs.evidenceExamUnknown = courseEvidenceState.examUnknown;
+        subject.updatedAt = new Date().toISOString();
+        saveSubjectStore();
+      }
+      saveDraft();
+    }
+
+    async function persistEvidenceFilesForCurrentOwner() {
+      await replaceEvidenceOwnerRecords(getEvidenceStorageOwnerId(), evidenceSourceFiles);
+      persistCourseEvidenceMetadata();
+    }
+
+    async function restoreEvidenceFilesForOwner(ownerId) {
+      const expectedFiles = courseEvidenceState.files;
+      if (!expectedFiles.length) return;
+      const restoreToken = ++evidenceRestoreToken;
+      courseEvidenceState.saving = true;
+      courseEvidenceState.filesPersisted = false;
+      courseEvidenceState.statusKey = "evidenceRestoring";
+      courseEvidenceState.statusReplacements = {};
+      renderCourseEvidenceState();
+      try {
+        const records = await getEvidenceOwnerRecords(ownerId);
+        if (restoreToken !== evidenceRestoreToken || ownerId !== getEvidenceStorageOwnerId()) return;
+        const recordsByName = new Map(records.map((record) => [normalizeMaterialName(record.fileName), record]));
+        const restored = expectedFiles.map((metadata) => {
+          const record = recordsByName.get(normalizeMaterialName(metadata.name));
+          if (!record) return null;
+          return new File([record.blob], record.fileName, {
+            type: record.mimeType || record.blob.type,
+            lastModified: record.lastModified || Date.now()
+          });
+        });
+        const missingCount = restored.filter((file) => !file).length;
+        evidenceSourceFiles = missingCount ? [] : restored;
+        courseEvidenceState.filesPersisted = missingCount === 0;
+        if (missingCount) {
+          courseEvidenceState.statusKey = courseEvidenceState.map
+            ? "evidenceMapRestoredFilesMissing"
+            : "evidenceFileNeedsReselect";
+          courseEvidenceState.statusReplacements = { count: missingCount };
+        } else if (courseEvidenceState.map) {
+          courseEvidenceState.statusKey = "evidenceMapRestored";
+          courseEvidenceState.statusReplacements = {
+            files: restored.length,
+            units: courseEvidenceState.map.knowledge_units.length
+          };
+        } else {
+          courseEvidenceState.statusKey = "evidenceFilesRestored";
+          courseEvidenceState.statusReplacements = { count: restored.length };
+        }
+      } catch {
+        if (restoreToken !== evidenceRestoreToken) return;
+        evidenceSourceFiles = [];
+        courseEvidenceState.filesPersisted = false;
+        courseEvidenceState.statusKey = courseEvidenceState.map
+          ? "evidenceMapRestoredFilesMissing"
+          : "evidenceStorageFailed";
+        courseEvidenceState.statusReplacements = { count: expectedFiles.length };
+      }
+      courseEvidenceState.saving = false;
+      renderCourseEvidenceState();
     }
 
     function setMaterialVaultStatus(key, replacements = {}) {
@@ -9266,7 +9627,7 @@
           throw error;
         }
         applyPlan(normalizedPlan);
-        saveGeneratedSubject();
+        await saveGeneratedSubject();
         setStatus(t("generationSuccess"));
       } catch (err) {
         const msg = String(err?.message || err);
@@ -9325,7 +9686,7 @@
       setSidebarOpen(false);
       subjectMenuToggle.focus();
     });
-    newSubjectBtn.addEventListener("click", startNewSubject);
+    newSubjectBtn.addEventListener("click", () => { void startNewSubject(); });
     bindMaterialsBtn.addEventListener("click", () => {
       materialFilesInput.value = "";
       materialFilesInput.click();
@@ -9348,7 +9709,7 @@
       evidenceFilesInput.value = "";
       evidenceFilesInput.click();
     });
-    evidenceFilesInput.addEventListener("change", () => setEvidenceFiles(evidenceFilesInput.files));
+    evidenceFilesInput.addEventListener("change", () => { void setEvidenceFiles(evidenceFilesInput.files); });
     buildEvidenceMapBtn.addEventListener("click", beginEvidenceMapBuild);
     evidenceMetricButtons.forEach((button, index) => {
       button.addEventListener("click", () => setEvidenceDetailView(button.dataset.evidenceView));
@@ -9374,7 +9735,7 @@
           : [...courseEvidenceState.questionTypes, type];
         renderEvidenceExamStatus();
         renderContentLanguageControl();
-        saveDraft();
+        persistCourseEvidenceMetadata();
       });
     });
     evidenceExamNote.addEventListener("input", () => {
@@ -9382,7 +9743,7 @@
       if (normalizeEvidenceExamConstraint(courseEvidenceState.examNote)) courseEvidenceState.examUnknown = false;
       renderEvidenceExamStatus();
       renderContentLanguageControl();
-      saveDraft();
+      persistCourseEvidenceMetadata();
     });
     evidenceExamUnknownBtn.addEventListener("click", () => {
       courseEvidenceState.examUnknown = true;
@@ -9391,7 +9752,7 @@
       evidenceExamNote.value = "";
       renderEvidenceExamStatus();
       renderContentLanguageControl();
-      saveDraft();
+      persistCourseEvidenceMetadata();
     });
     scopeSourceModeInputs.forEach((input) => {
       input.addEventListener("change", () => {
