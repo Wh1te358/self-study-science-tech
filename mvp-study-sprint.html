@@ -3872,6 +3872,7 @@
         parseError: "计划格式有误，请重新生成。",
         courseFallback: "当前课程",
         apiCallFailed: "生成失败（错误 {status}）。请稍后重试；你的输入已保留。",
+        planEvidenceTooLarge: "413：Evidence Map 超过计划接口 200 KB 限制。请减少资料后重新分析；你的文件、Map 和输入仍已保留。",
         emptyBackend: "生成服务没有返回计划，请重试。",
         requestingModel: "正在生成计划，通常需要 10–60 秒…",
         generationSuccess: "计划已生成，并保存到科目库。",
@@ -4264,6 +4265,7 @@
         parseError: "The plan format was invalid. Generate it again.",
         courseFallback: "Current course",
         apiCallFailed: "Generation failed (error {status}). Try again; your inputs are saved.",
+        planEvidenceTooLarge: "413: The Evidence Map exceeds the 200 KB planning limit. Remove some materials and analyze again; your files, map, and inputs are still saved.",
         emptyBackend: "The generation service returned no plan. Try again.",
         requestingModel: "Generating your plan. This usually takes 10–60 seconds…",
         generationSuccess: "Plan generated and saved to the subject library.",
@@ -9525,8 +9527,11 @@
       });
 
       if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(t("apiCallFailed", { status: response.status, detail: errText.slice(0, 180) }));
+        const errorPayload = await response.json().catch(() => ({}));
+        const error = new Error(t("apiCallFailed", { status: response.status }));
+        error.status = response.status;
+        error.detail = String(errorPayload?.error || "").slice(0, 180);
+        throw error;
       }
       const data = await response.json();
       if (data?.ok && data?.plan) return data.plan;
@@ -9637,7 +9642,9 @@
           setStatus(t("fetchFailed"));
         } else if (err?.name === "PlanFeasibilityError") {
           setStatus(msg);
-        } else if (msg.includes("401")) {
+        } else if (err?.status === 413 && scopeSourceMode === "materials") {
+          setStatus(t("planEvidenceTooLarge"));
+        } else if (err?.status === 401 || msg.includes("401")) {
           try {
             const health = await getHealth();
             if (health?.service !== "study-sprint-api") {
@@ -9650,6 +9657,8 @@
           } catch {
             setStatus(t("authHealthFailed"));
           }
+        } else if (Number.isInteger(err?.status)) {
+          setStatus(t("apiCallFailed", { status: err.status }));
         } else {
           setStatus(t("aiFailed", { message: msg }));
         }
