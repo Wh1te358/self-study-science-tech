@@ -23,7 +23,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 BASE_DIR = Path(__file__).resolve().parent
 COURSES_DIR = BASE_DIR / "courses"
 APP_NAME = "study-sprint-api"
-APP_VERSION = "2026-08-08-course-evidence-integration"
+APP_VERSION = "2026-08-09-plan-evidence-limit"
 WORKSPACE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 STRATEGY_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,99}$")
 MIN_PLAN_DAYS = 3
@@ -72,6 +72,8 @@ MAX_EVIDENCE_UPLOAD_BYTES = 100 * 1024 * 1024
 MAX_EVIDENCE_MULTIPART_OVERHEAD_BYTES = 2 * 1024 * 1024
 MAX_EVIDENCE_PROMPT_CHARS = 80_000
 MAX_EVIDENCE_CHUNK_CHARS = 1_600
+DEFAULT_PLAN_REQUEST_BYTES = 200 * 1024
+MAX_PLAN_REQUEST_BYTES = 256 * 1024
 EVIDENCE_UPLOAD_SUFFIXES = {".pdf", ".md", ".markdown", ".txt", ".docx", ".pptx"}
 EVIDENCE_MAP_FIELDS = {
     "version", "map_mode", "evidence_level", "files", "knowledge_units",
@@ -4126,7 +4128,10 @@ class Handler(SimpleHTTPRequestHandler):
             if length < 0:
                 raise PayloadValidationError("Content-Length is invalid")
             max_body = int(os.environ.get("MAX_BODY_BYTES", "20000"))
-            if request_path in {"/api/strategy/validate", "/api/guide", "/api/guide/revise"}:
+            if request_path == "/api/plan":
+                configured_plan_limit = int(os.environ.get("MAX_PLAN_BODY_BYTES", str(DEFAULT_PLAN_REQUEST_BYTES)))
+                max_body = max(20_000, min(MAX_PLAN_REQUEST_BYTES, configured_plan_limit))
+            elif request_path in {"/api/strategy/validate", "/api/guide", "/api/guide/revise"}:
                 strategy_max_body = int(os.environ.get("MAX_STRATEGY_BODY_BYTES", "120000"))
                 max_body = min(500000, max(max_body, strategy_max_body))
             elif request_path == "/api/evidence/map":
