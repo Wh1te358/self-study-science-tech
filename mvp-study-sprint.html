@@ -3219,7 +3219,7 @@
             <a
               id="feedbackFormLink"
               class="feedback-action"
-              href="https://docs.google.com/forms/d/e/1FAIpQLSeoLjOHUnG22anZXWujwkWxYkisV6AL6qs9WplDtGuM9iPa_A/viewform?usp=publish-editor"
+              href="https://fcn3wrbacidl.feishu.cn/share/base/form/shrcnbjAZVgWtMQBi49t6NLQpVc"
               target="_blank"
               rel="noopener noreferrer"
             ><span id="feedbackFormAction">填写反馈问卷</span><span class="external-mark" aria-hidden="true">↗</span></a>
@@ -3424,6 +3424,10 @@
     const previousWeekBtn = document.getElementById("previousWeek");
     const currentWeekBtn = document.getElementById("currentWeek");
     const nextWeekBtn = document.getElementById("nextWeek");
+    const feedbackFormUrls = {
+      zh: "https://fcn3wrbacidl.feishu.cn/share/base/form/shrcnbjAZVgWtMQBi49t6NLQpVc",
+      en: "https://docs.google.com/forms/d/e/1FAIpQLSeoLjOHUnG22anZXWujwkWxYkisV6AL6qs9WplDtGuM9iPa_A/viewform?usp=publish-editor"
+    };
     let currentLanguage = "zh";
     let hasGeneratedPlan = false;
     let lastHealth = null;
@@ -7153,6 +7157,7 @@
       });
       languageToggle.textContent = currentLanguage === "zh" ? "English" : "中文";
       languageToggle.setAttribute("aria-label", t("languageToggleAria"));
+      feedbackFormLink.href = feedbackFormUrls[currentLanguage];
       feedbackFormLink.setAttribute("aria-label", t("feedbackFormAria"));
       xProfileLink.setAttribute("aria-label", t("xProfileAria"));
       sectionNav.setAttribute("aria-label", t("sectionNavAria"));
